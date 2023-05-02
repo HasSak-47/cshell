@@ -7,25 +7,31 @@
 
 #include <stdarg.h>
 
-#include <format.h>
+DECLARE_TYPE(int)
+DEFINE_TYPE(int)
+
+DECLARE_FUNC_ID(fmt)
+DEFINE_FUNC_ID(fmt)
+
+MKGOF(fmt)
+
+void* MFNT(fmt, int)(void* ptr){
+	printf("fucker!\n");
+	return NULL;
+}
+
 
 int main(){
-	// setup
 	atexit(delete_tables);
 
-	__format_table = init_table();
-	__u64_formatter_id = add_function(__format_table, (fn)__u64_formatter);
-	__char_formatter_id = add_function(__format_table, (fn)__char_formatter);
-	__float_formatter_id = add_function(__format_table, (fn)__float_formatter);
-	__str_formatter_id = add_function(__format_table, (fn)__str_formatter);
+	INIT_FUNC_ID(fmt);
+	INIT_TYPE(int)
+	INIT(int, i, 0)
 
-	int   a = 10;
-	char  b = 'a';
-	float c = 5;
 
-	init_value(__format_table, __u64_formatter_id, &a);
-	init_value(__format_table, __char_formatter_id, &b);
-	init_value(__format_table, __float_formatter_id, &c);
+	OVERLOAD(fmt, int);
+
+	fmt(&i);
 
 
 	return 0;

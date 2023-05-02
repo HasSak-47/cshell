@@ -2,19 +2,50 @@
 #define __OBJECT_H__
 
 #include <stddef.h>
-#define PTR_SIZE sizeof(void*)
 
 typedef void* (*fn)(void*);
 
+#define DECLARE_TYPE(type) extern size_t __type_##type##_id;
+#define  DEFINE_TYPE(type) size_t __type_##type##_id = 0;
+#define    INIT_TYPE(type) __type_##type##_id = init_type();
 
-// should be replaced with a hash function
-fn lookup(void* ptr, size_t vID);
-void init_value(size_t vID, size_t lID, void* ptr);
+#define INIT(type, name, value)\
+	type name = value;\
+	init( __type_##type##_id , & name );
 
-void push(void**, size_t*, size_t);
+#define DECLARE_FUNC_ID(name) extern size_t __func_##name##_id;
+#define  DEFINE_FUNC_ID(name) size_t __func_##name##_id = 0;
+#define    INIT_FUNC_ID(name) __func_##name##_id = init_fn();
 
-size_t init_table();
-size_t add_function(size_t vID, fn f);
+#define MFNT(name, type) __func_##name##_##type
+
+#define OVERLOAD(name, type) overload_fn( __func_##name##_id , __type_##type##_id, __func_##name##_##type );
+
+#define MKGOF(name)\
+void* name(void* ptr){\
+	return lookup(__func_##name##_id, ptr)(ptr);\
+}
+
+//init funcs 
+// creates table for the type T
+// returns the id of the type T
+size_t init_type();
+// overloads the funtion fn for the type T
+void overload_fn(size_t vt_id, size_t t_id, fn f);
+//returns the id of the vtable
+size_t init_fn();
+
+//add_funcs
+// adds value to the type table
+void init(size_t t_id, void* ptr);
+
+//del funcs
 void delete_tables();
+
+void __print_tables();
+
+fn lookup(size_t vt_id, void* ptr);
+
+
 
 #endif

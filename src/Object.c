@@ -2,44 +2,30 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-struct v_table* tables = NULL;
-size_t vtable_size = 0;
-
-struct l_table{
+struct array{
 	void** ptrs;
 	size_t size;
+};
+
+typedef struct array v_table;
+typedef struct array t_table;
+
+v_table* vtable = NULL;
+size_t vsize = 0;
+
+t_table* ttable = NULL;
+size_t tsize = 0;
+
+
+struct f_table{
+	t_table* type_table;
 	fn f;
 };
 
-struct v_table{
-	struct l_table* tables;
-	size_t table_size;
-};
-
-// HASH REMEMBER TO HASH
-fn lookup(void *ptr, size_t vID){
-	struct v_table* v = &tables[vID];
-	for(size_t i = 0; i < v->table_size; ++i)
-		for(size_t j = 0; j < v->tables[i].size; ++j)
-			if(ptr == v->tables[i].ptrs[j])
-				return v->tables[i].f;
-
-	printf("value not found!\n");
-	exit(EXIT_FAILURE);
-}
-
-void init_value(size_t vID, size_t lID, void *ptr){
-	size_t i = tables[vID].tables[lID].size;
-	push((void**)&tables[vID].tables[lID].ptrs, &tables[vID].tables[lID].size, sizeof(void*));
-
-	tables[vID].tables[lID].ptrs[i] = ptr;
-}
-
-void push(void** ptr, size_t* n, size_t size){
-	// printf("%p %p %p %lu %lu\n", ptr, *ptr, n, *n, size);
-	void* aux = realloc(*ptr, (*n + 1) * size);
+void push(void** ptr, size_t* n, size_t len){
+	void* aux = realloc(*ptr, (*n + 1) * len);
 	if(aux == NULL){
-		printf("ran out of memory\n");
+		printf("RAN OUT OF MEMORY!");
 		exit(EXIT_FAILURE);
 	}
 
@@ -47,33 +33,81 @@ void push(void** ptr, size_t* n, size_t size){
 	*n = *n + 1;
 }
 
-size_t add_function(size_t vID, fn f){
-	size_t n = tables[vID].table_size;
-	push((void**)&tables[vID].tables, &tables[vID].table_size, sizeof(struct l_table));
-	tables[vID].tables[n].f = f;
-	tables[vID].tables[n].size = 0;
-	tables[vID].tables[n].ptrs = NULL;
+static size_t __init(struct array** tt, size_t* t){
+	size_t id = *t;
+	push((void**)tt, t, sizeof(struct array));
 
-	return n;
+	(*tt)[id].ptrs = NULL;
+	(*tt)[id].size = 0;
+
+	return id;
 }
 
-size_t init_table(){
-	size_t n = vtable_size;
-	push((void**)&tables, &vtable_size, sizeof(struct v_table));
-	tables[n].tables = NULL;
-	tables[n].table_size = 0;
-
-	return n;
+size_t init_type(){
+	return __init(&ttable, &tsize);
 }
 
-//memory leak
-void delete_tables(){
-	for(size_t i = 0; i < vtable_size; ++i){
-		for(size_t j = 0; j < tables[i].table_size; ++j){
-			free(tables[i].tables[j].ptrs);
-		} 
-		free(tables[i].tables);
+size_t init_fn(){
+	return __init(&vtable, &vsize);
+}
+
+void overload_fn(size_t vt_id, size_t t_id, fn f){
+	size_t id = vtable[vt_id].size;
+	push((void**)&vtable[vt_id].ptrs, &vtable[vt_id].size, sizeof(struct f_table));
+
+	struct f_table* ft = &((struct f_table*)vtable[vt_id].ptrs)[id];
+	ft->f = f;
+	ft->type_table = &ttable[t_id];
+}
+
+void init(size_t t_id, void* ptr){
+	size_t id = ttable[t_id].size;
+	push((void**)&ttable[t_id].ptrs, &ttable[t_id].size, sizeof(void*));
+	ttable[t_id].ptrs[id] = ptr;
+}
+
+fn lookup(size_t vt_id, void* ptr){
+	for(size_t i = 0; i < vtable[vt_id].size; ++i){
+		struct f_table* f = &((struct f_table*)vtable[vt_id].ptrs)[i];
+		for(size_t j = 0; j < f->type_table->size; ++j){
+			if(f->type_table->ptrs[j] == ptr){
+				return f->f;
+			}
+		}
 	}
 
-	free(tables);
+	printf("LOOKUP FAILED\n");
+	exit(EXIT_FAILURE);
+	return NULL;
+}
+
+void __print_tables(){
+	printf("vtable content:\n");
+	printf("init %p:\n", vtable);
+	for(size_t i = 0; i < vsize; ++i){
+		printf("\tvtable %lu content:\n", i);
+		for(size_t j = 0; j < vtable[i].size; ++j){
+			struct f_table* f = &((struct f_table*)vtable[i].ptrs)[j];
+			printf("\tftable %lu (%p): %p %p\n", j, f,  f->type_table, f->f);
+		}
+	}
+
+	printf("ttable content:\n");
+	printf("init: %p\n", ttable);
+	for(size_t i = 0; i < tsize; ++i){
+		printf("ttable %lu (%p): %p %lu\n", i, &ttable[i], ttable[i].ptrs, ttable[i].size);
+	}
+}
+
+void delete_tables(){
+	for(size_t i = 0; i < vsize; ++i){
+		free(vtable[i].ptrs);
+	}
+	free(vtable);
+
+	for(size_t i = 0; i < tsize; ++i){
+		free(ttable[i].ptrs);
+	}
+	free(ttable);
+
 }

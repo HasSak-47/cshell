@@ -3,8 +3,10 @@
 
 #include <stddef.h>
 
-struct String{
-	const char* str;
+typedef char* str;
+
+struct string{
+	str* s;
 	size_t len;
 };
 
