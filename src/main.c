@@ -1,63 +1,86 @@
 #define _GNU_SOURCE
-#include <unistd.h>
-
-#include <pwd.h>
-
 #include <stdio.h>
-#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdarg.h>
-#include <stdbool.h>
 
-#define MAX 256
+#include <Object.h>
 
-#define FORE "\e[38;2;%d;%d;%d;m"
-#define BACK "\e[42;2;%d;%d;%d;m"
+void* int_formatter(void* p){
+	char* c;
+	asprintf(&c, "%i", *(int*)p);
 
-struct ColorString{
-	const char* const str;
-	uint8_t r, g, b;
+	return c;
+}
+
+void* char_formatter(void* p){
+	char* c;
+	asprintf(&c, "%c", *(char*)p);
+
+	return c;
+}
+
+void* float_formatter(void* p){
+	char* c;
+	asprintf(&c, "%f", *(float*)p);
+
+	return c;
+}
+
+struct str{
+	char* c;
+	size_t s;
 };
 
+void* str_formatter(void* p){
+	struct str* s = (struct str* )p;
+	char* c; asprintf(&c, "%*.s", (int)s->s, s->c);
 
+	return c;
+}
+
+size_t format_table;
+size_t int_id, char_id, float_id, str_id;
+
+#include <stdarg.h>
+
+void print(char* fmt, ...){
+	va_list v;
+	va_start(v, fmt);
+	size_t len = strlen(fmt);
+	for(size_t i = 0; i < len; ++i){
+		if(fmt[i] == '%'){
+			void* p = va_arg(v, void*);
+			fn format = lookup(p, format_table);
+			char* c = format(p);
+			printf("%s", c);
+			free(c);
+		}
+		else{
+			printf("%c", fmt[i]);
+		}
+	}
+	fflush(stdout);
+}
 
 int main(){
 	// setup
-	struct passwd* user = getpwuid(getuid());
-	char* username = user->pw_name;
-	char* cwd = get_current_dir_name();
-	char  host[512] = {};
+	atexit(delete_tables);
 
-	gethostname(host, 512);
+	format_table = init_table();
+	int_id = add_function(format_table, int_formatter);
+	char_id = add_function(format_table, char_formatter);
+	float_id = add_function(format_table, float_formatter);
+	str_id = add_function(format_table, str_formatter);
 
-	unsigned hd_size = strlen(user->pw_dir);
+	int   a = 10;
+	char  b = 'a';
+	float c = 5;
 
-	//loop time
-	bool in_home = strncmp(user->pw_dir, cwd, hd_size) == 0;
+	init_value(format_table, int_id, &a);
+	init_value(format_table, char_id, &b);
+	init_value(format_table, float_id, &c);
 
-	if(in_home){
-		cwd[hd_size - 1] = '~';
-		printf("%s@%s %s", user->pw_name, host, cwd + hd_size - 1);
-	}
-	else
-		printf("%s@%s %s", user->pw_name, host, cwd);
+	print("test: % % %\n", &a, &b, &c);
 
-	char* buffer = NULL;
-	size_t bsize = 0;
-	char c = 0;
-	while(c != EOF && c != '\n'){
-		c = getchar();
-		char* aux = realloc(buffer, bsize + 1);
-		if(aux == NULL)
-			return -1;
-
-		buffer = aux;
-		buffer[bsize++] = c;
-	}
-
-	printf("%s", buffer);
-
-	free(cwd);
 	return 0;
 }
