@@ -1,7 +1,7 @@
 #ifndef __GENERIC_OBJECTS__
 #define __GENERIC_OBJECTS__
 
-#include "Object.h"
+#include "object.h"
 #include "str.h"
 #include "defs.h"
 
@@ -14,6 +14,9 @@ DECLARE_TYPE(i8)
 DECLARE_TYPE(i16)
 DECLARE_TYPE(i32)
 DECLARE_TYPE(i64)
+
+DECLARE_TYPE(f32)
+DECLARE_TYPE(f64)
 
 DECLARE_TYPE(str)
 DECLARE_TYPE(string)
