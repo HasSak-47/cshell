@@ -7,29 +7,47 @@
 
 #include <stdarg.h>
 
-DECLARE_TYPE(int)
-DEFINE_TYPE(int)
+#include <generic_objects.h>
 
-DECLARE_FUNC_ID(fmt)
 DEFINE_FUNC_ID(fmt)
-
 MKGOF(fmt)
 
+DEFINE_FUNC_ID(print)
+MKGOF(print)
+
 void* MFNT(fmt, int)(void* ptr){
-	printf("fucker!\n");
+	printf("int fucker!\n");
 	return NULL;
 }
 
+void* MFNT(fmt, str)(void* ptr){
+	printf("str fucker!\n");
+	return NULL;
+}
+
+void* MFNT(print, int)(void* ptr){
+	printf("int shitter!\n");
+	return NULL;
+}
+
+void* MFNT(print, str)(void* ptr){
+	printf("str shitter!\n");
+	return NULL;
+}
 
 int main(){
 	atexit(delete_tables);
 
 	INIT_FUNC_ID(fmt);
-	INIT_TYPE(int)
-	INIT(int, i, 0)
+	INIT_FUNC_ID(print);
+
+	INIT_TYPE(i32)
+	INIT_TYPE(str)
+
+	INIT(i32, i, 0)
+	INIT(str, s, (str){"pepe", 5})
 
 
-	OVERLOAD(fmt, int);
 
 	fmt(&i);
 
