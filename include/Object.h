@@ -17,5 +17,4 @@ size_t init_table();
 size_t add_function(size_t vID, fn f);
 void delete_tables();
 
-
 #endif
