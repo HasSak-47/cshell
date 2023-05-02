@@ -15,7 +15,7 @@ MKGOF(fmt)
 DEFINE_FUNC_ID(print)
 MKGOF(print)
 
-void* MFNT(fmt, int)(void* ptr){
+void* MFNT(fmt, i32)(void* ptr){
 	printf("int fucker!\n");
 	return NULL;
 }
@@ -25,7 +25,7 @@ void* MFNT(fmt, str)(void* ptr){
 	return NULL;
 }
 
-void* MFNT(print, int)(void* ptr){
+void* MFNT(print, i32)(void* ptr){
 	printf("int shitter!\n");
 	return NULL;
 }
@@ -37,20 +37,28 @@ void* MFNT(print, str)(void* ptr){
 
 int main(){
 	atexit(delete_tables);
-
+	// ---   setup   --- //
 	INIT_FUNC_ID(fmt);
 	INIT_FUNC_ID(print);
 
 	INIT_TYPE(i32)
 	INIT_TYPE(str)
 
+
+	OVERLOAD(fmt, i32)
+	OVERLOAD(fmt, str)
+	OVERLOAD(print, i32)
+	OVERLOAD(print, str)
+	// --- end setup --- //
+
 	INIT(i32, i, 0)
-	INIT(str, s, (str){"pepe", 5})
-
-
+	INIT(str, s, "string")
 
 	fmt(&i);
+	fmt(&s);
 
+	print(&i);
+	print(&s);
 
 	return 0;
 }
