@@ -35,13 +35,17 @@ void overload_fn(size_t vt_id, size_t t_id, fn f);
 //returns the id of the vtable
 size_t init_fn();
 
-//add_funcs
+//vars
 // adds value to the type table
 void init(size_t t_id, void* ptr);
+void out(size_t t_id, void* ptr);
+
+
 
 //del funcs
 void delete_tables();
 
+//debug
 void __print_tables();
 
 fn lookup(size_t vt_id, void* ptr);

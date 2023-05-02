@@ -21,4 +21,6 @@ DECLARE_TYPE(f64)
 DECLARE_TYPE(str)
 DECLARE_TYPE(string)
 
+void __init_generic_objects();
+
 #endif

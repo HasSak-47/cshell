@@ -41,8 +41,7 @@ int main(){
 	INIT_FUNC_ID(fmt);
 	INIT_FUNC_ID(print);
 
-	INIT_TYPE(i32)
-	INIT_TYPE(str)
+	__init_generic_objects();
 
 
 	OVERLOAD(fmt, i32)

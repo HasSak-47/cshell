@@ -1,3 +1,6 @@
+// I have to implement a hash function to speed up lookups
+// but I don't care rn
+
 #include <object.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -61,9 +64,24 @@ void overload_fn(size_t vt_id, size_t t_id, fn f){
 }
 
 void init(size_t t_id, void* ptr){
+	// look for a null character and replace it
+	for(size_t i = 0; i < ttable[t_id].size; ++i)
+		if(ttable[t_id].ptrs[i] == NULL){
+			ttable[t_id].ptrs[i] = ptr;
+			return;
+		}
+
 	size_t id = ttable[t_id].size;
 	push((void**)&ttable[t_id].ptrs, &ttable[t_id].size, sizeof(void*));
 	ttable[t_id].ptrs[id] = ptr;
+}
+
+void out(size_t t_id, void* ptr){
+	for(size_t i = 0; i < ttable[t_id].size; ++i)
+		if(ttable[t_id].ptrs[i] == ptr){
+			ttable[t_id].ptrs[i] = NULL;
+			return;
+		}
 }
 
 fn lookup(size_t vt_id, void* ptr){

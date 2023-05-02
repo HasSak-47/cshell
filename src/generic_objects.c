@@ -1,4 +1,5 @@
 #include "generic_objects.h"
+#include "object.h"
 
 DEFINE_TYPE(u8)
 DEFINE_TYPE(u16)
@@ -14,3 +15,18 @@ DEFINE_TYPE(f64)
 
 DEFINE_TYPE(str)
 DEFINE_TYPE(string)
+
+void __init_generic_objects(){
+	INIT_TYPE(u8)
+	INIT_TYPE(u16)
+	INIT_TYPE(u32)
+	INIT_TYPE(u64)
+	INIT_TYPE(i8)
+	INIT_TYPE(i16)
+	INIT_TYPE(i32)
+	INIT_TYPE(i64)
+	INIT_TYPE(f32)
+	INIT_TYPE(f64)
+	INIT_TYPE(str)
+	INIT_TYPE(string)
+}
