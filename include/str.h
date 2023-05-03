@@ -5,9 +5,9 @@
 
 typedef char* str;
 
-struct string{
+typedef struct string{
 	str* s;
 	size_t len;
-};
+} string;
 
 #endif

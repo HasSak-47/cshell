@@ -19,6 +19,9 @@ void print(const char* fmt, ...){
 			printf("%s", c);
 			free(c);
 		}
+		else{
+			printf("%c", fmt[i]);
+		}
 	}
 
 	va_end(v);
@@ -28,11 +31,10 @@ int main(){
 	atexit(delete_tables);
 	__init_generic_objects();
 	__format_setup();
+	INIT_DEFAULT(i8, a)
+	INIT_DEFAULT(i8, b)
+	INIT_DEFAULT(i8, c)
 
-	INIT(i32, a, 10)
-	INIT(f32, b, 10)
-	print("% %", &a, &b);
-
-
+	print("% % %\n", &a, &b, &c);
 	return 0;
 }

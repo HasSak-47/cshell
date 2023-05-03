@@ -1,5 +1,4 @@
 #define _GNU_SOURCE
-#define __STDC_WANT_LIB_EXT2
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -20,6 +19,7 @@ DEFINE_FUNC_ID(format)
 	free(fmt_buf);\
 	return buf;\
 
+char* MFNT(format, char)(char* fmt, char* val){ MAKE_FMT(char, "c") }
 char* MFNT(format, i8 )(char* fmt, i8 * val){ MAKE_FMT(i8 , "i") }
 char* MFNT(format, i16)(char* fmt, i16* val){ MAKE_FMT(i16, "i") }
 char* MFNT(format, i32)(char* fmt, i32* val){ MAKE_FMT(i32, "i") }
@@ -30,7 +30,7 @@ char* MFNT(format, u32)(char* fmt, i32* val){ MAKE_FMT(u32, "u") }
 char* MFNT(format, u64)(char* fmt, i64* val){ MAKE_FMT(u64, "u") }
 char* MFNT(format, f32)(char* fmt, f32* val){ MAKE_FMT(f32, "f") }
 char* MFNT(format, f64)(char* fmt, f64* val){ MAKE_FMT(f64, "f") }
-char* MFNT(format, str)(char* fmt, str* val){ MAKE_FMT(str, "i") }
+char* MFNT(format, str)(char* fmt, str* val){ MAKE_FMT(str, "s") }
 
 #define OVERLOADFMT(name, type)\
 	overload_fn( __func_##name##_id , __type_##type##_id, (fn) __func_##name##_##type);
@@ -38,6 +38,7 @@ char* MFNT(format, str)(char* fmt, str* val){ MAKE_FMT(str, "i") }
 
 void __format_setup(){
 	INIT_FUNC_ID(format)
+	OVERLOADFMT(format, char)
 	OVERLOADFMT(format, i8 )
 	OVERLOADFMT(format, i16)
 	OVERLOADFMT(format, i32)

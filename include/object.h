@@ -13,6 +13,14 @@ typedef void* (*fn)(void*);
 	type name = value;\
 	init( __type_##type##_id , & name );
 
+#define DECLARE_DEFAULT(type) extern const type __type_##type##_default;
+#define DEFINE_DEFAULT(type) const type __type_##type##_default = 
+
+#define INIT_DEFAULT(type, name)\
+	type name = __type_##type##_default;\
+	init( __type_##type##_id , & name );
+	
+
 #define DECLARE_FUNC_ID(name) extern size_t __func_##name##_id;
 #define  DEFINE_FUNC_ID(name) size_t __func_##name##_id = 0;
 #define    INIT_FUNC_ID(name) __func_##name##_id = init_fn();
@@ -25,6 +33,8 @@ typedef void* (*fn)(void*);
 void* name(void* ptr){\
 	return lookup(__func_##name##_id, ptr)(ptr);\
 }
+
+#define OUT(type, name) out(__type_##type##_id, &name);
 
 //init funcs 
 // creates table for the type T
