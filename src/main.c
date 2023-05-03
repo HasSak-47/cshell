@@ -31,10 +31,10 @@ int main(){
 	atexit(delete_tables);
 	__init_generic_objects();
 	__format_setup();
-	INIT_DEFAULT(i8, a)
-	INIT_DEFAULT(i8, b)
-	INIT_DEFAULT(i8, c)
+	INIT(i32, a, 10)
+	INIT(f32, b, 10)
+	INIT(str, c, "pp")
 
-	print("% % %\n", &a, &b, &c);
+	print("Hello there % % %\n", &a, &b, &c);
 	return 0;
 }
