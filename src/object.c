@@ -76,7 +76,7 @@ void init(size_t t_id, void* ptr){
 	ttable[t_id].ptrs[id] = ptr;
 }
 
-void out(size_t t_id, void* ptr){
+void drop(size_t t_id, void* ptr){
 	for(size_t i = 0; i < ttable[t_id].size; ++i)
 		if(ttable[t_id].ptrs[i] == ptr){
 			ttable[t_id].ptrs[i] = NULL;

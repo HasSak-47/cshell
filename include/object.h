@@ -34,7 +34,7 @@ void* name(void* ptr){\
 	return lookup(__func_##name##_id, ptr)(ptr);\
 }
 
-#define OUT(type, name) out(__type_##type##_id, &name);
+#define DROP(type, name) drop(__type_##type##_id, &name);
 
 //init funcs 
 // creates table for the type T
@@ -48,7 +48,7 @@ size_t init_fn();
 //vars
 // adds value to the type table
 void init(size_t t_id, void* ptr);
-void out(size_t t_id, void* ptr);
+void drop(size_t t_id, void* ptr);
 
 
 
