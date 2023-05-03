@@ -15,8 +15,6 @@ DEFINE_TYPE(f32)
 DEFINE_TYPE(f64)
 
 DEFINE_TYPE(str)
-DEFINE_TYPE(string)
-
 
 DEFINE_DEFAULT(char) '\0';
 
@@ -34,7 +32,6 @@ DEFINE_DEFAULT(f32) 0;
 DEFINE_DEFAULT(f64) 0;
 
 DEFINE_DEFAULT(str) 0;
-DEFINE_DEFAULT(string) {NULL, 0};
 
 void __init_generic_objects(){
 	INIT_TYPE(char)

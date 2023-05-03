@@ -35,7 +35,6 @@ DECLARE_DEFAULT(i64)
 DECLARE_DEFAULT(f32)
 DECLARE_DEFAULT(f64)
 DECLARE_DEFAULT(str)
-DECLARE_DEFAULT(string)
 
 void __init_generic_objects();
 

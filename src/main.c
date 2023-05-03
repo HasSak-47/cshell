@@ -1,10 +1,12 @@
-#include "formatter.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <object.h>
 #include <stdarg.h>
+
 #include <generic_objects.h>
+#include <formatter.h>
+#include <object.h>
+#include <colored_string.h>
 
 #include <stdarg.h>
 
@@ -29,12 +31,17 @@ void print(const char* fmt, ...){
 
 int main(){
 	atexit(delete_tables);
+	INIT_TYPE(string)
 	__init_generic_objects();
 	__format_setup();
-	INIT(i32, a, 10)
-	INIT(f32, b, 10)
-	INIT(str, c, "pp")
+	overload_fn(FUNC_ID(format), TYPE_ID(string), (fn)MFNT(format, string));
+	overload_fn(FUNC_ID(format), TYPE_ID(colored_string), (fn)MFNT(format, colored_string));
+	INIT_DEFAULT(colored_string, str_test)
+	str_test.b[0] = 255;
+	str_test.str.s = "12345";
+	str_test.str.len = 3;
 
-	print("Hello there % % %\n", &a, &b, &c);
+	print("%\n", &str_test);
+
 	return 0;
 }

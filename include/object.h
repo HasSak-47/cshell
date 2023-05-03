@@ -9,6 +9,8 @@ typedef void* (*fn)(void*);
 #define  DEFINE_TYPE(type) size_t __type_##type##_id = 0;
 #define    INIT_TYPE(type) __type_##type##_id = init_type();
 
+#define TYPE_ID(type) __type_##type##_id
+
 #define INIT(type, name, value)\
 	type name = value;\
 	init( __type_##type##_id , & name );
@@ -24,6 +26,7 @@ typedef void* (*fn)(void*);
 #define DECLARE_FUNC_ID(name) extern size_t __func_##name##_id;
 #define  DEFINE_FUNC_ID(name) size_t __func_##name##_id = 0;
 #define    INIT_FUNC_ID(name) __func_##name##_id = init_fn();
+#define 		FUNC_ID(name) __func_##name##_id
 
 #define MFNT(name, type) __func_##name##_##type
 

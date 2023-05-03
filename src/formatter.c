@@ -9,15 +9,15 @@
 #include <str.h>
 #include <defs.h>
 
-DEFINE_FUNC_ID(format)
-
 #define MAKE_FMT(type, type_str) \
 	char* fmt_buf;\
 	char* buf;\
 	asprintf(&fmt_buf, "%%%s%s", fmt, type_str);\
 	asprintf(&buf, fmt_buf, *val);\
 	free(fmt_buf);\
-	return buf;\
+	return buf;
+
+DEFINE_FUNC_ID(format)
 
 char* MFNT(format, char)(char* fmt, char* val){ MAKE_FMT(char, "c") }
 char* MFNT(format, i8 )(char* fmt, i8 * val){ MAKE_FMT(i8 , "i") }
