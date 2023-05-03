@@ -37,7 +37,12 @@ int main(){
 	overload_fn(FUNC_ID(format), TYPE_ID(string), (fn)MFNT(format, string));
 	overload_fn(FUNC_ID(format), TYPE_ID(colored_string), (fn)MFNT(format, colored_string));
 	INIT_DEFAULT(colored_string, str_test)
-	str_test.b[0] = 255;
+	str_test.b[0] = 0;
+	str_test.b[1] = 0;
+	str_test.b[2] = 0;
+	str_test.f[0] = 255;
+	str_test.f[1] = 255;
+	str_test.f[2] = 255;
 	str_test.str.s = "12345";
 	str_test.str.len = 3;
 
