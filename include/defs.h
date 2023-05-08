@@ -11,11 +11,13 @@ MAKE_INT(16)
 MAKE_INT(32)
 MAKE_INT(64)
 
+#undef MAKE_INT
+
 typedef float f32;
 typedef double f64;
 
 typedef void* void_ptr;
+typedef char* str;
 
-#undef MAKE_INT
 
 #endif
