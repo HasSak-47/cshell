@@ -1,6 +1,7 @@
 #ifndef __DEFS_H__
 #define __DEFS_H__
 
+#include <stddef.h>
 #include <stdint.h>
 
 #define MAKE_INT(b)\
@@ -15,6 +16,10 @@ MAKE_INT(64)
 typedef float f32;
 typedef double f64;
 
-#undef MAKE_INT
+typedef size_t usize;
+typedef size_t isize;
+
+typedef void* void_ptr;
+typedef char* str;
 
 #endif
