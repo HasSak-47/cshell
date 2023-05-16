@@ -1,6 +1,5 @@
 #ifndef __DEFS_H__
 #define __DEFS_H__
-
 #include <stddef.h>
 #include <stdint.h>
 
@@ -12,6 +11,8 @@ MAKE_INT(8)
 MAKE_INT(16)
 MAKE_INT(32)
 MAKE_INT(64)
+
+#undef MAKE_INT
 
 typedef float f32;
 typedef double f64;
