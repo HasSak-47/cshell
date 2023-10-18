@@ -1,5 +1,7 @@
 #include <defs.h>
+#include <alloc.h>
 #include <command.h>
+#include <tokenizer.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -12,10 +14,12 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
+
+
 typedef const char* const cchar;
 
 char* read_line(){
-	char* buffer = (char*)malloc(sizeof(char));
+	char* buffer = (char*)stdalloc.a(sizeof(char));
 	size_t size = 0;
 	size_t esize = 1;
 	char c;
@@ -38,12 +42,14 @@ char* read_line(){
 	return buffer;
 }
 
-int main(){
-	load_bin_names();
-	//char* ls[] = {"ls", NULL};
+#define __DEBUG
 
-#define __NOT_WACK_DEBUG
-#ifdef __NOT_WACK_DEBUG
+int main(){
+#ifdef __DEBUG_MEM
+    __mem_debug_init();
+#endif
+	load_bin_names();
+
 	struct passwd* pwd = getpwuid(getuid());
 	cchar user = pwd->pw_name;
 	cchar home = pwd->pw_dir;
@@ -52,7 +58,6 @@ int main(){
 	int status = 0;
 
 	while(true){
-
 		char _cwd[255] = {};
 		getcwd(_cwd, 255);
 
@@ -71,17 +76,21 @@ int main(){
 		printf("[%s@%s %s]%c [%d] ", user, host, cwd, priv, ret);
 		char* line = read_line();
 		if(strcmp(line, "exit") == 0){
+            printf("exiting...\n");
 			status = -1;
-			free(line);
+			stdalloc.d(line);
 			goto END;
 		}
 
 		ret = run(line);
-		free(line);
+		stdalloc.d(line);
 	}
-#endif
 
 END:
+    printf("cleaning...\n");
 	unload_bin_names();
+#ifdef __DEBUG_MEM
+    __mem_debug_end();
+#endif
 	return 0;
 }

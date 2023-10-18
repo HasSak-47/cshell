@@ -8,19 +8,8 @@
 #include <unistd.h>
 #include <dirent.h>
 
-/*
- * catastrophic realloc
- * if realloc returns null kill the program
- */
-static void cat_realloc(char*** c, size_t s){
-	void* aux = realloc(*c, s);
-	if(aux == NULL){
-		printf("ran out of memory!\n");
-		exit(EXIT_FAILURE);
-	}
-
-	c = aux;
-}
+#include <utils.h>
+#include <alloc.h>
 
 struct dirent* bin_programs = NULL;
 size_t bin_programs_len = 0;
@@ -39,7 +28,7 @@ int shell_cd(char** args){
 }
 
 const struct shell_cmd shell_cmds[] = {{"cd", shell_cd}};
-const size_t shell_cmds_len = 1;
+const size_t shell_cmds_len = sizeof(shell_cmds) / sizeof(shell_cmds[0]);
 
 void load_bin_names(){
 	DIR* bin_dir = opendir("/bin");
@@ -54,11 +43,12 @@ void load_bin_names(){
 	rewinddir(bin_dir);
 
 	size_t index = 0;
-	bin_programs = calloc(sizeof(struct dirent), bin_programs_len);
+	bin_programs = stdalloc.c(sizeof(struct dirent), bin_programs_len);
 	struct dirent* de;
 	while((de = readdir(bin_dir)) != NULL){
 		if(strcmp(de->d_name, "..") == 0 || strcmp(de->d_name, ".") == 0)
 			continue;
+
 		// gives an error otherwise :)
 		size_t name_len = strlen(de->d_name);
 		for(size_t i = 0; i < name_len; ++i){
@@ -76,7 +66,7 @@ void load_bin_names(){
 }
 
 void unload_bin_names(){
-	free(bin_programs);
+	stdalloc.d(bin_programs);
 }
 
 void print_line(char* line, size_t len){
@@ -126,7 +116,7 @@ int run_bin_program(char** args){
 	}
 
 	size_t name_len = strlen(args[0]) + 10;
-	char* name = calloc(sizeof(char), name_len);
+	char* name = stdalloc.c(sizeof(char), name_len);
 	strcat(name, "/bin/");
 	strcat(name, args[0]);
 
@@ -144,7 +134,7 @@ int run_bin_program(char** args){
 		waitpid(pid, &status, 0);
 	}
 
-	free(name);
+	stdalloc.d(name);
 
 	return status;
 }
@@ -183,7 +173,7 @@ int run(char* __line){
 		}
 	}
 
-	char** args = calloc(sizeof(char*), words + 2);
+	char** args = stdalloc.c(sizeof(char*), words + 2);
 	size_t new_len = 0;
 	size_t args_index = 1;
 	args[0] = line;
@@ -203,6 +193,6 @@ int run(char* __line){
 	else
 		st = run_bin_program(args);
 
-	free(args);
+	stdalloc.d(args);
 	return st;
 }
