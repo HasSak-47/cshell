@@ -20,13 +20,25 @@ struct ptrs{
     size_t cap;
 };
 
+//#define __LOG_STDOUT
+
 struct ptrs inited_ptrs;
+FILE* log_out = 0;
 
 void __mem_debug_init(){
     printf("initing mem debug...\n");
     inited_ptrs.ptr  = NULL;
     inited_ptrs.size = 0;
     inited_ptrs.cap  = 0;
+#ifdef __LOG_STDOUT
+    log_out = stdout;
+#else
+    log_out = fopen("../log/mem_log.txt", "w+");
+    if(log_out == NULL){
+        printf("could not make file\n");
+        exit(-1);
+    }
+#endif
 }
 
 void __mem_debug_end(){
@@ -38,11 +50,11 @@ void __mem_debug_end(){
 
 void __add_to_tracker(void* ptr){
     if(inited_ptrs.cap == inited_ptrs.size){
-        size_t new_cap = inited_ptrs.cap != 0 ? inited_ptrs.cap * 2: sizeof(void*);
-        printf("resized tracker to: %lu\n", new_cap);
-        void* aux = realloc(inited_ptrs.ptr, new_cap);
+        size_t new_cap = inited_ptrs.cap != 0 ? inited_ptrs.cap * 2: 1;
+        fprintf(log_out, "resized tracker to: %lu bytes\n", new_cap);
+        void** aux = (void**)realloc(inited_ptrs.ptr, new_cap * sizeof(void*));
         if(aux == NULL){
-            printf("could not increase ptr tracker!\n");
+            fprintf(log_out, "could not increase ptr tracker!\n");
             exit(-1);
         }
         inited_ptrs.ptr = aux;
@@ -59,28 +71,28 @@ void __remove_from_tracker(void* ptr){
             return;
         }
     }
-    printf("ptr double deleted or not allocated!\n");
+    fprintf(log_out, "ptr double deleted or not allocated!\n");
 }
 
 void* realloc_debug(void* ptr, usize len){
-    printf("\nreallocating %p to %lu bytes\n", ptr, len);
+    fprintf(log_out, "reallocating %p to %lu bytes\n", ptr, len);
     return realloc(ptr, len);
 }
 void* malloc_debug(usize len){
     void* p = malloc(len);
     __add_to_tracker(p);
-    printf("\nallocation %lu bytes at %p\n", len, p);
+    fprintf(log_out, "allocation %lu bytes at %p\n", len, p);
 
     return p;
 }
 void* calloc_debug(usize size_of, usize len){
     void* p = calloc(size_of, len);
     __add_to_tracker(p);
-    printf("\ncallocation %lu x %lu bytes at %p\n", size_of, len, p);
+    fprintf(log_out, "callocation %lu x %lu bytes at %p\n", size_of, len, p);
     return p;
 }
 void free_debug(void* ptr){
-    printf("\nfreeing at %p\n", ptr);
+    fprintf(log_out, "freeing at %p\n", ptr);
     __remove_from_tracker(ptr);
     free(ptr);
 }
