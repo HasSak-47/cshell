@@ -17,10 +17,17 @@ struct allocator{
 };
 
 extern struct allocator stdalloc;
+extern struct allocator debugalloc;
+
+#define cur_alloc debugalloc
 
 #ifdef __DEBUG_MEM
 void __mem_debug_init();
 void __mem_debug_end();
 #endif // __DEBUG_MEM
-
+#ifdef cur_alloc
+    #undef cur_alloc
 #endif
+    #define cur_alloc stdalloc
+#endif // !__DEBUG_MEM
+

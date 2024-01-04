@@ -3,7 +3,7 @@
 
 #include "defs.h"
 
-struct __vector{
+struct __vector {
     void_ptr ptr;
     usize len;
     usize cap;

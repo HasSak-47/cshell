@@ -1,18 +1,16 @@
-#include <alloc.h>
-#include <defs.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <stdio.h>
 
+#include <alloc.h>
+#include <defs.h>
 
-#ifndef __DEBUG_MEM
 struct allocator stdalloc = {
     realloc,
     malloc,
     calloc,
     free
 };
-#else // __DEBUG_MEM
-#include <stdbool.h>
 
 struct ptrs{
     void** ptr;
@@ -97,13 +95,9 @@ void free_debug(void* ptr){
     free(ptr);
 }
 
-struct allocator stdalloc = {
+struct allocator debugalloc = {
     realloc_debug,
     malloc_debug,
     calloc_debug,
     free_debug
 };
-
-
-#endif // !__DEBUG_MEM
-
