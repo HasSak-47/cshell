@@ -20,7 +20,7 @@ struct ptrs{
 
 // #define __LOG_STDOUT
 
-struct ptrs inited_ptrs;
+struct ptrs inited_ptrs = {};
 FILE* log_out = 0;
 
 void __mem_debug_init(){
@@ -47,6 +47,11 @@ void __mem_debug_end(){
         fprintf(log_out, "freeing tracker at: %p\n", inited_ptrs.ptr);
         free(inited_ptrs.ptr);
 	}
+
+#ifndef __LOG_STDOUT
+	fclose(log_out);
+#endif
+
 }
 
 void __add_to_tracker(void* ptr){

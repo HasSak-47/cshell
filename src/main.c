@@ -43,18 +43,12 @@ char* read_line(){
 
 #define __DEBUG
 
-MAKE_STRUCT_VECTOR(i32);
-
 int main(){
 #ifdef __DEBUG_MEM
     __mem_debug_init();
 #endif
-
-	struct vector_i32 testv = {};
-	for(i32 i = 0; i < 512; ++i)
-		push(testv, i);
-	free(testv.ptr);
-
+	load_so_names();
+	unload_so_names();
 END:
 #ifdef __DEBUG_MEM
     __mem_debug_end();

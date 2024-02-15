@@ -14,8 +14,15 @@ struct __vector {
 };
 
 
-#define MAKE_STRUCT_VECTOR(type)\
-struct vector_##type{\
+#define MAKE_STRUCT_VECTOR(typename)\
+struct vector_##typename{\
+    type* ptr;\
+    usize len;\
+    usize cap;\
+};
+
+#define MAKE_STRUCT_VECTOR_NAMED(name, type)\
+struct vector_##name{\
     type* ptr;\
     usize len;\
     usize cap;\
@@ -26,13 +33,13 @@ void __pop(struct __vector*, size_t, struct allocator a);
 
 #define push(vector, var) \
 {\
-	typeof(var) __aux = var; \
+	typeof(*vector.ptr) __aux = var; \
 	__push((struct __vector*)&vector, (void*)&__aux, sizeof(__aux), cur_alloc); \
 }
 
 #define pop(vector) \
 {\
-	typeof(var) __aux = var; \
+	typeof(*vector.ptr) __aux = var; \
 	__pop((struct __vector*)&vector, (void*)&__aux, sizeof(__aux), cur_alloc); \
 }
 
