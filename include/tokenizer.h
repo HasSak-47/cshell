@@ -1,18 +1,26 @@
 #ifndef __TOKENIZER_H__
 #define __TOKENIZER_H__
 
+#include "vector.h"
+
+
 enum token_type{
-	token_text,
-	token_pipe,
-	token_misc,
-	token_redir
+	TokenText,
+	TokenUndetermined,
+};
+
+struct slice{
+	char* beg;
+	char* end;
 };
 
 struct token{
-	char* value;
+	struct slice s;
 	enum token_type type;
 };
 
-struct token* make_tokens(char*);
+MAKE_STRUCT_VECTOR_NAMED(token, struct token);
+
+struct vector_token make_tokens(char*);
 
 #endif
