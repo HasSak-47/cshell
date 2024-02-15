@@ -2,12 +2,23 @@
 #define __RUN_H__
 #include <stdbool.h>
 
-int run(char* line);
-void load_bin_names();
-void unload_bin_names();
+typedef int command_result;
 
-typedef int (*__command)(char**);
+#ifndef SHELL_CMDS
 
+int run(char* cmd, char** params);
+void load_path_names();
+void unload_path_names();
+
+void load_so_names();
+void unload_so_names();
+
+#else
+
+typedef command_result (*__command)(char**);
 void init_shell_cmd(char* name, __command c);
+
+#endif
+
 
 #endif

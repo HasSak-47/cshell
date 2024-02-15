@@ -2,7 +2,11 @@
 #define __VECTOR__
 
 #include "defs.h"
+#include "alloc.h"
 
+/**
+ * Default vector that has a void* as it's pointer
+**/
 struct __vector {
     void_ptr ptr;
     usize len;
@@ -17,27 +21,20 @@ struct vector_##type{\
     usize cap;\
 };
 
-void __push(struct __vector*,void*,size_t);
-void __pop(struct __vector*,size_t);
+void __push(struct __vector*, void*, size_t, struct allocator a);
+void __pop(struct __vector*, size_t, struct allocator a);
 
-#define push(vector, var) __push((struct __vector*)&vector, (void*)&var, sizeof(ver));
-#define pop(vector) __pop((struct __vector*)&vector, sizeof(*(vector.ptr)));
-
-#define DECLARE_POP(type) void pop_##type(struct vector_##type*);
-#define DECLARE_PUSH(type) void push_##type(struct vector_##type*, type);
-
-#define DEFINE_POP(type) \
-void pop_##type(struct vector_##type* vector){\
-    __pop((struct __vector*)vector, sizeof(*(vector->ptr)));\
-}
-#define DEFINE_PUSH(type) \
-void push_##type(struct vector_##type* vector, type data){\
-    __push((struct __vector*)vector, &data, sizeof(*(vector->ptr)));\
+#define push(vector, var) \
+{\
+	typeof(var) __aux = var; \
+	__push((struct __vector*)&vector, (void*)&__aux, sizeof(__aux), cur_alloc); \
 }
 
-MAKE_STRUCT_VECTOR(i32)
-DECLARE_PUSH(i32)
-DECLARE_POP(i32)
+#define pop(vector) \
+{\
+	typeof(var) __aux = var; \
+	__pop((struct __vector*)&vector, (void*)&__aux, sizeof(__aux), cur_alloc); \
+}
 
 
 #endif 
