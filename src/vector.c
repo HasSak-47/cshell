@@ -67,3 +67,12 @@ void __remove(struct __vector* v, size_t pos, size_t size_of, struct allocator a
 	}
 	v->len--;
 }
+
+void __resize(struct __vector* v, size_t len, size_t size_of, struct allocator a) {
+	void* aux = a.r(v->ptr, size_of * len);
+	if(aux == NULL)
+		return;
+
+	v->ptr = aux;
+	v->len = len;
+}

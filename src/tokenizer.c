@@ -1,3 +1,4 @@
+#include <ctype.h>
 #include <utils.h>
 #include <vector.h>
 #include <alloc.h>
@@ -6,17 +7,24 @@
 #include <stdio.h>
 #include <stdbool.h>
 
-char* token_types[] = {
+static char* token_types[] = {
 	"Text",
 	"Unkn",
 };
 
-void print_token(struct token t){
+static void print_token(struct token t){
 	printf("type: %s, \"", token_types[t.type]);
 	struct slice s = t.s;
 	for(char* beg = s.beg; beg < s.end; ++beg){
-		printf("%c", *beg);
+		printf("%c", isprint(*beg) ? *beg : '.');
 	}
+	printf("\"");
+}
+
+static void print_slice(struct slice s){
+	printf("\"");
+	for(char* beg = s.beg; beg < s.end; ++beg)
+		printf("%c", isprint(*beg) ? *beg : '.');
 	printf("\"");
 }
 
@@ -31,16 +39,23 @@ static struct vector_token expand_token(struct token token){
 	char* beg = token.s.beg;
 	char* end  = token.s.end;
 
-	while(beg != end){
-        if(*beg == ' '){
-			current_slice.end = beg;
+
+	while(true){
+		while(isspace(*beg) && beg < end)
+			beg++;
+		current_slice.beg = beg;
+
+		while(!isspace(*beg) && beg < end)
+			beg++;
+		current_slice.end = beg;
+
+		if(current_slice.end != current_slice.beg)
 			v_push(tokens, __make_token(current_slice, false));
-			current_slice.beg = beg + 1;
-		}
-		beg++;
+		if(beg == end)
+			break;
 	}
-	current_slice.end = beg;
-	v_push(tokens, __make_token(current_slice, false));
+
+	
 
 	return tokens;
 }
@@ -64,6 +79,26 @@ struct vector_token make_tokens(char* line){
 	}
 	current_slice.end = ptr;
 	v_push(tokens, __make_token(current_slice, inside_quote));
+	for(size_t i = 0; i < tokens.len; ++i){
+		if(tokens.ptr[i].type == TokenUndetermined){
+			typeof(tokens) expanded = expand_token(tokens.ptr[i]);
+			v_remove(tokens, i);
+			for(size_t j = 0; j < expanded.len; ++j)
+				v_insert(tokens, expanded.ptr[j], i + j);
+			cur_alloc.d(expanded.ptr);
+			i += expanded.len;
+		}
+	}
 
 	return tokens;
+}
+
+struct vector_char split_into_args(struct vector_token* vector){
+	struct vector_char args = {};
+	v_resize(args, vector->len);
+	for(size_t i = 0; i < vector->len; ++i){
+		size_t token_len = vector->ptr[i].s.end - vector->ptr[i].s.beg;
+		args.ptr[i] = (char*)cur_alloc.a(token_len);
+	}
+	return args;
 }
