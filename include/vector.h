@@ -1,73 +1,61 @@
-#ifndef __VECTOR__
-#define __VECTOR__
+#ifndef __VECTOR_H__
+#define __VECTOR_H__
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include "defs.h"
 #include "alloc.h"
 
+#define vectored
+
 /**
- * Default vector that has a void* as it's pointer
-**/
-struct __vector {
-    void_ptr ptr;
+ * Header before a dynamic vector
+ * this solution will not allow to differientate between static arrays and dynamic arrays
+ */
+struct vector_header {
     usize len;
     usize cap;
 };
 
+#define __SIZE_H sizeof(struct vector_header)
 
-#define MAKE_STRUCT_VECTOR(type)\
-struct vector_##type{\
-    type* ptr;\
-    usize len;\
-    usize cap;\
-};
+void __vector_push(void** vector, usize size_of, struct allocator a);
+void __vector_pop(void** vector, usize size_of, struct allocator a);
 
-#define MAKE_STRUCT_VECTOR_NAMED(name, type)\
-struct vector_##name{\
-    type* ptr;\
-    usize len;\
-    usize cap;\
-};
+#define v_len(v) (((struct vector_header*)((void*)v - __SIZE_H))->len)
 
-MAKE_STRUCT_VECTOR(u8);
-MAKE_STRUCT_VECTOR(u16);
-MAKE_STRUCT_VECTOR(u32);
-MAKE_STRUCT_VECTOR(u64);
-
-MAKE_STRUCT_VECTOR(i8);
-MAKE_STRUCT_VECTOR(i16);
-MAKE_STRUCT_VECTOR(i32);
-MAKE_STRUCT_VECTOR(i64);
-
-MAKE_STRUCT_VECTOR(f32);
-MAKE_STRUCT_VECTOR(f64);
-
-MAKE_STRUCT_VECTOR(char);
-
-void   __push(struct __vector*, void*, size_t, struct allocator a);
-void __insert(struct __vector*, void*, size_t, size_t, struct allocator a);
-void __remove(struct __vector*, size_t, size_t, struct allocator a);
-void    __pop(struct __vector*, size_t, struct allocator a);
-void __resize(struct __vector*, size_t, size_t, struct allocator a);
-
-#define v_push(vector, var) \
-{\
-	typeof(*vector.ptr) __aux = var; \
-	__push((struct __vector*)&vector, (void*)&__aux, sizeof(__aux), cur_alloc); \
+#define v_push(v, data){\
+	__vector_push((void**)&v, sizeof(*v), cur_alloc);\
+	v[v_len(v) - 1] = data;\
 }
 
-#define v_pop(vector) \
-__pop((struct __vector*)&vector, sizeof(*vector.ptr), cur_alloc);
-
-#define v_insert(vector, var, pos) \
-{\
-	typeof(*vector.ptr) __aux = var; \
-	__insert((struct __vector*)&vector, (void*)&__aux, pos, sizeof(__aux), cur_alloc); \
+#define v_pop(v){\
+	__vector_pop((void**)&v, sizeof(*v), cur_alloc);\
 }
 
-#define v_remove(vector, pos) \
-__remove((struct __vector*)&vector, pos, sizeof(*vector.ptr), cur_alloc);
+#define v_insert(v, data, pos){\
+	__vector_push((void**)&v, sizeof(*v), cur_alloc);\
+	usize __len = v_len(v);\
+	typeof(*v) __buf_b = {};\
+	typeof(*v) __buf_a = data;\
+	for(usize __i = pos; __i < __len; ++__i){\
+		__buf_b = v[__i];\
+		v[__i] = __buf_a;\
+		__buf_a = __buf_b;\
+	}\
+}
 
-#define v_resize(vector, size) \
-__remove((struct __vector*)&vector, size, sizeof(*vector.ptr), cur_alloc);
+#define v_remove(v, pos){\
+	usize __len = v_len(v);\
+	for(usize __i = pos; __i < __len - 1; ++__i){\
+		v[__i] = v[__i + 1];\
+	}\
+	__vector_pop((void**)&v, sizeof(*v), cur_alloc);\
+}
 
-#endif 
+#ifdef __cplusplus
+}
+#endif
+#endif // __VECTOR_H__

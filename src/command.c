@@ -1,4 +1,4 @@
-
+/*
 #include <defs.h>
 #include <command.h>
 #include <utils.h>
@@ -72,3 +72,4 @@ int run(char* name, char **params){
 			return __run_so(&so_execs.ptr[i], params);
 	return -1;
 }
+*/
