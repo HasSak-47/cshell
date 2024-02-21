@@ -61,7 +61,7 @@ static void __add_to_tracker(void* ptr){
 	}
 	for(size_t i = 0; i < inited_ptrs.size; ++i){
 		if(inited_ptrs.ptr[i] == NULL){
-			fprintf(log_out, "found null at %lu, filling with ptr %p\n", i, ptr);
+			fprintf(log_out, "[TRACKER]: found null at %lu, filling with ptr %p\n", i, ptr);
 			inited_ptrs.ptr[i] = ptr;
 			return;
 		}
@@ -91,19 +91,28 @@ static void __remove_from_tracker(void* ptr){
     fprintf(log_out, "ptr double deleted or not allocated!\n");
 }
 
+static void __change_in_tracker(void* org, void* new){
+    for(size_t i = 0; i < inited_ptrs.size; ++i){
+        if(inited_ptrs.ptr[i] == org){
+            inited_ptrs.ptr[i] = new;
+            return;
+        }
+    }
+    fprintf(log_out, "ptr double deleted or not allocated!\n");
+}
+
 void* malloc_debug(usize);
 
 void* realloc_debug(void* ptr, usize len){
 	if(ptr == NULL){
-		fprintf(log_out, "realloc ptr is null, calling alloc initing to bytes %lu\n", len);
+		fprintf(log_out, "[REALLOC]: realloc ptr is null, calling alloc initing to bytes %lu\n", len);
 		return malloc_debug(len);
 	}
-    fprintf(log_out, "reallocating %p to %lu bytes\n", ptr, len);
+    fprintf(log_out, "[REALLOC]: %p to %lu bytes\n", ptr, len);
 	void* aux = realloc(ptr, len);
 	if(aux != ptr){
-		fprintf(log_out, "data moved from %p to %p\n", ptr, aux);
-		__remove_from_tracker(ptr);
-		__add_to_tracker(aux);
+		fprintf(log_out, "[REALLOC]: moved %p to %p\n", ptr, aux);
+		__change_in_tracker(ptr, aux);
 	}
     return aux;
 }
@@ -111,18 +120,18 @@ void* realloc_debug(void* ptr, usize len){
 void* malloc_debug(usize len){
     void* p = malloc(len);
     __add_to_tracker(p);
-    fprintf(log_out, "allocation %lu bytes at %p\n", len, p);
+    fprintf(log_out, "[MALLOC]: %lu at %p\n", len, p);
 
     return p;
 }
 void* calloc_debug(usize size_of, usize len){
     void* p = calloc(size_of, len);
-    fprintf(log_out, "callocation %lu x %lu bytes at %p\n", size_of, len, p);
+    fprintf(log_out, "[CALLOC]: %lu x %lu at %p\n", size_of, len, p);
     __add_to_tracker(p);
     return p;
 }
 void free_debug(void* ptr){
-    fprintf(log_out, "freeing at %p\n", ptr);
+    fprintf(log_out, "[FREE]: %p\n", ptr);
     __remove_from_tracker(ptr);
     free(ptr);
 }

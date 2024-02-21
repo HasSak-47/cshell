@@ -1,4 +1,3 @@
-/*
 #include <ctype.h>
 #include <utils.h>
 #include <vector.h>
@@ -13,7 +12,7 @@ static char* token_types[] = {
 	"Unkn",
 };
 
-static void print_token(struct token t){
+void print_token(struct token t){
 	printf("type: %s, \"", token_types[t.type]);
 	struct slice s = t.s;
 	for(char* beg = s.beg; beg < s.end; ++beg){
@@ -34,8 +33,8 @@ static struct token __make_token(struct slice s, bool text){
 	return b;
 }
 
-static struct vector_token expand_token(struct token token){
-    struct vector_token tokens = {};
+static struct token vectored* expand_token(struct token token){
+    struct token vectored* tokens = {};
 	struct slice current_slice = {};
 	char* beg = token.s.beg;
 	char* end  = token.s.end;
@@ -62,8 +61,8 @@ static struct vector_token expand_token(struct token token){
 }
 
 // not effitien but idc
-struct vector_token make_tokens(char* line){
-    struct vector_token tokens = {};
+struct token vectored* make_tokens(char* line){
+    struct token vectored* tokens = {};
 	struct slice current_slice = {};
 
 	current_slice.beg = line;
@@ -80,27 +79,16 @@ struct vector_token make_tokens(char* line){
 	}
 	current_slice.end = ptr;
 	v_push(tokens, __make_token(current_slice, inside_quote));
-	for(size_t i = 0; i < tokens.len; ++i){
-		if(tokens.ptr[i].type == TokenUndetermined){
-			typeof(tokens) expanded = expand_token(tokens.ptr[i]);
+	for(size_t i = 0; i < v_len(tokens); ++i){
+		if(tokens[i].type == TokenUndetermined){
+			typeof(tokens) expanded = expand_token(tokens[i]);
 			v_remove(tokens, i);
-			for(size_t j = 0; j < expanded.len; ++j)
-				v_insert(tokens, expanded.ptr[j], i + j);
-			cur_alloc.d(expanded.ptr);
-			i += expanded.len;
+			for(size_t j = 0; j < v_len(expanded); ++j)
+				v_insert(tokens, expanded[j], i + j);
+			i += v_len(expanded);
+			v_delete(expanded);
 		}
 	}
 
 	return tokens;
 }
-
-struct vector_char split_into_args(struct vector_token* vector){
-	struct vector_char args = {};
-	v_resize(args, vector->len);
-	for(size_t i = 0; i < vector->len; ++i){
-		size_t token_len = vector->ptr[i].s.end - vector->ptr[i].s.beg;
-		args.ptr[i] = (char*)cur_alloc.a(token_len);
-	}
-	return args;
-}
-*/
