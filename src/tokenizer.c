@@ -92,3 +92,20 @@ struct token vectored* make_tokens(char* line){
 
 	return tokens;
 }
+
+char vectored* vectored* split_into_args(struct token vectored* vector){
+	char vectored* vectored* args = NULL;
+	size_t len = v_len(vector);
+	for(size_t i = 0; i < len; ++i){
+		char vectored* new_char = NULL;
+		size_t t_len = vector[i].s.end - vector[i].s.beg;
+		for(size_t j = 0; j < t_len; ++j){
+			v_push(new_char, vector[i].s.beg[j]);
+		}
+		v_push(new_char, 0);
+		v_push(args, new_char);
+		new_char = NULL;
+	}
+	v_push(args, NULL);
+	return args;
+}

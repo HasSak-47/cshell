@@ -34,22 +34,34 @@ static int __run_so(void* lib, char* args[]){
 }
 
 static int __run_ex(char* path, char* args[]){
-	printf("running %s\n", path);
-	return -1;
+	v_insert(args, path, 0);
+
+	pid_t pid = fork();
+	int status = 0;
+	if(pid == 0) // child
+		execv(path, args);
+	else{
+		waitpid(pid, &status, 0);
+		v_remove(args, 0);
+	}
+
+	return status;
 }
 
-static int __run(struct command* so_cmd, char** args){
+static int __run(struct command* so_cmd, char vectored** args){
+	int return_code = -1;
 	switch(so_cmd->type){
-		CMD_T_EXE:
-			return __run_so(so_cmd->run.library, args);
+		case CMD_T_LIB:
+			return_code = __run_so(so_cmd->run.library, args);
 		break;
-		CMD_T_LIB:
-			return __run_ex(so_cmd->path, args);
+		case CMD_T_EXE:
+			return_code = __run_ex(so_cmd->path, args);
 		break;
 		default:
 		break;
 	}
-	return -1;
+
+	return return_code;
 }
 
 static struct command vectored* __get_commands(const char* path){
@@ -94,8 +106,7 @@ void load_commands(){
 		lib_get_name name = dlsym(buffer[i].run.library, "get_name");
 		strcpy(buffer[i].name, name());
 		v_push(commands, buffer[i]);
-	}
-	v_delete(buffer);
+	} v_delete(buffer);
 }
 
 void unload_commands(){
@@ -107,10 +118,20 @@ void unload_commands(){
 	v_delete(commands);
 }
 
-int run(char* name, char *params[]){
+void reload(){
+	unload_commands();
+	load_commands();
+}
+
+int run_cmd(char* name, char vectored* params[]){
+	if(strcmp(name,"reload") == 0){
+		reload();
+		return 0;
+	}
 	for(size_t i = 0; i < v_len(commands); ++i){
 		if(strcmp(commands[i].name, name) == 0)
 			return __run(&commands[i], params);
 	}
+	printf("func not fund\n");
 	return -1;
 }

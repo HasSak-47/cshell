@@ -1,4 +1,6 @@
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #define __DEBUG
 
 #include <vector.h>
@@ -15,6 +17,16 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
+struct token vectored* get_args(){
+	char c = 0;
+	char vectored* v = NULL;
+	while((c = getchar()) != '\n')
+		v_push(v, c);
+	v_push(v, 0);
+
+	struct token vectored* tokens = make_tokens(v);
+	return tokens;
+}
 
 int main(){
 #ifdef __DEBUG_MEM
@@ -22,12 +34,26 @@ int main(){
 	atexit(__mem_debug_end);
 #endif
 	load_commands();
-	char* ls_args[] = {"--color"};
-	char* cd_args[] = {".."};
+	int r = 0;
+	while(true){
+		printf("[%d]:", r);
+		char** args = split_into_args(get_args());
+		if(strcmp(args[0], "exit") == 0){
+			for(size_t i = 0; i < v_len(args) - 1; ++i)
+				v_delete(args[i]);
+			v_delete(args);
+			break;
+		}
 
-	run("ls", ls_args);
-	run("cd", cd_args);
-	run("ls", ls_args);
+		char* name = args[0];
+		v_remove(args, 0);
+		int r = run_cmd(name, args);
+		v_delete(args);
+		for(size_t i = 0; i < v_len(args); ++i)
+			v_delete(args[i]);
+		v_delete(args);
+
+	}
 	unload_commands();
 	return 0;
 }
