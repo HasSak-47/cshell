@@ -70,7 +70,7 @@ void __vector_resize(void** vector, usize len, usize size_of, struct allocator a
  */
 #define v_delete(v) {\
 	if(v)\
-	__vector_delete((void**)&v, sizeof(*v), cur_alloc);\
+		__vector_delete((void**)&v, sizeof(*v), cur_alloc);\
 }
 
 #define v_resize(v) {\
