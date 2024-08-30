@@ -1,7 +1,19 @@
-files := $(wildcard *.c)
+UTILS := ../../utils
+SRCS := $(wildcard *.c)
+OBJS := $(patsubst %.c, $(UTILS)/%.so,$(SRCS))
 
-build:
-	$(foreach file, $(files), gcc -I ../../include $(file) -shared -o ../../utils/$(file).so &&) echo "build cmds!"
+C := gcc
+CFLAGS := -g -I ../../include -shared
+
+build: $(OBJS)
+
+$(UTILS)/%.so: %.c | $(UTILS)
+	$(C) $(CFLAGS) -c $< -o $@
+
+$(UTILS):
+	mkdir -p $(UTILS)
 
 clean:
 	rm ../../utils/*.so
+
+.PHONY: build clean

@@ -21,28 +21,28 @@ struct vector_header {
 
 #define __SIZE_H sizeof(struct vector_header)
 
-void __vector_push(void** vector, usize size_of, struct allocator a);
-void __vector_pop(void** vector, usize size_of, struct allocator a);
-void __vector_delete(void** vector, usize size_of, struct allocator a);
-void __vector_resize(void** vector, usize len, usize size_of, struct allocator a);
+void __vector_push(void** vector, usize size_of);
+void __vector_pop(void** vector, usize size_of);
+void __vector_delete(void** vector, usize size_of);
+void __vector_resize(void** vector, usize len, usize size_of);
 
 
 #define v_len(v) \
 	(v ? (((struct vector_header*)((void*)v - __SIZE_H))->len) : 0)
 
 #define v_push(v, data){\
-	__vector_push((void**)&v, sizeof(*v), cur_alloc);\
+	__vector_push((void**)&v, sizeof(*v));\
 	v[v_len(v) - 1] = data;\
 }
 
 #define v_pop(v)\
 	v[v_len(v) - 1];\
 {\
-	__vector_pop((void**)&v, sizeof(*v), cur_alloc);\
+	__vector_pop((void**)&v, sizeof(*v));\
 }
 
 #define v_insert(v, data, pos){\
-	__vector_push((void**)&v, sizeof(*v), cur_alloc);\
+	__vector_push((void**)&v, sizeof(*v));\
 	usize __len = v_len(v);\
 	typeof(*v) __buf_b = {};\
 	typeof(*v) __buf_a = data;\
@@ -62,7 +62,7 @@ void __vector_resize(void** vector, usize len, usize size_of, struct allocator a
 	for(usize __i = pos; __i < __len - 1; ++__i){\
 		v[__i] = v[__i + 1];\
 	}\
-	__vector_pop((void**)&v, sizeof(*v), cur_alloc);\
+	__vector_pop((void**)&v, sizeof(*v));\
 }
 
 /* 
@@ -70,11 +70,11 @@ void __vector_resize(void** vector, usize len, usize size_of, struct allocator a
  */
 #define v_delete(v) {\
 	if(v)\
-		__vector_delete((void**)&v, sizeof(*v), cur_alloc);\
+		__vector_delete((void**)&v, sizeof(*v));\
 }
 
 #define v_resize(v) {\
-	__vector_delete((void**)&v, sizeof(*v), cur_alloc); \
+	__vector_delete((void**)&v, sizeof(*v)); \
 }
 
 

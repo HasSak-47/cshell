@@ -10,6 +10,8 @@
 static char* token_types[] = {
 	"Text",
 	"Unkn",
+	"Pipe",
+	"Rdir",
 };
 
 void print_token(struct token t){
