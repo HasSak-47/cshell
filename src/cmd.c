@@ -9,25 +9,24 @@
 
 #include "cmd.h"
 
+static int reload(int _argc, char **_argv){
+	reload_cmd();
+	return 0;
+}
+
+static struct Command _reload_cmd = {
+	reload, {6, "reload"},
+};
+
 struct Hot* hot = NULL;
-struct Command* api = NULL;
+struct Command* api = {
+};
 struct Command* path = NULL;
 
 size_t chot  = 0;
-size_t capi  = 0;
+size_t capi  = 1;
 size_t cpath = 0;
 #define ALLOCATED
-
-char* ALLOCATED get_name(const char* name){
-	char* target = malloc(1024);
-	strcpy(target, "./units/"); 
-	char* r  = strcat(target, name);
-	if(r == NULL){
-		free(target);
-		return NULL;
-	}
-	return target;
-}
 
 void load_cmds(){
 	DIR* dir = opendir("./units");
@@ -67,6 +66,11 @@ void load_cmds(){
 	}
 	chot = count;
 	closedir(dir);
+}
+
+void reload_cmd(){
+	unload_cmds();
+	load_cmds();
 }
 
 void unload_cmds(){
