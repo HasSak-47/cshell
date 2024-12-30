@@ -1,4 +1,4 @@
-#include <errno.h>
+#include <stddef.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -9,24 +9,31 @@
 
 #include "cmd.h"
 
-static int reload(int _argc, char **_argv){
-	reload_cmd();
+static int reload(size_t argc, const struct String* _argv){
+	unload_cmds();
+	load_cmds();
 	return 0;
 }
-
-static struct Command _reload_cmd = {
-	reload, {6, "reload"},
-};
+struct Command _reload_cmd = { reload, {6, "reload"} };
 
 struct Hot* hot = NULL;
-struct Command* api = {
-};
+struct Command* api = &_reload_cmd;
 struct Command* path = NULL;
 
 size_t chot  = 0;
 size_t capi  = 1;
 size_t cpath = 0;
-#define ALLOCATED
+
+static char* get_name(const char* name) {
+	char* target = malloc(1024);
+	strcpy(target, "./units/"); 
+	char* r  = strcat(target, name);
+	if(r == NULL){
+		free(target);
+		return NULL;
+	}
+	return target;
+}
 
 void load_cmds(){
 	DIR* dir = opendir("./units");
@@ -68,9 +75,18 @@ void load_cmds(){
 	closedir(dir);
 }
 
-void reload_cmd(){
-	unload_cmds();
-	load_cmds();
+int run_cmd(const struct String name, const size_t argc, const struct String *args){
+	for(size_t i = 0; i < chot; ++i){
+		if(strcmp(hot[i].cmd.name.cstr, name.cstr) == 0)
+			return hot[i].cmd.run(argc, args);
+	}
+
+	for(size_t i = 0; i < capi; ++i){
+		if(strcmp(api[i].name.cstr, name.cstr) == 0)
+			return api[i].run(argc, args);
+	}
+
+	return -1;
 }
 
 void unload_cmds(){

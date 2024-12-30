@@ -4,7 +4,7 @@
 
 #include "./str.h"
 
-typedef int (*Run)(int, char**);
+typedef int (*Run)(const size_t, const struct String*);
 
 struct Command{
 	Run run;
@@ -18,7 +18,11 @@ struct Hot{
 
 
 #ifdef COMMAND_DEFINITION
-const struct Command cmd;
+
+int on_load();
+int run(const size_t argc, const struct String* args);
+int on_unload();
+
 #else
 
 extern struct Hot* hot;
@@ -30,7 +34,7 @@ extern size_t capi;
 extern size_t cpath;
 
 void load_cmds();
-void reload_cmd();
+int run_cmd(const struct String name, const size_t argc, const struct String* args);
 void unload_cmds();
 
 #endif

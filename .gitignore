@@ -1,7 +1,5 @@
-.cache
 build
-make
-vgcore.*
-log
 units
+plugins
+vgcore.*
 luall
