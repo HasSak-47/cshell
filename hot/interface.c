@@ -170,7 +170,7 @@ void lua_setup(lua_State* L){
     if(luaL_dofile(L, init_path) != LUA_OK){
         // if it doesn't load just nuke it
         running = false;
-        temporal_suicide_msg("could not load init");
+        unrecoverable_error("could not load init");
         return;
     }
     debug_printf("setting up state\n");
