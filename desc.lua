@@ -10,3 +10,12 @@
 
 ---@class functions
 ---@field prompt function
+---@field right_prompt function
+---@field greeting function
+
+---@class api
+---@field path function
+---@field cd function
+
+---@class inner
+---@field parse function
