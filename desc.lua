@@ -2,20 +2,26 @@
 ---@field name string
 ---@field home string
 
----@class values
+---@class Values
 ---@field cwd  string
 ---@field host string
 ---@field user User
 ---@field error integer
+---@field debug boolean
 
----@class functions
+---@class Prompts
 ---@field prompt function
 ---@field right_prompt function
 ---@field greeting function
 
----@class api
----@field path function
+---@class BuiltIn
 ---@field cd function
+---
+---@class Inner
+---@class Api
 
----@class inner
----@field parse function
+---@class Luall
+---@field values Values
+---@field prompts Prompts
+---@field api Api
+---@field inner Inner
