@@ -14,7 +14,7 @@ OUT := luall
 
 C := gcc
 CFLAGS := -g -I include -c
-UFLAGS := -g -shared -I include
+UFLAGS := -g -shared -I include -fPIC
 
 LDFLAGS := -o $(OUT) -export-dynamic -llua
 
@@ -34,7 +34,7 @@ $(OBJ_DIR):
 run : shell
 	./$(OUT)
 
-cmd : $(SHRD)
+hot: $(SHRD)
 
 $(SHR_DIR)/%.so: $(UNI_DIR)/%.c | $(SHR_DIR)
 	$(C) $(UFLAGS) $< -o $@

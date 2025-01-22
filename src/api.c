@@ -7,7 +7,6 @@
 #include <pwd.h>
 
 #include <shell.h>
-#include <cmds.h>
 #include <str.h>
 
 struct String api_getcwd(){
@@ -50,9 +49,9 @@ struct User api_getuser(){
     return u;
 }
 
-void update_values(){
+void update_variables(){
     lua_getglobal(L, "Luall");
-    lua_getfield(L, -1, "values");
+    lua_getfield(L, -1, "variables");
 
     struct String s = api_getcwd();
     char* c = to_null_terminated(s);
@@ -95,14 +94,6 @@ void update_values(){
     lua_pop(L, 2);
 }
 
-void init_api(){
-    lua_getglobal(L, "Luall");
 
-    // WARN: magic numbres bad!
-    lua_createtable(L, 4, 4);
-    luaL_setfuncs(L, api_cmds, 0);
-
-    lua_setfield(L, -2, "api");
-
-    lua_pop(L, 1);
+void update_env(){
 }

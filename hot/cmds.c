@@ -3,7 +3,6 @@
 #include <lauxlib.h>
 
 #include <shell.h>
-#include <cmds.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -13,52 +12,65 @@
 #include <sys/wait.h>
 
 
-static int cmd_exit(lua_State* L) {
+static int api_exit(lua_State* L) {
     run = false;
     return 0;
 }
 
-static int cmd_cd(lua_State* L) {
-    printf("not implemented lmao\n");
+static int api_cd(lua_State* L) {
+    size_t argc = lua_gettop(L);
+    if(argc != 1){
+        printf("invalid number of arguments\n");
+        last_return_code = -1;
+        return -1;
+    }
+    const char* path = lua_tostring(L, -1);
+    if(path == NULL){
+        printf("not a valid path\n");
+        last_return_code = -1;
+        return 0;
+    }
+
+    last_return_code = chdir(path);
+    if(last_return_code == -1){
+        printf("could not change dir to %s", path);
+        perror(NULL);
+        printf("\n");
+    }
     return 0;
 }
 
-static int cmd_reload(lua_State *L){
+static int api_reload(lua_State *L){
     reload = true;
     return 0;
 }
 
-static int cmd_lua_info(lua_State *L){
-    size_t c = lua_gettop(L);
-    printf("there are %lu values in the stack\n", c);
+static int api_execp(lua_State *L){
+    size_t argc = lua_gettop(L);
+    printf("number of arguments: %lu\n", argc);
+    for(size_t i = 1; i <= argc; ++i){
+        const char* arg = lua_tostring(L, i);
+        printf("arg: %s\n", arg);
+    }
+
     return 0;
 }
 
-static int cmd_execv(lua_State *L){
-    size_t argc = lua_gettop(L);
-    const char** args = malloc(argc - 1);
-    /*
-    char* buf = malloc(strlen(str));
-    strcpy(buf, str);
-    pid_t pid = fork();
-    if(pid == 0){ // child
-        execv(buf, NULL);
-        free(buf);
-    }
-    else{ // parent
-        waitpid(pid, &last_return_code, 0);
-    }
-    */
-    
-    return 1;
+static int api_add_env(lua_State* L){
+    return 0;
 }
 
-struct luaL_Reg api_cmds[] = {
-    {"exit", cmd_exit},
-    {"cd", cmd_cd},
-    {"reload", cmd_reload},
-    {"execv", cmd_execv},
-    {"lua_info", cmd_lua_info},
+struct luaL_Reg api[] = {
+    {"exit", api_exit},
+    {"cd", api_cd},
+    {"reload", api_reload},
+    {"exec", api_execp},
 
     {NULL, NULL}
 };
+
+struct luaL_Reg* get_api(){
+    return api;
+}
+
+void take_api(struct luaL_Reg* api){ }
