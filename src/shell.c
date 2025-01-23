@@ -7,9 +7,10 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+
+#include <string.h>
 #include <unistd.h>
 #include <pwd.h>
-
 #include <dlfcn.h>
 
 lua_State* L = NULL;
@@ -51,41 +52,36 @@ void parse(const char* prompt){
     lua_pop(L, 2);
 }
 
-void shell(){
-    while(run){
-        prompt();
+void load_env(){
+    char** end = __environ;
+    while(*end++ != NULL);
 
-        char* input = NULL;
-        size_t len = 0;
-        int c = getc(stdin);
-        while(c != '\n'){
-            void* aux = realloc(input, len + 1);
-            if(aux == NULL){
-                exit(-1);
-            }
-            input = aux;
-            input[len++] = c;
-            c = getc(stdin);
-        }
+    size_t size = (end - 1) - __environ;
 
-        // make it null terminated
-        void* aux = realloc(input, len + 1);
-        if(aux == NULL){
-            exit(-1);
-        }
+    lua_getglobal(L, "Luall");
+    lua_getfield(L, -1, "vars");
+    lua_getfield(L, -1, "env");
+    for(size_t i = 0; i < size; ++i){
+        printf("loading [%lu]: %s\n", i, __environ[i]);
+        char* val = __environ[i];
+        while(*val != '=' && val != NULL)
+            val++;
 
-        input = aux;
-        input[len++] = 0;
-        parse(input);
-        free(input);
+        char* end = val;
+        while(*end++ != '\0');
 
-        if(reload){
-            unload();
-            load();
-            reload = false;
-        }
-        update_variables();
+        size_t len = val - __environ[i];
+        char* name = calloc(len + 1, 1);
+        strncpy(name, __environ[i], len);
+
+        if(val == end)
+            lua_pushnil(L);
+        else
+            lua_pushstring(L, val + 1);
+        lua_setfield(L, -2, name);
+        free(name);
     }
+    lua_pop(L, 3);
 }
 
 void* handler = NULL;
@@ -119,6 +115,8 @@ void load(){
 
     printf("init api\n");
     init_api();
+    printf("loading env\n");
+    load_env();
 }
 
 void init_api(){

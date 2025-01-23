@@ -35,7 +35,7 @@ local function first_pass(input)
 end
 
 Luall = {
-	variables = {
+	vars= {
 		host = "",
 		cwd  = "",
 		user = {
@@ -44,18 +44,24 @@ Luall = {
 		},
 		error = 0,
         debug = false,
-        env  = {
-            path = {},
-        },
+        env  = {},
 	},
 
     ---@type function[]
 	api = {},
+    util = {
+        print_env = function ()
+            print('there are ' .. #Luall.vars.env .. ' env')
+            for env, val in ipairs(Luall.vars.env) do
+                print(env, val)
+            end
+        end,
+    },
     overwrite = {
         ---@param ... ...
         cd = function(...)
             if arg == nil then
-                Luall.api.cd(Luall.values.user.home)
+                Luall.api.cd(Luall.vars.user.home)
             else
                 Luall.api.cd(arg[1])
             end
@@ -73,7 +79,9 @@ Luall = {
             local cmd = table.remove(args, 1)
 
             print("cmd: " .. cmd)
-            if Luall.overwrite[cmd] ~= nil then
+            if Luall.util[cmd] ~= nil then
+                Luall.util[cmd](table.unpack(args))
+            elseif Luall.overwrite[cmd] ~= nil then
                 Luall.overwrite[cmd](table.unpack(args))
             elseif Luall.api[cmd] ~= nil then
                 if #args == 0 then
@@ -82,7 +90,7 @@ Luall = {
                     Luall.api[cmd](table.unpack(args))
                 end
             else
-                local ok, _ = pcall(Luall.api.exec, cmd, table.unpack(args))
+                local ok, _ = pcall(Luall.api['exec'], cmd, table.unpack(args))
                 if not ok then
                     print("could not find command")
                 end
@@ -91,9 +99,9 @@ Luall = {
 	},
     prompts = {
         prompt = function()
-            local vals = Luall.values;
-            local user = vals.user;
-            return user.name .. "@" .. vals.host .. vals.cwd .. ">"
+            local vars = Luall.vars;
+            local user = vars.user;
+            return user.name .. "@" .. vars.host .. vars.cwd .. ">"
         end,
         right_prompt = function() return "" end,
         greeting = function() return "" end,

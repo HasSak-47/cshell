@@ -51,7 +51,7 @@ struct User api_getuser(){
 
 void update_variables(){
     lua_getglobal(L, "Luall");
-    lua_getfield(L, -1, "variables");
+    lua_getfield(L, -1, "vars");
 
     struct String s = api_getcwd();
     char* c = to_null_terminated(s);
@@ -92,8 +92,4 @@ void update_variables(){
     lua_setfield(L, -2, "debug");
 
     lua_pop(L, 2);
-}
-
-
-void update_env(){
 }
