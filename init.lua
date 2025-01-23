@@ -57,7 +57,7 @@ Luall = {
             end
 
             print("exec: " .. args[1])
-            local func, err = load(args[1])
+            local func, _ = load(args[1])
             if func ~= nil then
                 pcall(func)
             end
