@@ -74,7 +74,8 @@ void load_env(){
         char* name = calloc(len + 1, 1);
         strncpy(name, __environ[i], len);
 
-        printf("loading [%lu] (%lu): %*.s\n", i, len, (int)len, __environ[i]);
+        printf("loading [%lu]: (%3lu) %.*s\n", i, len, len, __environ[i]);
+        printf("        value: %s ", val + 1);
         if(val == end)
             lua_pushnil(L);
         else
