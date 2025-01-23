@@ -62,7 +62,7 @@ void load_env(){
     lua_getfield(L, -1, "vars");
     lua_getfield(L, -1, "env");
     for(size_t i = 0; i < size; ++i){
-        printf("loading [%lu]: %s\n", i, __environ[i]);
+        // value separator
         char* val = __environ[i];
         while(*val != '=' && val != NULL)
             val++;
@@ -74,14 +74,15 @@ void load_env(){
         char* name = calloc(len + 1, 1);
         strncpy(name, __environ[i], len);
 
+        printf("loading [%lu] (%lu): %*.s\n", i, len, (int)len, __environ[i]);
         if(val == end)
             lua_pushnil(L);
         else
             lua_pushstring(L, val + 1);
         lua_setfield(L, -2, name);
+
         free(name);
     }
-    lua_setfield(L, -2, "env");
     lua_pop(L, 3);
 }
 
