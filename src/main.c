@@ -32,6 +32,11 @@ int main(){
         parse(input);
         free(input);
 
+        // TODO: here goes updating the env
+        // it is probably an expensive thing to check the table and the __environ
+        // and it should be done with and Luall.api.set_env and Luall.api.unset_env
+        // but it is more fun this way
+        // the Luall.vars.env is only set at load so it is ready to do that
         if(reload){
             unload();
             load();
