@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <sys/types.h>
 #include <unistd.h>
 #include <sys/wait.h>
 #include <dirent.h>
@@ -81,7 +82,40 @@ static int api_execp(lua_State *L){
         printf("arg: %s\n", arg);
     }
 
+    const char* path = lua_tostring(L, 1);
+    printf("path: %s\n", path);
+    char** argv = calloc(argc + 1, 1);
+    if(argv == NULL){
+        printf("calloc failed\n");
+    }
 
+    for(size_t i = 1; i <= argc; ++i){
+        if(lua_type(L, i) != LUA_TSTRING)
+            continue;
+
+        const char* arg = lua_tostring(L, i);
+        size_t len = strlen(arg);
+        printf("len: %lu\n", len);
+    }
+
+    /*
+    pid_t pid = fork();
+    if(pid < -1){
+        last_return_code = -1;
+        return 0;
+    }
+    if(pid == 0){ // parent
+        waitpid(pid, NULL, 0);
+    }
+    else{ // child
+        last_return_code = execv(path, argv);
+    }
+    */
+    for(size_t i = 0; i < argc; ++i){
+        if(argv[i] != NULL)
+            free(argv[i]);
+    }
+    free(argv);
 
     return 0;
 }
