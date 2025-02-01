@@ -3,3 +3,4 @@ units
 plugins
 vgcore.*
 luall
+.env

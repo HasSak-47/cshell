@@ -9,6 +9,8 @@
 #include <shell.h>
 #include <str.h>
 
+// TODO: use char* instead of struct String
+
 struct String api_getcwd(){
     char* cwd = getcwd(NULL, 0);
     struct String s = from_null_terminated(cwd);
@@ -47,6 +49,22 @@ struct User api_getuser(){
     u.name = from_null_terminated(lp.pw_name);
 
     return u;
+}
+
+void set_conf_variables(){
+    lua_getglobal(L, "Luall");
+    lua_getfield(L, -1, "vars");
+
+    lua_pushstring(L, init_path);
+    lua_setfield(L, -2, "init_path");
+
+    lua_pushstring(L, config_path);
+    lua_setfield(L, -2, "config_path");
+
+    lua_pushstring(L, hot_path);
+    lua_setfield(L, -2, "hot_path");
+
+    lua_pop(L, 2);
 }
 
 void update_variables(){
@@ -92,4 +110,10 @@ void update_variables(){
     lua_setfield(L, -2, "debug");
 
     lua_pop(L, 2);
+}
+
+void set_inital_setup(){
+    lua_getglobal(L, "Luall");
+    lua_getfield(L, -1, "setup");
+    lua_call(L, 0, 0);
 }
