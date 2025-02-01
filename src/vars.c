@@ -52,8 +52,10 @@ struct User api_getuser(){
 }
 
 void set_conf_variables(){
+    printf("setting config");
     lua_getglobal(L, "Luall");
     lua_getfield(L, -1, "vars");
+    lua_getfield(L, -1, "settings");
 
     lua_pushstring(L, init_path);
     lua_setfield(L, -2, "init_path");
