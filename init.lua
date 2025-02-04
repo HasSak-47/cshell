@@ -36,12 +36,11 @@ end
 
 ---@param path string
 local function expand_path(path)
-    print('expanding: ', path)
-    if path:sub(1, 2) == '.' then
-        return path:gsub('.', Luall.vars.cwd)
-    end
-    if path:sub(1, 2) == '~' then
-        return path:gsub('~', Luall.vars.user.home)
+    local start = path:sub(1, 2)
+    if  start == './' then
+        path = string.gsub(path, '.', Luall.vars.cwd, 1)
+    elseif start == '~/' then
+        path = string.gsub(path, '~', Luall.vars.user.home, 1)
     end
     return path
 end
@@ -59,10 +58,10 @@ Luall = {
         -- special vars that don't get updated at each cycle
         -- changes to env should trigger an env update
         env = {},
-        settings = {
-            init_path = "",
-            config_path = "",
-            hot_path = "",
+        config = {
+            init_path = '',
+            config_path = '',
+            hot_path = '',
         },
 	},
 
@@ -138,16 +137,11 @@ Luall = {
         greeting = function() return "" end,
     },
     setup = function()
-        -- why this IDK
-        local settings = Luall.vars.settings
-        settings.config_path = expand_path(settings.config_path)
-        settings.init_path = expand_path(settings.init_path)
-        settings.hot_path = expand_path(settings.hot_path)
-        print('settings: ')
-        print('home:', Luall.vars.user.home)
-        print('cwd:', Luall.vars.cwd)
-        print('config: "', settings.config_path, '"')
-        print('init  : "', settings.init_path, '"')
-        print('hot   : "', settings.hot_path, '"')
+        local config = Luall.vars.config
+        print('iconfig:', config.init_path)
+        Luall.vars.config.config_path = expand_path(config.config_path)
+        Luall.vars.config.init_path   = expand_path(config.init_path)
+        Luall.vars.config.hot_path    = expand_path(config.hot_path)
+        print('dconfig:', Luall.vars.config.init_path)
     end
 }

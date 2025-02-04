@@ -55,7 +55,7 @@ void set_conf_variables(){
     printf("setting config\n");
     lua_getglobal(L, "Luall");
     lua_getfield(L, -1, "vars");
-    lua_getfield(L, -1, "settings");
+    lua_getfield(L, -1, "config");
 
     lua_pushstring(L, init_path);
     lua_setfield(L, -2, "init_path");
@@ -66,7 +66,42 @@ void set_conf_variables(){
     lua_pushstring(L, hot_path);
     lua_setfield(L, -2, "hot_path");
 
-    lua_pop(L, 2);
+    lua_pop(L, lua_gettop(L));
+}
+
+void update_config_variables(){
+    free(init_path);
+    free(config_path);
+    free(hot_path);
+
+    lua_getglobal(L, "Luall");
+    lua_getfield(L, -1, "vars");
+    lua_getfield(L, -1, "config");
+
+    lua_getfield(L, -1, "init_path");
+    if(lua_isstring(L, -1) == LUA_OK){
+        init_path = strdup(lua_tostring(L, -1));
+    }
+    else{
+        init_path = strdup(INIT_PATH);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, -1, "config_path");
+    if(lua_isstring(L, -1) == LUA_OK){
+        config_path = strdup(lua_tostring(L, -1));
+    }
+    else{
+        config_path = strdup(CONFIG_PATH);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, -1, "hot_path");
+    hot_path = strdup(lua_tostring(L, -1));
+    lua_pop(L, 1);
+
+
+
 }
 
 void update_variables(){
