@@ -1,5 +1,6 @@
 // here all the Luall.api functions are loaded
 
+#include "signal.h"
 #include <lua.h>
 #include <lualib.h>
 #include <lauxlib.h>
@@ -49,6 +50,11 @@ static int api_reload(lua_State *L){
     return 0;
 }
 
+static int api_set_error(lua_State* L){
+    last_return_code = lua_tointeger(L, -1);
+    return 0;
+}
+
 static int api_in_dir(lua_State* L){
     const char* path = lua_tostring(L, -2);
     const char* name = lua_tostring(L, -1);
@@ -77,6 +83,7 @@ static int api_in_dir(lua_State* L){
 static int api_execp(lua_State *L){
     size_t argc = lua_gettop(L);
     printf("number of arguments: %lu\n", argc);
+
     for(size_t i = 1; i <= argc; ++i){
         const char* arg = lua_tostring(L, i);
         printf("arg: %s\n", arg);
@@ -84,33 +91,40 @@ static int api_execp(lua_State *L){
 
     const char* path = lua_tostring(L, 1);
     printf("path: %s\n", path);
-    char** argv = calloc(argc + 1, 1);
+
+    // (args...] + null
+    char** argv = (char**)calloc(sizeof(char*) * (argc + 1), 1);
     if(argv == NULL){
         printf("calloc failed\n");
     }
 
+    size_t argi = 0;
     for(size_t i = 1; i <= argc; ++i){
         if(lua_type(L, i) != LUA_TSTRING)
             continue;
 
         const char* arg = lua_tostring(L, i);
         size_t len = strlen(arg);
-        printf("len: %lu\n", len);
+        if(len == 0)
+            continue;
+
+        argv[argi++] = strdup(arg);
     }
 
-    /*
     pid_t pid = fork();
-    if(pid < -1){
+    if(pid == -1){
         last_return_code = -1;
         return 0;
     }
-    if(pid == 0){ // parent
-        waitpid(pid, NULL, 0);
+    if(pid == 0){ // child
+        printf("execv path %s", path);
+        if( execv(path, argv) == -1){
+            kill(0, SIGKILL);
+        }
     }
-    else{ // child
-        last_return_code = execv(path, argv);
+    else{ // parent
+        waitpid(pid, &last_return_code, 0);
     }
-    */
     for(size_t i = 0; i < argc; ++i){
         if(argv[i] != NULL)
             free(argv[i]);
@@ -126,6 +140,7 @@ struct luaL_Reg api[] = {
     {"reload", api_reload},
     {"exec", api_execp},
     {"in_dir", api_in_dir},
+    {"set_error", api_set_error},
 
     {NULL, NULL}
 };

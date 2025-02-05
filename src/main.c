@@ -16,7 +16,6 @@ int main(){
 
     while(run){
         prompt();
-
         char* input = NULL;
         size_t len = 0;
         int c = getc(stdin);
