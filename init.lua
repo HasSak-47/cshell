@@ -153,4 +153,3 @@ Luall = {
         print('dconfig:', Luall.vars.config.init_path)
     end
 }
---
