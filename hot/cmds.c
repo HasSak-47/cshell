@@ -1,5 +1,4 @@
 // here all the Luall.api functions are loaded
-
 #include "signal.h"
 #include <lua.h>
 #include <lualib.h>
@@ -15,7 +14,6 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include <dirent.h>
-
 
 static int api_exit(lua_State* L) {
     run = false;
@@ -81,6 +79,7 @@ static int api_in_dir(lua_State* L){
 }
 
 static int api_execp(lua_State *L){
+    printf("not enabled yet :)\n");
     size_t argc = lua_gettop(L);
     printf("number of arguments: %lu\n", argc);
 
@@ -111,20 +110,21 @@ static int api_execp(lua_State *L){
         argv[argi++] = strdup(arg);
     }
 
-    pid_t pid = fork();
-    if(pid == -1){
-        last_return_code = -1;
-        return 0;
-    }
-    if(pid == 0){ // child
-        printf("execv path %s", path);
-        if( execv(path, argv) == -1){
-            kill(0, SIGKILL);
-        }
-    }
-    else{ // parent
-        waitpid(pid, &last_return_code, 0);
-    }
+    // pid_t pid = fork();
+    // if(pid == -1){
+    //     last_return_code = -1;
+    //     return 0;
+    // }
+    // if(pid == 0){ // child
+    //     printf("execv path %s", path);
+    //     if( execv(path, argv) == -1){
+    //         kill(0, SIGKILL);
+    //     }
+    // }
+    // else{ // parent
+    //     waitpid(pid, &last_return_code, 0);
+    // }
+
     for(size_t i = 0; i < argc; ++i){
         if(argv[i] != NULL)
             free(argv[i]);

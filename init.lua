@@ -34,17 +34,6 @@ local function first_pass(input)
     return tokens
 end
 
----@param path string
-local function expand_path(path)
-    local start = path:sub(1, 2)
-    if  start == './' then
-        path = string.gsub(path, '.', Luall.vars.cwd, 1)
-    elseif start == '~/' then
-        path = string.gsub(path, '~', Luall.vars.user.home, 1)
-    end
-    return path
-end
-
 Luall = {
 	vars= {
 		host = "",
@@ -65,6 +54,7 @@ Luall = {
         },
 	},
 
+    -- this is set up by c
     api = {},
     util = {
         ---@param args table
@@ -73,7 +63,7 @@ Luall = {
                 return;
             end
 
-            print("exec: " .. args[1])
+            -- print("exec: " .. args[1])
             local func, _ = load(args[1])
             if func ~= nil then
                 pcall(func)
@@ -84,18 +74,29 @@ Luall = {
         cd = function(args)
             if #args == 0 then
                 Luall.api.cd(Luall.vars.user.home)
-                print('cd to home')
+                -- print('cd to home')
             else
-                local path = Luall.inner.path_expantion(args[1])
-                print('cd to: ' .. path)
+                local path = Luall.inner.expand_path(args[1])
+                -- print('cd to: ' .. path)
                 Luall.api.cd(path)
             end
         end,
     },
 	inner = {
-        path_expantion = function(path)
-           path = string.gsub(path, '~', Luall.vars.user.home)
-           return path
+
+        ---@param path string
+        expand_path = function(path)
+            local start = path:sub(1, 2)
+            if  start == './' then
+                path = string.gsub(path, '.', Luall.vars.cwd, 1)
+            elseif start == '~/' then
+                path = string.gsub(path, '~', Luall.vars.user.home, 1)
+            end
+            return path
+        end,
+        ---@param path string
+        format_path = function (path)
+            return path:gsub(Luall.vars.home, '~')
         end,
 		parse = function(input)
             local tokens = first_pass(input)
@@ -111,8 +112,8 @@ Luall = {
                 return
             end
 
-            print("cmd : " .. cmd)
-            print("argc: " .. #args)
+            -- print("cmd : " .. cmd)
+            -- print("argc: " .. #args)
             if Luall.util[cmd] ~= nil then
                 Luall.util[cmd](args)
             elseif Luall.overwrite[cmd] ~= nil then
@@ -144,12 +145,11 @@ Luall = {
         right_prompt = function() return "" end,
         greeting = function() return "" end,
     },
+
     setup = function()
         local config = Luall.vars.config
-        print('iconfig:', config.init_path)
-        Luall.vars.config.config_path = expand_path(config.config_path)
-        Luall.vars.config.init_path   = expand_path(config.init_path)
-        Luall.vars.config.hot_path    = expand_path(config.hot_path)
-        print('dconfig:', Luall.vars.config.init_path)
+        Luall.vars.config.config_path = Luall.inner.expand_path(config.config_path)
+        Luall.vars.config.init_path   = Luall.inner.expand_path(config.init_path)
+        Luall.vars.config.hot_path    = Luall.inner.expand_path(config.hot_path)
     end
 }

@@ -4,6 +4,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+void print_curr_config(){
+    printf("config path: %s\n", config_path);
+    printf("init path: %s\n", init_path);
+    printf("hot path: %s\n", hot_path);
+}
+
 int main(){
     // set initial settings
     config_path = strdup(CONFIG_PATH);
@@ -46,6 +52,9 @@ int main(){
         // but it is more fun this way
         // the Luall.vars.env is only set at load so it is ready to do that
         if(reload){
+            // first get the new config variables
+            update_config_variables();
+            print_curr_config();
             unload();
             load();
             setup();
@@ -59,3 +68,4 @@ int main(){
     free(hot_path);
     return 0;
 }
+

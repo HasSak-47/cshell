@@ -51,7 +51,7 @@ void parse(const char* prompt){
         }
     }
     else{
-        printf("error Luall.inner.parse is not a function");
+        // printf("error Luall.inner.parse is not a function");
     }
     lua_pop(L, 2);
 }
@@ -95,32 +95,33 @@ struct luaL_Reg* (* get_api)() = NULL;
 void (* take_api)(struct luaL_Reg*) = NULL;
 
 void load(){
-    printf("inited state\n");
+    // printf("inited state\n");
     L = luaL_newstate();
     luaL_openlibs(L);
 
-    printf("initing Luall at: %s\n", init_path);
+    // printf("initing Luall at: %s\n", init_path);
     if (luaL_dofile(L, init_path) != LUA_OK){
         luaL_error(L, "Could not init the Luall: %s\n", lua_tostring(L, -1));
     }
 
-    printf("updating variables...\n");
+    // printf("updating variables...\n");
     update_variables();
 
-    printf("building api\n");
+    // printf("building api\n");
 
     // this is so wack
     char* cwd = getcwd(NULL, 0);
     if(cwd == NULL){
-        printf("error: could not move to hot dir\n");
+        // printf("error: could not move to hot dir\n");
         last_return_code = -1;
         return;
     }
 
     chdir(hot_path);
+    // printf("changed dir to hot path %s\n", hot_path);
     int exit = system("make hot");
     if(exit != 0){
-        printf("error: could not build api\n");
+        // printf("error: could not build api\n");
         last_return_code = -1;
         chdir(cwd);
         free(cwd);
@@ -134,12 +135,12 @@ void load(){
     chdir(cwd);
     free(cwd);
 
-    printf("init api\n");
+    // printf("init api\n");
     init_api();
-    printf("loading env\n");
+    // printf("loading env\n");
     load_env();
 
-    printf("running user config\n");
+    // printf("running user config\n");
     if (luaL_dofile(L, config_path) != LUA_OK){
         luaL_error(L, "Could not init the Luall: %s\n", lua_tostring(L, -1));
     }
