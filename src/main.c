@@ -6,6 +6,7 @@
 #include <lua.h>
 #include <lualib.h>
 #include <lauxlib.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 
@@ -13,6 +14,7 @@ Prompt prompt = NULL;
 HandleInput handle_input = NULL;
 // UpdateVariables update_variables = NULL;
 LuaSetup lua_setup = NULL;
+LuaCleanup lua_cleanup = NULL;
 void* handler = NULL;
 
 int main(){
@@ -21,14 +23,19 @@ int main(){
     // event loop
     // there is no fucking way I can hot reload this shit
     while (running) {
-        prompt(L); 
+        if(prompt == NULL){
+            printf("fallback >");
+        }
+        else{
+            prompt(L); 
+        }
         get_current_state();
         handle_input(L);
         // update_variables(L);
         if (reload) {
             unload();
             load();
-            reload = true;
+            reload = false;
         }
     }
     unload();
@@ -37,23 +44,19 @@ int main(){
 }
 
 void load(){
+    // init blank lua state
     L = luaL_newstate();
-    luaL_openlibs(L);
 
-    // load blueprint
-    if(luaL_dofile(L, init_path) != LUA_OK){
-        // if it doesn't load just nuke it
-        running = false;
-        return;
-    }
-
+    // load dynamic symbols
     char* cwd = getcwd(NULL, 0);
+    printf("changing to dir: %s", hot_path);
     chdir(hot_path);
     int exit = system("make hot");
     if( exit != 0) {
         chdir(cwd);
         return;
     }
+
     handler = dlopen("units/bundle.so", RTLD_NOW);
     prompt = dlsym(handler, "prompt");
     handle_input = dlsym(handler, "handle_input");
@@ -62,6 +65,9 @@ void load(){
     lua_cleanup = dlsym(handler, "lua_cleanup");
 
     chdir(cwd);
+
+    // init api
+    lua_setup(L);
 }
 
 void unload(){
