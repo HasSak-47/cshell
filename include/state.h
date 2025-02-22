@@ -6,7 +6,7 @@
 #endif
 
 #ifndef HOT_PATH
-#define HOT_PATH "./hot.lua"
+#define HOT_PATH "./"
 #endif
 
 #ifndef CONFIG_PATH
