@@ -10,6 +10,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <dirent.h>
+#include <sys/wait.h>
 
 static int api_exit(lua_State* L){
     running = false;
@@ -30,8 +31,41 @@ static int api_cd(lua_State* L){
     return 0;
 }
 
-
+// NOTE: this should not be run with valgrind!!
 static int api_exec(lua_State* L){
+    const size_t argc = lua_gettop(L);
+    char** args = malloc((argc + 1) * sizeof(char*));
+    // args must be null terminated
+    args[argc] = NULL;
+
+    for(size_t i = 0; i < argc; ++i){
+        // lua indices start at 1 for some fucking reason
+        const char* arg = lua_tostring(L, i + 1);
+        // something weird was passed as an argument just ignore
+        if(arg == NULL)
+            continue;
+        args[i] = strdup(arg);
+    }
+    const char* cmd = args[0];
+
+    pid_t pid = fork();
+    if(pid == 0) { // child
+        execv(cmd, args);
+        exit(0);
+    }
+    else if(pid > 0){ // parent
+        waitpid(pid, &error, 0);
+    }
+    else{
+        printf("could not exec\n");
+        error = -1;
+    }
+    for(size_t i = 0; i < argc; ++i){
+        free(args[i]);
+    }
+    free(args);
+
+    return 0;
 }
 
 #define REG(name) { #name, api_##name }
@@ -40,12 +74,16 @@ luaL_Reg api[] = {
     REG(cd),
     REG(exit),
     REG(reload),
+    REG(exec),
     {NULL, NULL},
 };
 
 void update_lua_state(lua_State* L){
     lua_getglobal(L, "Luall");
     lua_getfield(L, -1, "vars");
+
+    lua_pushinteger(L, error);
+    lua_setfield(L, -2, "error");
 
     lua_pushstring(L, host);
     lua_setfield(L, -2, "host");

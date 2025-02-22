@@ -37,7 +37,7 @@ run : shell
 hot: $(SHRD)
 
 $(SHR_DIR)/%.so: $(UNI_DIR)/%.c | $(SHR_DIR)
-	$(C) $(UFLAGS) $< -o $@
+	@$(C) $(UFLAGS) $< -o $@
 
 $(SHR_DIR):
 	mkdir -p $(SHR_DIR)
@@ -50,13 +50,6 @@ clean_units:
 
 valgrind: shell
 	valgrind ./$(OUT)
-
-
-GCC_PLUGINS_DIR = $(shell gcc -print-file-name=plugin)
-CXXFLAGS+= -I$(GCC_PLUGINS_DIR)/include -fPIC -fno-rtti
-
-plugins: extensions/vectored.c
-	g++ -shared $(CXXFLAGS) extensions/vectored.c -o plugins/bin
 
 
 .PHONY: all clean cmds source
