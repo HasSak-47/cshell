@@ -9,14 +9,32 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <termios.h>
 
 HandleInput handle_input = NULL;
-// UpdateVariables update_variables = NULL;
 LuaSetup lua_setup = NULL;
 LuaCleanup lua_cleanup = NULL;
 void* handler = NULL;
 
+struct termios orig_termios;
+
+void disable_raw_mode(){
+    tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig_termios);
+}
+
+void enable_raw_mode(){
+    tcgetattr(STDIN_FILENO, &orig_termios);
+    atexit(disable_raw_mode);
+
+    struct termios raw = orig_termios;
+    raw.c_lflag &= ~(ECHO | ICANON | ISIG);
+
+    tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
+}
+
 int main(){
+    enable_raw_mode();
+
     init_shell_state();
     get_current_state();
     load();
@@ -32,7 +50,8 @@ int main(){
         }
         get_current_state();
     }
-    printf("graceful exit...\n");
+    if(debug)
+        printf("graceful exit...\n");
     unload();
     end_shell_state();
     return 0;
@@ -44,7 +63,9 @@ void load(){
 
     // load dynamic symbols
     char* cwd = getcwd(NULL, 0);
-    printf("changing to dir: %s\n", hot_path);
+    if(debug){
+        printf("changing to dir: %s\n", hot_path);
+    }
     chdir(hot_path);
     int exit = system("make hot");
     if( exit != 0) {
@@ -71,7 +92,6 @@ void unload(){
         dlclose(handler);
         handler          = NULL;
         handle_input     = NULL;
-        // update_variables = NULL;
         lua_setup        = NULL;
         lua_cleanup      = NULL;
     }

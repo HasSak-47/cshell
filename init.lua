@@ -108,7 +108,7 @@ Luall = {
 
             local cmd = table.remove(args, 1)
             if cmd == nil then
-                Luall.api.set_error(-1)
+                -- Luall.api.set_error(-1)
                 return
             end
 
