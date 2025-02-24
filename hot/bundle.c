@@ -1,3 +1,4 @@
+#include <ctype.h>
 #include <state.h>
 
 #include <lua.h>
@@ -11,6 +12,7 @@
 #include <unistd.h>
 #include <dirent.h>
 #include <sys/wait.h>
+#include <sys/stat.h>
 
 static int api_exit(lua_State* L){
     running = false;
@@ -48,21 +50,29 @@ static int api_exec(lua_State* L){
     }
     const char* cmd = args[0];
 
-    pid_t pid = fork();
-    if(pid == 0) { // child
-        execv(cmd, args);
-        exit(0);
+    // if the cmd does not exists just don't execute it
+    // if I fork() for an unexisting path some reason the termios resets
+    // and I don't need it to do that
+    struct stat statbuf;
+    if(stat(cmd, &statbuf) == 0){
+        pid_t pid = fork();
+        if(pid == 0) { // child
+            execv(cmd, args);
+        }
+        else if(pid > 0){ // parent
+            waitpid(pid, &error, 0);
+        }
+        else { // not found
+            printf("could not exec\n");
+            error = -1;
+        }
     }
-    else if(pid > 0){ // parent
-        waitpid(pid, &error, 0);
+    else{
+        printf("binary not found!");
     }
-    else { // not found
-        printf("could not exec\n");
-        error = -1;
-    }
-    for(size_t i = 0; i < argc; ++i){
+
+    for(size_t i = 0; i < argc; ++i)
         free(args[i]);
-    }
     free(args);
 
     return 0;
@@ -121,6 +131,58 @@ void prompt(lua_State* L){
     printf("%s", prompt);
 }
 
+char* read_keyboard(){
+    char* input = malloc(64);
+    size_t len = 0; 
+    size_t cap = 64;
+
+    // read
+    int c = 0;
+    while (read(STDIN_FILENO, &c, 1) == 1) {
+        if(c == '\n'){
+            putchar('\n');
+            break;
+        }
+        // backspace
+        if(c == 0x08 || c == 0x7f){
+            if(len == 0)
+                continue;
+
+            len--;
+            write(STDOUT_FILENO, "\b \b", 3);
+            fflush(stdout);
+            continue;
+        }
+        if(!isprint(c)) continue;
+
+        printf("%c", c);
+        // write(STDOUT_FILENO, &c, 1);
+        fflush(stdout);
+
+        // resize if necessary
+        if(len + 1 == cap){
+            cap *= 2;
+            void* aux = realloc(input, cap);
+            if(aux == NULL){
+                // just nuke it
+                exit(-1);
+            }
+            input = aux;
+        }
+        input[len++] = c;
+    }
+
+    // make the input null terminated
+    void* aux = realloc(input, len + 1);
+    if (aux == NULL) 
+        exit(-1);
+    input = aux;
+    input[len++] = 0;
+
+    return input;
+}
+
+
 // WARN: this is a bad name for the function
 void handle_input(lua_State* L){
     update_lua_state(L);
@@ -129,29 +191,8 @@ void handle_input(lua_State* L){
     // since it is raw mode make sure to print the prompt
     fflush(stdout);
 
-    // NOTE: dumb way to do increase an array len
-    char* input = NULL;
-    size_t len = 0; 
-    int c = 0;
-    read(STDIN_FILENO, &c, 1);
-    while (c != '\n') {
-        printf("%c", c);
-        void* aux = realloc(input, len + 1);
-        if (aux == NULL) {
-            exit(-1);
-        }
-        input = aux;
-        input[len++] = c;
-        c = getc(stdin);
-    }
-    printf("\n");
-
-    // make the input null terminated
-    void* aux = realloc(input, len + 1);
-    if (aux == NULL) 
-        exit(-1);
-    input = aux;
-    input[len++] = 0;
+    char* input = read_keyboard();
+    printf("input: %s\n", input);
 
     // parse the function
     lua_getglobal(L, "Luall");
@@ -172,6 +213,52 @@ void handle_input(lua_State* L){
     lua_pop(L, 2);
 
     free(input);
+}
+
+static int __env_index(lua_State* L){
+    const char* key = lua_tostring(L, -1);
+    if(key == NULL){
+        lua_pushliteral(L, "");
+        return 1;
+    }
+    const char* value = getenv(key);
+    if(value == NULL)
+        lua_pushnil(L);
+    else
+        lua_pushstring(L, value);
+
+    return 1;
+}
+
+static int __env_newindex(lua_State* L){
+    const char* key = lua_tostring(L, -2);
+    if(key == NULL)
+        return 0;
+
+    if(lua_isnil(L, -1)){
+        unsetenv(key);
+        return 0;
+    }
+    const char* value = lua_tostring(L, -1);
+    setenv(key, value, 1);
+
+    return 0;
+}
+
+void create_env(lua_State* L){
+    lua_getglobal(L, "Luall");
+    lua_getfield(L, -1, "vars");
+
+    lua_newtable(L);
+    luaL_newmetatable(L, "__env");
+    lua_pushcfunction(L, __env_index);
+    lua_setfield(L, -2, "__index");
+    lua_pushcfunction(L, __env_newindex);
+    lua_setfield(L, -2, "__newindex");
+    lua_setmetatable(L, -2);
+
+    lua_setfield(L, -2, "env");
+    lua_pop(L, 2);
 }
 
 void lua_setup(lua_State* L){
@@ -199,6 +286,8 @@ void lua_setup(lua_State* L){
     lua_setfield(L, -2, "init_path");
 
     lua_pop(L, 2);
+
+    create_env(L);
 
     // blueprint setup
     lua_createtable(L, 4, 4);
