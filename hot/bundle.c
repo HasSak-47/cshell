@@ -33,6 +33,16 @@ static int api_cd(lua_State* L){
     return 0;
 }
 
+static int api_exists(lua_State* L){
+    const char* path = lua_tostring(L, -1);
+    struct stat statm;
+    if(stat(path, &statm) == 0)
+        lua_pushboolean(L, true);
+    else
+        lua_pushboolean(L, false);
+    return 1;
+}
+
 // NOTE: this should not be run with valgrind!!
 static int api_exec(lua_State* L){
     const size_t argc = lua_gettop(L);
@@ -85,6 +95,7 @@ luaL_Reg api[] = {
     REG(exit),
     REG(reload),
     REG(exec),
+    REG(exists),
     {NULL, NULL},
 };
 
@@ -192,7 +203,6 @@ void handle_input(lua_State* L){
     fflush(stdout);
 
     char* input = read_keyboard();
-    printf("input: %s\n", input);
 
     // parse the function
     lua_getglobal(L, "Luall");
