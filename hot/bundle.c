@@ -99,16 +99,6 @@ luaL_Reg api[] = {
     {NULL, NULL},
 };
 
-/**
- * env table is a metatable
- * everytime you add or remove from the metatable
- * it should update the env
- *
- * I have no idea how to archive this
- */
-void setup_env(){
-}
-
 void update_lua_state(lua_State* L){
     lua_getglobal(L, "Luall");
     lua_getfield(L, -1, "vars");
@@ -155,7 +145,7 @@ char* read_keyboard(){
             break;
         }
         // backspace
-        if(c == 0x08 || c == 0x7f){
+       if(c == 0x08 || c == 0x7f){
             if(len == 0)
                 continue;
 
@@ -171,16 +161,16 @@ char* read_keyboard(){
         fflush(stdout);
 
         // resize if necessary
-        if(len + 1 == cap){
-            cap *= 2;
-            void* aux = realloc(input, cap);
-            if(aux == NULL){
-                // just nuke it
-                exit(-1);
-            }
-            input = aux;
-        }
-        input[len++] = c;
+       if(len + 1 == cap){
+           cap *= 2;
+           void* aux = realloc(input, cap);
+           if(aux == NULL){
+               // just nuke it
+               exit(-1);
+           }
+           input = aux;
+       }
+       input[len++] = c;
     }
 
     // make the input null terminated
@@ -226,24 +216,38 @@ void handle_input(lua_State* L){
 }
 
 static int __env_index(lua_State* L){
-    const char* key = lua_tostring(L, -1);
-    if(key == NULL){
-        lua_pushliteral(L, "");
+    const char* okey = lua_tostring(L, -1);
+    if(okey == NULL){
+        lua_pushnil(L);
         return 1;
     }
+
+    size_t len = strlen(okey);
+    char* key = malloc(strlen(okey) + 1);
+    for(size_t i = 0; i < len; ++i)
+        key[i] = toupper(okey[i]);
+    key[len] = 0;
+
     const char* value = getenv(key);
     if(value == NULL)
         lua_pushnil(L);
     else
         lua_pushstring(L, value);
+    free(key);
 
     return 1;
 }
 
 static int __env_newindex(lua_State* L){
-    const char* key = lua_tostring(L, -2);
-    if(key == NULL)
+    const char* okey = lua_tostring(L, -2);
+    if(okey == NULL)
         return 0;
+
+    size_t len = strlen(okey);
+    char* key = malloc(strlen(okey) + 1);
+    for(size_t i = 0; i < len; ++i)
+        key[i] = toupper(okey[i]);
+    key[len] = 0;
 
     if(lua_isnil(L, -1)){
         unsetenv(key);
