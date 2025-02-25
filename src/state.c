@@ -11,6 +11,7 @@
 
 // event loop control
 
+bool kill_child = false;
 bool reload  = false;
 bool running = true;
 lua_State* L = NULL;
