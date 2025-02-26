@@ -72,10 +72,13 @@ Luall = {
                 return;
             end
 
-            -- print("exec: " .. args[1])
+            --- print("exec: " .. args[1])
             local func, _ = load(args[1])
             if func ~= nil then
-                pcall(func)
+                local ok, _ = pcall(func)
+                if not ok then
+                    print('failed to run')
+                end
             end
         end
     },
@@ -90,7 +93,6 @@ Luall = {
         end,
     },
 	inner = {
-
         ---@param path string
         expand_path = function(path)
             local start = path:sub(1, 2)
@@ -172,7 +174,7 @@ Luall = {
             local cwd = string.gsub(vars.cwd, user.home, '~');
             local fc = Luall.inner.full_color;
             local rc = Luall.inner.reset_color;
-            return fc(0, 128, 0) .. user.name .. rc() .. "@" .. vars.host .. ' ' .. cwd .. err .. ">"
+            return fc(0, 128, 0) .. user.name .. rc() .. "@" .. vars.host .. ' ' .. fc(0, 128, 0) .. cwd .. rc() .. err .. " >"
         end,
         right_prompt = function() return "" end,
         greeting = function() return "" end,
