@@ -7,6 +7,8 @@
 #include <string.h>
 #include <unistd.h>
 
+#include <input.h>
+
 char* interactive_input(){
     char* input = malloc(64);
     size_t len = 0; 

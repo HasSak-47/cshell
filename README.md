@@ -2,7 +2,8 @@
 This is an interactive shell written in C and Lua, designed to provide a flexible and extensible command-line interface.
 It allows user to execute built-in commands, use embedded scripting language for automation, customization, and extensibility.
 
-A single line is interpreted as a normal "bash-like" command, e.g. `ls --lA >> out.txt` would have the same behavior as bash.
+\[pipes not yet implemented\]
+A single line interpreted as a normal "bash-like" command, e.g. `ls --lA >> out.txt` would have the same behavior as bash.
 But if there is more than a single line it would be interpreted as a Lua script.
 
 ## Features

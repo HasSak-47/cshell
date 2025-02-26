@@ -46,4 +46,7 @@ void end_shell_state();
 void get_current_state();
 void update_current_state();
 
+void set_raw_mode();
+void unset_raw_mode();
+
 #endif
