@@ -44,7 +44,7 @@ int main(){
     get_current_state();
     load();
     // event loop
-    // there is no fucking way I can hot reload this shit
+    // this is so fucking ass
     while (running) {
         handle_input(L);
         if (reload) {

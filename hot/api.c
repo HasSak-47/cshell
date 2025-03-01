@@ -53,14 +53,12 @@ static void set_to_foreground(){
     // NOTE: I don't know why this is needed
     // it just works like that
     // sure why not ignore this random signal
-    // so it can take over
     signal(SIGTTOU, SIG_IGN);
     int ok = tcsetpgrp(FD, group_id);
     if(ok == -1)
         exit(-1);
 }
 
-// NOTE: this should not be run with valgrind!!
 static int api_exec(lua_State* L){
     const size_t argc = lua_gettop(L);
     char** args = malloc((argc + 1) * sizeof(char*));
@@ -95,7 +93,6 @@ static int api_exec(lua_State* L){
                 exit(-1);
             }
 
-            signal(SIGTTOU, SIG_IGN);
             set_to_foreground();
             set_raw_mode();
         }

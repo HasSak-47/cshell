@@ -11,7 +11,6 @@
 
 // event loop control
 
-bool kill_child = false;
 bool reload  = false;
 bool running = true;
 lua_State* L = NULL;
@@ -30,11 +29,6 @@ char* host = NULL;
 // last error code
 int error = 0;
 bool debug = true;
-
-
-// Luall.vars.history
-char** history = NULL;
-
 
 /**
  * sets the state of the shell
