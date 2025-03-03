@@ -1,12 +1,4 @@
 
---- @param var string
-local function parse_env(var)
-    local result = {}
-    for part in string.gmatch(var, "([^:]+)") do
-        table.insert(result, part)
-    end
-    return result
-end
 
 local function first_pass(input)
     local i = 1
@@ -116,52 +108,7 @@ Luall = {
         reset_color = function ()
             return '\x1b[0m'
         end,
-        ---@param input string
-		parse = function(input)
-            local tokens = first_pass(input)
-            ---@type string[]
-            local args = {}
-            for _, token in pairs(tokens) do
-                table.insert(args, token.val)
-            end
-
-            local cmd = table.remove(args, 1)
-            if cmd == nil then
-                -- Luall.api.set_error(-1)
-                return
-            end
-
-            -- print("cmd : " .. cmd)
-            -- print("argc: " .. #args)
-            if Luall.util[cmd] ~= nil then
-                Luall.util[cmd](args)
-            elseif Luall.overwrite[cmd] ~= nil then
-                Luall.overwrite[cmd](args)
-            elseif Luall.api[cmd] ~= nil then
-                if #args == 0 then
-                    Luall.api[cmd]()
-                else
-                    Luall.api[cmd](table.unpack(args))
-                end
-            else
-
-                -- check all posssible dirs in which cmd could be
-                local possible_locs = parse_env(Luall.vars.env.PATH)
-                local target_cmd = ''
-                for _, path in pairs(possible_locs) do
-                    local candidate = path ..'/' .. cmd
-                    if Luall.api.exists(candidate) then
-                        target_cmd = candidate
-                        break
-                    end
-                end
-
-                local ok, _ = pcall(Luall.api['exec'], target_cmd, table.unpack(args))
-                if not ok then
-                    print('cmd not found')
-                end
-            end
-		end
+		parse = require('parser')
 	},
     prompts = {
         prompt = function()
