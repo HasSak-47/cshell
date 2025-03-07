@@ -1,3 +1,5 @@
+#include <testing.h> 
+
 #include <ctype.h>
 #include <state.h>
 
@@ -40,7 +42,6 @@ void update_lua_state(lua_State* L){
     lua_setfield(L, -2, "name");
     lua_pop(L, 2);
 }
-
 
 void prompt(lua_State* L){
     lua_getglobal(L, "Luall");
@@ -219,3 +220,9 @@ void lua_setup(lua_State* L){
 void lua_cleanup(lua_State* L){
     // ...
 }
+
+#ifdef TEST
+void __test(lua_State* L){
+    test_input();
+}
+#endif

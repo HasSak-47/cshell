@@ -21,6 +21,8 @@ char* config_path = NULL;
 char* init_path   = NULL;
 char* hot_path    = NULL;
 
+char** history = NULL;
+
 // Luall.vars
 
 struct User user = { NULL, NULL };
