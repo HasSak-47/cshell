@@ -55,7 +55,7 @@ int main(){
     init_shell_state();
     get_current_state();
     load();
-    // event loop
+    // interaction loop
     // this is so fucking ass
     while (running) {
         handle_input(L);
@@ -92,7 +92,6 @@ void load(){
 
     handler = dlopen("units/bundle.so", RTLD_NOW);
     handle_input = dlsym(handler, "handle_input");
-    // update_variables = dlsym(handler, "update_variables");
     lua_setup = dlsym(handler, "lua_setup");
     lua_cleanup = dlsym(handler, "lua_cleanup");
 

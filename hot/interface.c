@@ -83,6 +83,7 @@ void handle_input(lua_State* L){
     free(input);
 }
 
+// env metatable function
 static int __env_index(lua_State* L){
     const char* okey = lua_tostring(L, -1);
     if(okey == NULL){
@@ -106,6 +107,7 @@ static int __env_index(lua_State* L){
     return 1;
 }
 
+// env metatable function
 static int __env_newindex(lua_State* L){
     const char* okey = lua_tostring(L, -2);
     if(okey == NULL)
@@ -127,6 +129,7 @@ static int __env_newindex(lua_State* L){
     return 0;
 }
 
+// create metatable env
 void create_env(lua_State* L){
     lua_getglobal(L, "Luall");
     lua_getfield(L, -1, "vars");
@@ -183,7 +186,7 @@ void lua_setup(lua_State* L){
         return;
     }
 
-    // setup make sure everything in the config
+    // setup makes sure that everything in the config
     // that was a relative path is now an absolute path
     lua_getfield(L, -1, "setup");
     if(lua_isfunction(L, -1)){
@@ -213,12 +216,10 @@ void lua_setup(lua_State* L){
     lua_getfield(L, -1, "init_path");
     init_path = strdup(lua_tostring(L, -1));
     lua_pop(L, lua_gettop(L));
-
-
 }
 
 void lua_cleanup(lua_State* L){
-    // ...
+    // there is nothing to do yet...
 }
 
 #ifdef TEST
