@@ -1,4 +1,3 @@
-#include <cstddef>
 #include <ctype.h>
 #include <state.h>
 
@@ -8,7 +7,9 @@
 #include <string.h>
 #include <unistd.h>
 
+#include <api.h>
 #include <input.h>
+#include <interface.h>
 
 struct Input{
     char*  buf; // buffer not null terminated
@@ -48,23 +49,68 @@ void delete_char(struct Input* in){
     // so just continue
     if (in->cur == 0)
         return;
-    for (size_t i = in->cur - 1; i < in->len - 1; ++i) {
+    for (size_t i = in->cur - 2; i < in->len - 1; ++i) {
         in->buf[i] = in->buf[i + 1];
     }
     in->len--;
     in->cur--;
 }
 
-// TODO: handle input using a global ish state
-struct InputState{};
+struct InputState{
+    bool cont; // should continue
+    struct Input in;
+};
 
-void handle_ctrl(struct Input* in, char c){
-    // NOTE: here it should read until it encounters a \0
-    // and then choose what to do according to the signal
-    if(c == 0x08 || c == 0x7f){
+
+void handle_ctrl(struct InputState* in, char c){
+    if(c == 0x08 || c == 0x7f){ // backspace
+        delete_char(&in->in);
+        if (in->in.len <= 0) {
+            return;
+        }
         write(STDOUT_FILENO, "\b \b", 3);
         fflush(stdout);
+        return;
     }
+
+    if(c == '\n'){ // newline
+        putchar(c);
+        in->cont = false;
+        return;
+    }
+
+
+    char buffer[1024] = {};
+    if (c == '\e') {
+        int r = read(STDIN_FILENO, buffer, 1024);
+        if (r < 0)
+            return;
+    }
+
+    if (buffer[0] == '[') {
+        switch (buffer[1]) {
+            case 'A': // up
+                return;
+            case 'B': // down
+                return;
+            case 'C': // right
+                if(in->in.cur < in->in.len){
+                    printf("\e[C");
+                    fflush(stdout);
+                    in->in.cur++;
+                }
+                return;
+            case 'D': // left
+                if(in->in.cur > 0){
+                    printf("\e[D");
+                    fflush(stdout);
+                    in->in.cur--;
+                }
+                return;
+        }
+    
+    }
+
 
     return;
 }
@@ -73,27 +119,33 @@ void handle_ctrl(struct Input* in, char c){
  * returns input string when enter is pressed
  */
 char* interactive_input(){
-    struct Input in = {};
-
-    bool send = false;
+    struct InputState state = { };
+    state.cont = true;
 
     // read a characer
     int c = 0;
-    while (read(STDIN_FILENO, &c, 1) == 1) {
-        // if input is done stop procesing text
-        if(send)
-            break;
-
+    // if input is done stop procesing text
+    while (state.cont) {
+        int len = read(STDIN_FILENO, &c, 1);
+        if (len <= 0) {
+            continue;
+        }
         if (iscntrl(c)) {
-            handle_ctrl(&in, c);
+            fflush(stdout);
+            handle_ctrl(&state, c);
             continue;
         }
 
-        printf("%c", c);
+        insert_char(&state.in, c);
+        for (size_t i = state.in.cur- 1; i < state.in.len; ++i) {
+            printf("%c", state.in.buf[i]);
+        }
         fflush(stdout);
     }
+    char* buffer = realloc(state.in.buf, state.in.len + 1);
+    buffer[state.in.len] = 0;
 
-    return NULL;
+    return buffer;
 }
 
 

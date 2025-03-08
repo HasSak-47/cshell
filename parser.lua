@@ -103,6 +103,10 @@ end
 
 ---@param input string
 local function parser (input)
+    if input == nil or input == '' then
+        return;
+    end
+
     local lines = {}
     local i = 1
     -- split into lines
