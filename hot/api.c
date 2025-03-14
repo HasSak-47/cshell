@@ -103,7 +103,7 @@ static int api_exec(lua_State* L){
     }
     else{
         error = -1;
-        printf("binary not found!\n");
+        printf("binary \"%s\" not found!\n", args[0]);
     }
 
     for(size_t i = 0; i < argc; ++i)

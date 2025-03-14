@@ -83,8 +83,40 @@ Luall = {
                 Luall.api.cd(path)
             end
         end,
+        ls = function (args)
+            table.insert(args, 1, '--color')
+            Luall.inner.exec('ls', args)
+        end,
     },
 	inner = {
+        ---@param name string
+        ---@param args table
+        exec = function (name, args)
+            --- @param var string
+            local function parse_env(var)
+                local result = {}
+                for part in string.gmatch(var, "([^:]+)") do
+                    table.insert(result, part)
+                end
+                return result
+            end
+
+            -- check all possible dirs in which cmd could be
+            local possible_locs = parse_env(Luall.vars.env.PATH)
+            local target_cmd = ''
+            for _, path in pairs(possible_locs) do
+                local candidate = path ..'/' .. name
+                if Luall.api.exists(candidate) then
+                    target_cmd = candidate
+                    break
+                end
+            end
+
+            local ok, _ = pcall(Luall.api['exec'], target_cmd, table.unpack(args))
+            if not ok then
+                print('failed to exec cmd: '.. target_cmd)
+            end
+        end,
         ---@param path string
         expand_path = function(path)
             local start = path:sub(1, 2)
@@ -110,6 +142,9 @@ Luall = {
         end,
 		parse = require('parser')
 	},
+    matching = {
+        files = {}
+    },
     prompts = {
         prompt = function()
             local vars = Luall.vars;

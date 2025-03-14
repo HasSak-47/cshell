@@ -4,3 +4,8 @@ plugins
 vgcore.*
 luall
 .env
+
+
+# Added by cargo
+
+/target

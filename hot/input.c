@@ -24,7 +24,7 @@ void insert_char(struct Input* in, char c){
         size_t target_cap = (in->cap + 1) * 2;
         void* aux = realloc(in->buf, target_cap);
         if (aux == NULL) {
-            // don't want to handle this
+            // I don't want to handle this
             // so just kill self
             exit(-1);
         }
@@ -64,10 +64,10 @@ struct InputState{
 
 void handle_ctrl(struct InputState* in, char c){
     if(c == 0x08 || c == 0x7f){ // backspace
-        delete_char(&in->in);
-        if (in->in.len <= 0) {
+        if (in->in.cur == 0){
             return;
         }
+        delete_char(&in->in);
         write(STDOUT_FILENO, "\b \b", 3);
         fflush(stdout);
         return;
@@ -95,20 +95,19 @@ void handle_ctrl(struct InputState* in, char c){
                 return;
             case 'C': // right
                 if(in->in.cur < in->in.len){
+                    in->in.cur++;
                     printf("\e[C");
                     fflush(stdout);
-                    in->in.cur++;
                 }
                 return;
             case 'D': // left
                 if(in->in.cur > 0){
+                    in->in.cur--;
                     printf("\e[D");
                     fflush(stdout);
-                    in->in.cur--;
                 }
                 return;
         }
-    
     }
 
 
@@ -140,6 +139,8 @@ char* interactive_input(){
         for (size_t i = state.in.cur- 1; i < state.in.len; ++i) {
             printf("%c", state.in.buf[i]);
         }
+        printf("\e[%dD", (int)state.in.len);
+        printf("\e[%dC", (int)state.in.cur);
         fflush(stdout);
     }
     char* buffer = realloc(state.in.buf, state.in.len + 1);
