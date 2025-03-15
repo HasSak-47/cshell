@@ -1,40 +1,3 @@
-
-
-local function first_pass(input)
-    local i = 1
-    local len = #input
-    local tokens = {}
-
-    while i <= len do
-        local char = input:sub(i, i)
-
-        if char == '"' or char == "'" then
-            -- Handle quoted strings
-            local quote = char
-            local start = i
-            i = i + 1
-            while i <= len and input:sub(i, i) ~= quote do
-                i = i + 1
-            end
-            if i <= len then
-                i = i + 1
-            end
-            -- remove quotes
-            table.insert(tokens, {val = input:sub(start + 1, i - 2), type = "string"})
-        elseif not char:match("%s") then
-            local start = i
-            while i <= len and not input:sub(i, i):match("%s") do
-                i = i + 1
-            end
-            table.insert(tokens, {val = input:sub(start, i - 1), type = "undetermined"})
-        else
-            i = i + 1
-        end
-    end
-
-    return tokens
-end
-
 Luall = {
 	vars= {
 		host = '',
@@ -156,7 +119,7 @@ Luall = {
             local cwd = string.gsub(vars.cwd, user.home, '~');
             local fc = Luall.inner.full_color;
             local rc = Luall.inner.reset_color;
-            return fc(0, 128, 0) .. user.name .. rc() .. "@" .. vars.host .. ' ' .. fc(0, 128, 0) .. cwd .. rc() .. err .. " >"
+            return fc(0, 128, 0) .. user.name .. rc() .. '@' .. vars.host .. ' ' .. fc(0, 128, 0) .. cwd .. rc() .. err .. " >"
         end,
         right_prompt = function() return "" end,
         greeting = function() return "" end,

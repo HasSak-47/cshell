@@ -35,7 +35,6 @@ void set_raw_mode(){
         atexit(unset_raw_mode);
         got_original = true;
     }
-
     struct termios raw = orig_termios;
     raw.c_lflag &= ~(ECHO | ICANON | ISIG | IEXTEN);
     raw.c_cc[VMIN] = 0;

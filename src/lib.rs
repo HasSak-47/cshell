@@ -1,4 +1,4 @@
-use std::str::Lines;
+use std::{fmt::Display, str::Lines};
 
 
 #[derive(Debug)]
@@ -9,15 +9,64 @@ enum Literal{
     String(String),
 }
 
+impl Display for Literal {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self{
+            Self::U32(a) => write!(f, "{a}"),
+            Self::I32(a) => write!(f, "{a}"),
+            Self::F32(a) => write!(f, "{a}"),
+            Self::String(a) => write!(f, "\"{a}\""),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+#[repr(u32)]
+enum Delimiter{
+    OpenPar  = '(' as u32,
+    ClosePar = ')' as u32,
+    OpenSBr  = '[' as u32,
+    CloseSBr = ']' as u32,
+    OpenCBr  = '{' as u32,
+    CloseCBr = '}' as u32,
+    Coma     = ',' as u32,
+    Dot      = '.' as u32,
+}
+
+impl Display for Delimiter{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        unsafe{
+            write!(f, "{}", char::from_u32_unchecked(*self as u32))
+        }
+    }
+}
+
 #[derive(Debug)]
 enum Token {
     Literal(Literal),
 
     /* [\d\s_]+ */
+    Delimiter(Delimiter),
     Identifier(String),
     Operator(String),
     Keyword(String),
     Undefined(String),
+    NewLine,
+}
+
+impl Display for Token{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self{
+            Self::NewLine       => write!(f, "\n"),
+            Self::Delimiter(a)  => write!(f, "{a}"),
+            Self::Literal(a)    => write!(f, "{a}"),
+            Self::Identifier(a) => write!(f, "{a}"),
+            Self::Operator(a)   => write!(f, "{a}"),
+            Self::Keyword(a)    => write!(f, "{a}"),
+            Self::Undefined(a)  => write!(f, "{a}"),
+        }
+        
+    }
 }
 
 impl Token{
@@ -36,8 +85,7 @@ impl Token{
         };
 
         let mut iter = string
-            .chars()
-            .into_iter();
+            .chars();
         let mut splits = vec![0usize];
         loop {
             let next = iter.position(|c| !(c.is_ascii_alphanumeric() || c == '_'));
@@ -63,34 +111,28 @@ impl Token{
             toggle = !toggle;
         }
 
-        return new;
+        new
     }
 
-    pub fn token_stream<S: AsRef<str>>(s: S) -> Vec<Self>{
-        let mut lines : Vec<_> = s.as_ref().to_string().lines().map(ToString::to_string).collect();
-        let mut s = String::new();
-        for line in &mut lines{
-            *line = line.trim_matches(char::is_whitespace).to_string();
-            let matches : Vec<_> = line.match_indices("--").map(|m| m.0).collect();
-            for mch in matches {
-                if mch >= line.len(){
-                    break;
-                }
-                *line = line[0..mch].to_string();
-            }
-            s.push_str(line.as_str());
-            s.push(' ');
-        }
-
-
-        let mut iter = s.chars().enumerate();
-        let mut token : Vec<Token> = vec![];
+    pub fn process_line<S: AsRef<str>>(s: S) -> Vec<Self> {
+        let rf = s.as_ref().replace(";", "\n");
+        let mut iter = rf.chars().enumerate().peekable();
         let mut current = String::new();
-        loop {
-            let (idx, curr) = match iter.next(){
-                Some(c) => c,
-                None => break,
-            };
+        let mut token : Vec<Token> = vec![];
+
+        current = current.replace("\n", "");
+        'line: while let Some((_idx, curr)) = iter.next() {
+            if curr == '-' {
+                if let Some((_idx_n, curr_n)) = iter.peek(){
+                    // comment
+                    if *curr_n == '-'{
+                        token.push(Token::Undefined(current));
+                        token.push(Token::NewLine);
+                        return token;
+                    }
+                }
+            }
+            // inside quotes
             if curr == '"' || curr == '\''{
                 let double = curr == '"';
 
@@ -107,6 +149,9 @@ impl Token{
                     match curr{
                         None => break,
                         Some((_, c)) =>{
+                            if c == '\n'{
+                                continue 'line;
+                            }
                             if first{
                                 first = false;
                             }
@@ -117,21 +162,74 @@ impl Token{
                     }
 
                 }
-                println!("string: \"{string}\"");
                 token.push(Token::Literal(Literal::String(string)));
+                continue;
             }
-
-            if curr.is_whitespace(){
-
-                current = String::new();
-            }
-            else{
-                current.push(curr);
-            }
+            current.push(curr);
         }
-
+        token.push(Token::Undefined(current));
+        token.push(Token::NewLine);
 
         return token;
+
+    }
+
+    pub fn expand_whitespace(mut self) -> Vec<Self> {
+        if let Self::Undefined(mut s) = self {
+            s = s.replace("\t", " ");
+            while s.contains("  "){
+                s = s.replace("  ", " ");
+            }
+
+            let mut tokens = vec![];
+            let mut curr = String::new();
+            for letter in s.trim().chars(){
+                if letter == ' '{
+                    tokens.push(Self::Undefined(curr));
+                    curr = String::new();
+                    continue;
+                }
+                curr.push(letter);
+            }
+            if !curr.is_empty(){
+                tokens.push(Token::Undefined(curr));
+            }
+
+            return tokens;
+        }
+        return vec![self];
+    }
+
+    // TODO: rename this one
+    pub fn ya_expansion(mut self) -> Vec<Self>{
+        if let Self::Undefined(s) = self{
+            let mut indicies = Vec::new();
+            for del in DELIMITERS{
+                if let Some(i) = s.find(del){
+                    indicies.push(i);
+                }
+            }
+
+            return vec![];
+        }
+        return vec![self];
+    }
+
+    pub fn token_stream<S: AsRef<str>>(s: S) -> Vec<Self>{
+        let lines = s.as_ref().lines();
+        let mut tokens = vec![];
+        for line in lines{
+            let mut v = Self::process_line(line);
+            tokens.append(&mut v);
+        }
+        let mut tks = Vec::new();
+        for token in tokens{
+            let mut other = token.expand_whitespace();
+            tks.append(&mut other);
+        }
+
+        return tks;
+
     }
 }
 
@@ -160,6 +258,22 @@ const KEYWORDS: &[&str] = &[
     "return",
     "then",
     "until",
+];
+
+const OPERATORS: &[&str] = &[
+    "=",
+    "+",
+    "-",
+    "*",
+    "/",
+    "..", // concat
+];
+
+const DELIMITERS: &[&str] = &[
+    "(", ")",
+    "[", "]",
+    "{", "}",
+    ",", ".",
 ];
 
 #[test]
