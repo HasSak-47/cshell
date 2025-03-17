@@ -22,7 +22,6 @@ int test(){
     printf("end shell state...\n");
     end_shell_state();
 
-
     return 0;
 }
 

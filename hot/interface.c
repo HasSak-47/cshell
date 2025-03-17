@@ -221,9 +221,3 @@ void lua_setup(lua_State* L){
 void lua_cleanup(lua_State* L){
     // there is nothing to do yet...
 }
-
-#ifdef TEST
-void __test(lua_State* L){
-    test_input();
-}
-#endif

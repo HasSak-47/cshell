@@ -1,4 +1,5 @@
 #include <state.h>
+#include <utils.h>
 
 #include <lua.h>
 #include <lualib.h>
@@ -41,22 +42,6 @@ static int api_exists(lua_State* L){
     else
         lua_pushboolean(L, false);
     return 1;
-}
-
-static void set_to_foreground(){
-    const int FD = STDIN_FILENO;
-    if(tcgetpgrp(FD) < 0)
-        exit(-1);
-    if(setpgid(0, 0) == -1)
-        exit(-1);
-    pid_t group_id = getpgrp();
-    // NOTE: I don't know why this is needed
-    // it just works like that
-    // sure why not ignore this random signal
-    signal(SIGTTOU, SIG_IGN);
-    int ok = tcsetpgrp(FD, group_id);
-    if(ok == -1)
-        exit(-1);
 }
 
 static int api_exec(lua_State* L){

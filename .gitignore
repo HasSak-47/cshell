@@ -4,3 +4,4 @@ plugins
 vgcore.*
 luall
 .env
+log.txt
