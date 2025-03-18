@@ -43,9 +43,7 @@ struct Command new_command(char* cmd){
         .args = NULL,
         .argc = 0,
 
-        .in = NULL,
-        .out = NULL,
-        .err = NULL,
+        .pipe = {NULL, NoneBind},
     };
     // first arg is the name
     add_arg(&c, cmd);
@@ -53,17 +51,12 @@ struct Command new_command(char* cmd){
     return c;
 }
 
-void bind_stdin(struct Command *cmd, struct Pipe *p){
-    cmd->in = &p->p[0];
+void bind_pipe(struct Command *cmd, struct Pipe *pipe, enum BindType type){
+    struct PipeBind binding = { pipe, type };
+
+    cmd->pipe = binding;
 }
 
-void bind_stdout(struct Command *cmd, struct Pipe *p){
-    cmd->out = &p->p[1];
-}
-
-void bind_stderr(struct Command *cmd, struct Pipe *p){
-    cmd->err = NULL;
-}
 
 void add_arg(struct Command *cmd, char *arg){
     char** aux = realloc(cmd->args, (cmd->argc + 1) * sizeof(char*));
@@ -86,18 +79,16 @@ pid_t run(struct Command* p){
     pid_t pid = fork();
     if(pid == 0){ // child
         printf("[child]: %s\n", p->cmd);
-        if (p->in != NULL) {
-            int fd = *p->in;
-            int err = dup2(fd, STDIN_FILENO);
-            if (err == -1)
-                temporal_suicide_msg("[child]: failed to set in");
-        }
+        if (p->pipe.pipe != NULL) {
+            if (p->pipe.ty & ReadBind)
+                dup2(p->pipe.pipe->p[0], STDIN_FILENO);
+            else
+                close(p->pipe.pipe->p[0]);
 
-        if (p->out != NULL) {
-            int fd = *p->out;
-            int err = dup2(fd, STDOUT_FILENO);
-            if (err == -1)
-                temporal_suicide_msg("[child]: failed to set out");
+            if (p->pipe.ty & WriteBind)
+                dup2(p->pipe.pipe->p[1], STDOUT_FILENO);
+            else
+                close(p->pipe.pipe->p[1]);
         }
 
         int r = execv(p->cmd, p->args);
@@ -127,19 +118,20 @@ void test_process(){
     add_arg(&cmds[0], "-lA");
     add_arg(&cmds[0], "--color");
 
-    cmds[1] = new_command("/bin/cat");
+    cmds[1] = new_command("/bin/wc");
+    add_arg(&cmds[1], "-l");
 
     struct Pipe p = new_pipe();
 
-    bind_stdout(&cmds[0], &p);
-    bind_stdin (&cmds[1], &p);
+    bind_pipe(&cmds[0], &p, WriteBind);
+    bind_pipe(&cmds[1], &p, ReadBind);
+
 
     pid_t pid0 = run(&cmds[0]);
     pid_t pid1 = run(&cmds[1]);
 
     close(p.p[0]);
     close(p.p[1]);
-
 
     waitpid(pid0, &error, 0);
     waitpid(pid1, &error, 0);

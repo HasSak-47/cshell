@@ -8,23 +8,31 @@ struct Pipe{
     int p[2];
 };
 
+enum BindType{
+    NoneBind = 0,
+    ReadBind  = 1,
+    WriteBind = 2,
+    ErrorBind = 4,
+};
+
+struct PipeBind{
+    struct Pipe* pipe;
+    enum BindType ty;
+};
+
 struct Command{
     char* cmd;
     char** args;
     size_t argc;
 
-    int* in;
-    int* out;
-    int* err;
+    struct PipeBind pipe;
 };
 
 struct Pipe new_pipe();
 void close_pipe(struct Pipe* p);
 struct Command new_command(char* path);
 
-void bind_stdin(struct Command* cmd, struct Pipe* p);
-void bind_stdout(struct Command* cmd, struct Pipe* p);
-void bind_stderr(struct Command* cmd, struct Pipe* p);
+void bind_pipe(struct Command* cmd, struct Pipe* pipe, enum BindType ty);
 void add_arg(struct Command* cmd, char* arg);
 
 pid_t run(struct Command* p);
