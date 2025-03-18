@@ -19,7 +19,7 @@ struct Command{
 };
 
 struct Pipe new_pipe();
-struct Pipe close_pipe();
+void close_pipe(struct Pipe* p);
 struct Command new_command(char* path);
 
 void bind_stdin(struct Command* cmd, struct Pipe* p);
