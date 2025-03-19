@@ -95,11 +95,15 @@ void handle_ctrl(struct InputState* in, char c){
                 return;
             case 'C': // right
                 if(in->in.cur < in->in.len){
+                    printf("\e[D");
+                    fflush(stdout);
                     in->in.cur++;
                 }
                 return;
             case 'D': // left
                 if(in->in.cur > 0){
+                    printf("\e[D");
+                    fflush(stdout);
                     in->in.cur--;
                 }
                 return;
@@ -110,6 +114,23 @@ void handle_ctrl(struct InputState* in, char c){
 
     return;
 }
+
+void print_string(const struct Input* const in){
+    for (size_t i = 0; i < in->len; ++i) {
+        if(i == in->cur){
+            printf("\e[48;2;0;128;255m%c\e[0m", in->buf[i]);
+        }
+        else{
+            printf("%c", in->buf[i]);
+        }
+    }
+    if (in->cur == in->len) {
+        printf("\e[48;2;0;128;255m \e[0m");
+    }
+    printf("(%lu %lu %lu)\n", in->cur, in->len, in->cap);
+}
+
+void write
 
 /**
  * returns input string when enter is pressed
@@ -133,13 +154,6 @@ char* interactive_input(){
         }
 
         insert_char(&state.in, c);
-        for (size_t i = state.in.cur - 1; i < state.in.len; ++i) {
-            printf("%c", state.in.buf[i]);
-        }
-        if (state.in.len > 0) {
-            printf("\e[%luD", state.in.len - (state.in.cur - 1));
-        }
-        fflush(stdout);
     }
     char* buffer = realloc(state.in.buf, state.in.len + 1);
     buffer[state.in.len] = 0;
@@ -150,20 +164,6 @@ char* interactive_input(){
 
 #ifdef TEST
 
-void print_string(const struct Input* const in){
-    for (size_t i = 0; i < in->len; ++i) {
-        if(i == in->cur){
-            printf("\e[48;2;0;128;255m%c\e[0m", in->buf[i]);
-        }
-        else{
-            printf("%c", in->buf[i]);
-        }
-    }
-    if (in->cur == in->len) {
-        printf("\e[48;2;0;128;255m \e[0m");
-    }
-    printf("(%lu %lu %lu)\n", in->cur, in->len, in->cap);
-}
 
 void test_input(){
     struct Input in = {};
@@ -205,13 +205,12 @@ void test_input(){
 
 #undef TARGET_STRING
 #define TARGET_STRING "taest string"
-    printf("[TEST 3]: inserting a char in first position\n");
+    printf("[TEST 3]: inserting a char in at index 1\n");
     in.cur = 1;
 
     insert_char(&in, 'a');
     print_string(&in);
 
-    print_string(&in);
     if (strncmp(in.buf, TARGET_STRING, strlen(TARGET_STRING)) != 0){
         printf("error \"%*s != %s\"\n", (int)in.len, in.buf, TARGET_STRING);
         exit(-1);
@@ -225,20 +224,10 @@ void test_input(){
     insert_char(&in, 'a');
     print_string(&in);
 
-    print_string(&in);
     if (strncmp(in.buf, TARGET_STRING, strlen(TARGET_STRING)) != 0){
         printf("error \"%*s != %s\"\n", (int)in.len, in.buf, TARGET_STRING);
         exit(-1);
     }
-
-    delete_char(&in);
-    delete_char(&in);
-    delete_char(&in);
-    delete_char(&in);
-    delete_char(&in);
-    print_string(&in);
-    insert_char(&in, 'a');
-    print_string(&in);
 
     free(in.buf);
 }

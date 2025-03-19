@@ -54,6 +54,8 @@ clean_units:
 	rm $(SHR_DIR)/bundle.so
 	rm $(SHRD)
 
+clean_all: clean clean_units
+
 valgrind: shell
 	valgrind ./$(OUT)
 
