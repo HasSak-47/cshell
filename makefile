@@ -14,12 +14,12 @@ OUT := luall
 BUNDLE := $(SHR_DIR)/bundle.so
 
 C := gcc
-CFLAGS := -g -I include -c
+CFLAGS := -g -shared -I include -c
 UFLAGS := -g -shared -I include -fPIC
 
 LDFLAGS := -o $(OUT) -export-dynamic -llua
 
-all: $(OUT) units
+all: $(OUT) hot
 
 $(OUT): $(OBJS)
 	$(C) $(OBJS) $(LDFLAGS)

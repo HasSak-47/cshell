@@ -1,4 +1,5 @@
 #include <utils.h>
+#include <state.h>
 
 #include <signal.h>
 #include <stdio.h>
@@ -6,16 +7,15 @@
 #include <unistd.h>
 
 
-void __temporal_suicide(int line, char* file, char* msg, int code){
-    if (msg != NULL)
-        printf("TODO: handle err at %s in line %d %s\n", file, line, msg);
-    else 
-        printf("TODO: handle err at %s in line %d\n", file, line);
+void __error_msg(int line, char* file, char* fmt, char* msg, int code){
+    printf(fmt, file, line, msg);
     exit(code);
 }
 
-
 void set_to_foreground(){
+    if(debug) {
+        printf("setting to foreground\n");
+    }
     const int FD = STDIN_FILENO;
     if(tcgetpgrp(FD) < 0)
         temporal_suicide_msg("could not get fd");

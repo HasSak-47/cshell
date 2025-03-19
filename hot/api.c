@@ -1,5 +1,6 @@
 #include <state.h>
 #include <utils.h>
+#include <process.h>
 
 #include <lua.h>
 #include <lualib.h>
@@ -13,10 +14,22 @@
 #include <dirent.h>
 #include <sys/wait.h>
 #include <sys/stat.h>
-#include <signal.h>
 
 static int api_exit(lua_State* L){
     running = false;
+    return 0;
+}
+
+// should not exists
+// it should be just as easy as mod the variable
+// Luall.vars.debug
+static int api_set_debug(lua_State* L){
+    debug = true;
+    return 0;
+}
+
+static int api_unset_debug(lua_State* L){
+    debug = false;
     return 0;
 }
 
@@ -44,64 +57,71 @@ static int api_exists(lua_State* L){
     return 1;
 }
 
+/*
+ * Executes a regular binary
+ * In it's lua form it takes a valid path and `n` arguments
+ * set's it to the foreground and awaits it's termination
+ */
 static int api_exec(lua_State* L){
     const size_t argc = lua_gettop(L);
-    char** args = malloc((argc + 1) * sizeof(char*));
-    // args must be null terminated
-    args[argc] = NULL;
+    const char* path = lua_tostring(L, 1);
+    if (path == NULL) {
+        error = -1;
+        printf("not a valid path");
+        return 0;
+    }
+    struct Command p = new_command(path);
+    command_reserve_size(&p, argc);
 
+    // last arg must be null
+    p.args[argc] = NULL;
+    
     for(size_t i = 0; i < argc; ++i){
         // lua indices start at 1 for some fucking reason
         const char* arg = lua_tostring(L, i + 1);
         // something weird was passed as an argument just ignore
         if(arg == NULL)
             continue;
-        args[i] = strdup(arg);
+        p.args[i] = strdup(arg);
     }
-    const char* cmd = args[0];
 
+    // so it takes over
+    p.foreground = true;
     // if the cmd does not exists just don't execute it
     struct stat statbuf;
-    if(stat(cmd, &statbuf) == 0){
-        pid_t pid = fork();
-        if(pid == 0) { // child
-            unset_raw_mode();
-            set_to_foreground();
-            execv(cmd, args);
-            // kill self just in case
-            kill(getpid(), SIGKILL);
-        }
-        else if(pid > 0){ // parent
-            pid_t result = waitpid(pid, &error, 0);
-            if (result < 0) {
-                printf("[parent] failed to wait for child??\n");
-                exit(-1);
-            }
+    if(stat(p.cmd, &statbuf) == 0){
+        pid_t child_pid = run(&p);
+        waitpid(child_pid, &error, 0);
 
-            set_to_foreground();
-            set_raw_mode();
+        if (debug) {
+            printf("process ended with: %d\n", error);
         }
-        else { // not found
-            printf("could not exec\n");
-            error = -1;
-        }
+        set_to_foreground();
+        set_raw_mode();
     }
     else{
         error = -1;
-        printf("binary not found!\n");
+        printf("file not found!\n");
     }
-
-    for(size_t i = 0; i < argc; ++i)
-        free(args[i]);
-    free(args);
 
     return 0;
 }
+
+/*
+ * Creates a process that will be executed in the future
+ * Just like Luall.api.exec it takes a valid path and `n` arguments
+ */
+static int api_process_new(lua_State* L){
+    return 0;
+}
+
 
 #define REG(name) { #name, api_##name }
 
 luaL_Reg api[] = {
     REG(cd),
+    REG(set_debug),
+    REG(unset_debug),
     REG(exit),
     REG(reload),
     REG(exec),

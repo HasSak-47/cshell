@@ -147,13 +147,23 @@ void create_env(lua_State* L){
 }
 
 void lua_setup(lua_State* L){
+    if (debug) {
+        printf("loading lua stdlibs\n");
+    }
     luaL_openlibs(L);
 
     // load blueprint
+    if (debug) {
+        printf("loading blueprint\n");
+    }
     if(luaL_dofile(L, init_path) != LUA_OK){
         // if it doesn't load just nuke it
         running = false;
         return;
+    }
+    if (debug) {
+        printf("setting up state\n");
+    
     }
     update_lua_state(L);
 
