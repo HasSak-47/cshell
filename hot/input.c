@@ -59,6 +59,7 @@ void delete_char(struct Input* in){
 
 struct InputState{
     bool cont; // should continue
+    int index;
     struct Input in;
 };
 
@@ -83,7 +84,8 @@ void render_input(struct Input* in){
 
     for (size_t i = 0; i < in->len; ++i)
         putchar(' ');
-    printf("\e[%luD", in->cur);
+
+    printf("\e[%luD", in->len);
 }
 
 
@@ -108,10 +110,29 @@ void handle_ctrl(struct InputState* in, char c){
 
     if (buffer[0] == '[') {
         switch (buffer[1]) {
-            case 'A': // up
-                return;
-            case 'B': // down
-                return;
+            // up
+            case 'A': {
+                char* v = get_history(L, --in->index);
+                if (v == NULL) {
+                    in->index++;
+                    return;
+                }
+
+                in->in.buf = v;
+                in->in.len = in->in.cur = strlen(v);
+            }
+            // down
+            case 'B':{
+                char* v = get_history(L, ++in->index);
+                if (v == NULL) {
+                    in->index--;
+                    return;
+                }
+
+                in->in.buf = v;
+                in->in.len = in->in.cur = strlen(v);
+                in->in.cur++;
+            }
             case 'C': // right
                 if(in->in.cur < in->in.len){
                     in->in.cur++;
@@ -136,6 +157,7 @@ void handle_ctrl(struct InputState* in, char c){
 char* interactive_input(){
     struct InputState state = { };
     state.cont = true;
+    state.index = -1;
 
     // read a character
     int c = 0;

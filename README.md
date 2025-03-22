@@ -26,11 +26,3 @@ to run: `make run` or `./luall` after building
 
 ### Foot guns
 Luall is the bridge between the interaction loop and the configuration, and there are not many guards to guaranty it's integrity and structure and the user has full control over it changes to it may crash the whole shell :D
-
-## TODO:
-- Expand `Luall.api`
-- Pipes
-- Autocomplete
-- Cursor
-- History
-- Modules

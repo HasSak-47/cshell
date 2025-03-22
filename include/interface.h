@@ -10,4 +10,6 @@ void lua_cleanup(lua_State*);
 void unload();
 void load();
 
+char* get_history(lua_State*, int index);
+
 #endif
