@@ -239,13 +239,16 @@ char* get_history(lua_State* state, int index){
 
     lua_pushinteger(L, index);
     int error = lua_pcall(L, 1, 1, 0);
+
     if (error != 0) {
         lua_pop(L, lua_gettop(L));
         return NULL;
     }
+
     const char* s = lua_tostring(L, -1);
     if (s == NULL) 
         return NULL;
+
     char* copy = strdup(s);
     return copy;
 }

@@ -30,7 +30,7 @@ char* cwd  = NULL;
 char* host = NULL;
 // last error code
 int error = 0;
-bool debug = false;
+bool debug = true;
 
 /**
  * sets the state of the shell

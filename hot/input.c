@@ -88,6 +88,11 @@ void render_input(struct Input* in){
     printf("\e[%luD", in->len);
 }
 
+void set_string(struct Input* in, char* str){
+    size_t len = strlen(str);
+
+}
+
 
 void handle_ctrl(struct InputState* in, char c){
     if(c == 0x08 || c == 0x7f){ // backspace
@@ -118,9 +123,14 @@ void handle_ctrl(struct InputState* in, char c){
                     return;
                 }
 
+                free(in->in.buf);
+                size_t len = strlen(v);
+
                 in->in.buf = v;
-                in->in.len = in->in.cur = strlen(v);
+                in->in.len = len;
+                in->in.cur = 0;
             }
+            break;
             // down
             case 'B':{
                 char* v = get_history(L, ++in->index);
@@ -129,20 +139,26 @@ void handle_ctrl(struct InputState* in, char c){
                     return;
                 }
 
+                free(in->in.buf);
+                size_t len = strlen(v);
+
                 in->in.buf = v;
-                in->in.len = in->in.cur = strlen(v);
-                in->in.cur++;
+                in->in.len = len;
+                in->in.cur = 0;
             }
+            break;
             case 'C': // right
                 if(in->in.cur < in->in.len){
                     in->in.cur++;
                 }
                 return;
+            break;
             case 'D': // left
                 if(in->in.cur > 0){
                     in->in.cur--;
                 }
                 return;
+            break;
         }
     
     }

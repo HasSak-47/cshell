@@ -1,4 +1,3 @@
-#include <errno.h>
 #include <utils.h>
 #include <testing.h>
 

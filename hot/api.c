@@ -1,6 +1,6 @@
+#include <process.h>
 #include <state.h>
 #include <utils.h>
-#include <process.h>
 
 #include <lua.h>
 #include <lualib.h>
@@ -112,7 +112,67 @@ static int api_exec(lua_State* L){
  * Just like Luall.api.exec it takes a valid path and `n` arguments
  */
 static int api_process_new(lua_State* L){
+    // create command
+    const size_t argc = lua_gettop(L);
+    const char* path = lua_tostring(L, 1);
+    if (path == NULL) {
+        error = -1;
+        printf("not a valid path");
+        return 0;
+    }
+    struct Command* p = lua_newuserdata(L, sizeof(struct Command));
+    *p = new_command(path);
+    command_reserve_size(p, argc);
+
+    // last arg must be null
+    p->args[argc] = NULL;
+    
+    for(size_t i = 0; i < argc; ++i){
+        // lua indices start at 1 for some fucking reason
+        const char* arg = lua_tostring(L, i + 1);
+        // something weird was passed as an argument just ignore
+        if(arg == NULL)
+            continue;
+        p->args[i] = strdup(arg);
+    }
+
+    return 1;
+}
+
+/*
+ * Creates a new pipe
+ */
+static int api_process_bind_pipe(lua_State* L){
+    // create command
+    struct Command* cmd = lua_touserdata(L, 1);
+    struct Pipe* pipe = lua_touserdata(L, 2);
+    const char* action = lua_tostring(L, 3);
+
+    enum BindType ty = NoneBind;
+    if (strcmp(action, "out")) {
+        ty |= WriteBind;
+    }
+    if (strcmp(action, "in")) {
+        ty |= ReadBind;
+    }
+    if (strcmp(action, "err")) {
+        ty |= ErrorBind;
+    }
+
+    bind_pipe(cmd, pipe, ty);
+
     return 0;
+}
+
+/*
+ * Creates a new pipe
+ */
+static int api_pipe_new(lua_State* L){
+    // create command
+    struct Pipe* p = lua_newuserdata(L, sizeof(struct Pipe));
+    *p = new_pipe();
+
+    return 1;
 }
 
 
