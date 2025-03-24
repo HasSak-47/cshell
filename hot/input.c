@@ -141,6 +141,7 @@ void prev_entry(struct InputState* state){
     }
     if (state->in.buf != NULL) {
         free(state->in.buf);
+        state->in.buf = NULL;
     }
     char* new = get_history(L, state->index - 1);
     set_string(&state->in, new);

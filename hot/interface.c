@@ -261,6 +261,5 @@ char* get_history(lua_State* state, int index){
         return NULL;
 
     char* copy = strdup(s);
-    printf("dup: %d, %p %s\n", index, copy, copy);
     return copy;
 }
