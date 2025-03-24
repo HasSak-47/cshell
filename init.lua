@@ -43,15 +43,6 @@ Luall = {
                 end
             end
         end,
-
-        history = function()
-            if Luall.vars.history == nil then
-                return
-            end
-            for key, value in pairs(Luall.vars.history) do
-                print(key, value)
-            end
-        end,
     },
     overwrite = {
         cd = function(args)
@@ -89,6 +80,10 @@ Luall = {
         end,
         ---@param input string
 		parse = function(input)
+            if input == '' then
+                return
+            end
+
             local parser = require('parser')
             if Luall.vars.history == nil then
                 Luall.vars.history = {input}
@@ -98,22 +93,14 @@ Luall = {
             parser(input)
         end,
 
-        ---gets a element of the current history
-        ---if index is negative it returns from the top
         ---@param index number
         history = function(index)
-            local len = 0
-            if Luall.vars.history ~= nil then
-                len = #Luall.vars.history
+            if Luall.vars.history == nil then
+                return
             end
-            if index < 0 then
-                index = 1 + len + index
-            end
-            if index > len then
-                index = len
-            end
+            local indx = #Luall.vars.history - index
 
-            return Luall.vars.history[index]
+            return Luall.vars.history[indx]
         end,
 	},
     prompts = {

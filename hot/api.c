@@ -139,6 +139,24 @@ static int api_process_new(lua_State* L){
     return 1;
 }
 
+/**
+ * runs a process and returns it's pid
+ */
+static int api_process_run(lua_State* L){
+    struct Command* p = lua_touserdata(L, 1);
+    pid_t pid = run(p);
+    lua_pushinteger(L, pid);
+
+    return 1;
+}
+
+static int api_process_wait(lua_State* L){
+    pid_t p = lua_tointeger(L, 1);
+    waitpid(p, &error, 0);
+
+    return 1;
+}
+
 /*
  * Creates a new pipe
  */
@@ -175,6 +193,17 @@ static int api_pipe_new(lua_State* L){
     return 1;
 }
 
+luaL_Reg api_process[] = {
+    {"new", api_process_new},
+    {"run", api_process_run},
+    {"bind_pipe", api_process_bind_pipe},
+    {NULL, NULL},
+};
+
+luaL_Reg api_pipe[] = {
+    {"new", api_pipe_new},
+    {NULL, NULL},
+};
 
 #define REG(name) { #name, api_##name }
 
