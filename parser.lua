@@ -5,6 +5,7 @@
 ---| "redir"
 ---| "fd"
 ---| "str"
+---| "undefined"
 ---
 ---@alias Token {val: any, type: TokenType}
 
@@ -48,7 +49,7 @@ end
 
 local pipe_set, redir_set, fd_set = setify_table(pipe_operators), setify_table(redir_operators), setify_table(filedesc)
 
----@param tokens string[]
+---@param tokens Token[]
 ---@return Token
 local function take_process(tokens)
     local i = 0
@@ -67,10 +68,11 @@ local function take_process(tokens)
         end
     end
 
+    ---@type Token[]
     local process = {}
-    for _ = 1, i, 1 do
+    for _ = 1, i - 1, 1 do
         local str = table.remove(tokens, 1)
-        table.insert(process, {val=str, type="string"})
+        table.insert(process, {val=str, type="str"})
     end
 
     return {val=process, type="process"}
@@ -85,6 +87,7 @@ end
 local function tokenize(input)
     local i = 1
     local len = #input
+    ---@type Token[]
     local tokens = {}
 
     while i <= len do
@@ -102,13 +105,13 @@ local function tokenize(input)
                 i = i + 1
             end
             -- remove quotes
-            table.insert(tokens, input:sub(start + 1, i - 2));
+            table.insert(tokens, {val=input:sub(start + 1, i - 2), type="str"});
         elseif not char:match("%s") then
             local start = i
             while i <= len and not input:sub(i, i):match("%s") do
                 i = i + 1
             end
-            table.insert(tokens, input:sub(start, i - 1))
+            table.insert(tokens, {val=input:sub(start, i - 1), type="undefined"})
         else
             i = i + 1
         end
@@ -150,7 +153,7 @@ end
 
 --- testing function
 local function main()
-    local tokens = tokenize("echo 'test this out' this is wack >> out.txt");
+    local tokens  = tokenize("echo 'test this out' this is wack >> out.txt");
     local process = take_process(tokens)
     print_tokens({process}, 0)
 end
