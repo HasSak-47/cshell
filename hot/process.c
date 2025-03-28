@@ -37,6 +37,9 @@ void close_pipe(struct Pipe* p){
     close(p->p[1]);
 }
 
+/*
+ * takes an string md and clones it
+ */
 struct Command new_command(const char* cmd){
     struct Command c = {
         .cmd = strdup(cmd),
@@ -64,11 +67,15 @@ void command_reserve_size(struct Command *cmd, size_t argc){
     vector_reserve(cmd->args, argc);
 }
 
+/*
+ * takes an string md and clones it
+ */
 void add_arg(struct Command *cmd, const char *arg){
     if (debug) {
         printf("adding arg: %s\n", arg);
     }
-    vector_push(cmd->args, arg);
+    char* clone_arg = arg != NULL ? strdup(arg) : NULL;
+    vector_push(cmd->args, clone_arg);
 }
 
 /*
@@ -134,6 +141,8 @@ pid_t run(struct Command* p){
         printf("[parent]: cleaning command data\n");
     }
     for (char** arg = p->args.data; *arg != NULL; ++arg) {
+        if (debug) 
+            printf("[parent]: removing arg: %s\n", *arg);
         free(*arg);
     }
 

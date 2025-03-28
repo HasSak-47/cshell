@@ -12,33 +12,21 @@
 #include <input.h>
 #include <interface.h>
 
+DefineVector(String, char)
+
 struct Input{
-    char*  buf; // buffer not null terminated
-    size_t cap;
-    size_t len;
+    struct VectorString str;
     size_t cur; // position of the cursor inside the string 
 };
 
 void insert_char(struct Input* in, char c){
-    size_t target_len = in->len + 1;
-    if (target_len >= in->cap) {
-        size_t target_cap = (in->cap + 1) * 2;
-        void* aux = realloc(in->buf, target_cap);
-        if (aux == NULL) {
-            temporal_suicide_msg("I dont want to handle this");
-        }
-
-        in->buf = aux;
-        in->cap = target_cap;
-    }
-
+    vector_push(in->str, '\0');
     char prev = c;
-    for (size_t i = in->cur; i < in->len + 1; ++i) {
-        char aux = in->buf[i];
-        in->buf[i] = prev;
+    for (size_t i = in->cur; i < in->str.len + 1; ++i) {
+        char aux = in->str.data[i];
+        in->str.data[i] = prev;
         prev = aux;
     }
-    in->len++;
     in->cur++;
 }
 
@@ -50,10 +38,10 @@ void delete_char(struct Input* in){
         return;
     }
     // make everything the next character
-    for (size_t i = in->cur - 1; i < in->len; ++i) {
-        in->buf[i] = in->buf[i + 1];
+    for (size_t i = in->cur - 1; i < in->str.len; ++i) {
+        in->str.data[i] = in->str.data[i + 1];
     }
-    in->len = in->len - 1;
+    vector_pop(in->str);
     in->cur = in->cur - 1;
 }
 
@@ -68,16 +56,16 @@ struct InputState{
 };
 
 void render_input(struct Input* in){
-    if (in->len == 0) {
+    if (in->str.len == 0) {
         putchar(' ');
         printf("\e[D");
         fflush(stdout);
         return;
     }
-    for (size_t i = 0; i < in->len; ++i)
-        putchar(in->buf[i]);
+    for (size_t i = 0; i < in->str.len; ++i)
+        putchar(in->str.data[i]);
     
-    printf("\e[%luD", in->len);
+    printf("\e[%luD", in->str.len);
 
     if (in->cur > 0)
         printf("\e[%luC", in->cur);
@@ -86,21 +74,21 @@ void render_input(struct Input* in){
     if (in->cur > 0)
         printf("\e[%luD", in->cur);
 
-    for (size_t i = 0; i < in->len; ++i)
+    for (size_t i = 0; i < in->str.len; ++i)
         putchar(' ');
 
-    printf("\e[%luD", in->len);
+    printf("\e[%luD", in->str.len);
 }
 
 /**
  * takes an string and makes it the buffer of input
  */
 void set_string(struct Input* in, char* str){
-    free(in->buf);
+    free(in->str.data);
     size_t len = strlen(str);
 
-    in->buf = str;
-    in->len = len;
+    in->str.data = str;
+    in->str.len = len;
     in->cur = len;
 }
 
@@ -108,11 +96,11 @@ void set_string(struct Input* in, char* str){
  * takes an string and clones it to make it the buffer of input
  */
 void copy_string(struct Input* in, char* str){
-    free(in->buf);
+    free(in->str.data);
     size_t len = strlen(str);
 
-    in->buf = strdup(str);
-    in->len = len;
+    in->str.data = strdup(str);
+    in->str.len = len;
     in->cur = len;
 }
 /**
@@ -139,9 +127,9 @@ void prev_entry(struct InputState* state){
         copy_string(&state->in, "");
         return;
     }
-    if (state->in.buf != NULL) {
-        free(state->in.buf);
-        state->in.buf = NULL;
+    if (state->in.str.data != NULL) {
+        free(state->in.str.data);
+        state->in.str.data = NULL;
     }
     char* new = get_history(L, state->index - 1);
     set_string(&state->in, new);
@@ -178,7 +166,7 @@ void handle_ctrl(struct InputState* in, char c){
                 prev_entry(in);
             break;
             case 'C': // right
-                if(in->in.cur < in->in.len){
+                if(in->in.cur < in->in.str.len){
                     in->in.cur++;
                 }
                 return;
@@ -222,8 +210,8 @@ char* interactive_input(){
 
         render_input(&state.in);
     }
-    char* buffer = realloc(state.in.buf, state.in.len + 1);
-    buffer[state.in.len] = 0;
+    char* buffer = realloc(state.in.str.data, state.in.str.len + 1);
+    buffer[state.in.str.len] = 0;
     printf("%s\n", buffer);
 
     return buffer;
@@ -233,18 +221,18 @@ char* interactive_input(){
 #ifdef TEST
 
 void print_string(const struct Input* const in){
-    for (size_t i = 0; i < in->len; ++i) {
+    for (size_t i = 0; i < in->str.len; ++i) {
         if(i == in->cur){
-            printf("\e[48;2;0;128;255m%c\e[0m", in->buf[i]);
+            printf("\e[48;2;0;128;255m%c\e[0m", in->str.data[i]);
         }
         else{
-            printf("%c", in->buf[i]);
+            printf("%c", in->str.data[i]);
         }
     }
-    if (in->cur == in->len) {
+    if (in->cur == in->str.len) {
         printf("\e[48;2;0;128;255m \e[0m");
     }
-    printf("(%lu %lu %lu)\n", in->cur, in->len, in->cap);
+    printf("(%lu %lu )\n", in->cur, in->str.len);
 }
 
 void test_input(){
@@ -255,8 +243,8 @@ void test_input(){
         insert_char(&in, TEST_STRING[i]);
     }
     print_string(&in);
-    if (strncmp(in.buf, TARGET_STRING, strlen(TARGET_STRING)) != 0){
-        printf("error \"%*s != %s\"\n", (int)in.len, in.buf, TARGET_STRING);
+    if (strncmp(in.str.data, TARGET_STRING, strlen(TARGET_STRING)) != 0){
+        printf("error \"%*s != %s\"\n", (int)in.str.len, in.str.data, TARGET_STRING);
         exit(-1);
     }
 
@@ -266,8 +254,8 @@ void test_input(){
     printf("[TEST 1]: adding another char\n");
     insert_char(&in, 'a');
     print_string(&in);
-    if (strncmp(in.buf, TARGET_STRING, strlen(TARGET_STRING)) != 0){
-        printf("error \"%*s != %s\"\n", (int)in.len, in.buf, TARGET_STRING);
+    if (strncmp(in.str.data, TARGET_STRING, strlen(TARGET_STRING)) != 0){
+        printf("error \"%*s != %s\"\n", (int)in.str.len, in.str.data, TARGET_STRING);
         exit(-1);
     }
 
@@ -277,8 +265,8 @@ void test_input(){
     printf("[TEST 2]: removing last char\n");
     delete_char(&in);
     print_string(&in);
-    if (strncmp(in.buf, TARGET_STRING, strlen(TARGET_STRING)) != 0){
-        printf("error \"%*s != %s\"\n", (int)in.len, in.buf, TARGET_STRING);
+    if (strncmp(in.str.data, TARGET_STRING, strlen(TARGET_STRING)) != 0){
+        printf("error \"%*s != %s\"\n", (int)in.str.len, in.str.data, TARGET_STRING);
         exit(-1);
     }
 
@@ -293,8 +281,8 @@ void test_input(){
     insert_char(&in, 'a');
     print_string(&in);
 
-    if (strncmp(in.buf, TARGET_STRING, strlen(TARGET_STRING)) != 0){
-        printf("error \"%*s != %s\"\n", (int)in.len, in.buf, TARGET_STRING);
+    if (strncmp(in.str.data, TARGET_STRING, strlen(TARGET_STRING)) != 0){
+        printf("error \"%*s != %s\"\n", (int)in.str.len, in.str.data, TARGET_STRING);
         exit(-1);
     }
 
@@ -306,11 +294,11 @@ void test_input(){
     insert_char(&in, 'a');
     print_string(&in);
 
-    if (strncmp(in.buf, TARGET_STRING, strlen(TARGET_STRING)) != 0){
-        printf("error \"%*s != %s\"\n", (int)in.len, in.buf, TARGET_STRING);
+    if (strncmp(in.str.data, TARGET_STRING, strlen(TARGET_STRING)) != 0){
+        printf("error \"%*s != %s\"\n", (int)in.str.len, in.str.data, TARGET_STRING);
         exit(-1);
     }
 
-    free(in.buf);
+    free(in.str.data);
 }
 #endif
