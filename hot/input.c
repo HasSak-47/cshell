@@ -22,7 +22,7 @@ struct Input{
 void insert_char(struct Input* in, char c){
     vector_push(in->str, '\0');
     char prev = c;
-    for (size_t i = in->cur; i < in->str.len + 1; ++i) {
+    for (size_t i = in->cur; i < in->str.len; ++i) {
         char aux = in->str.data[i];
         in->str.data[i] = prev;
         prev = aux;
@@ -232,7 +232,7 @@ void print_string(const struct Input* const in){
     if (in->cur == in->str.len) {
         printf("\e[48;2;0;128;255m \e[0m");
     }
-    printf("(%lu %lu )\n", in->cur, in->str.len);
+    printf("(%lu %lu %lu)\n", in->cur, in->str.len, in->str.cap);
 }
 
 void test_input(){

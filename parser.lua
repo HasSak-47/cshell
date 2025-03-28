@@ -193,6 +193,10 @@ local function run_cmd(cmd)
 
     local name = table.remove(cmd.val, 1).val
     local args = {}
+    for _, val in ipairs(cmd.val) do
+        table.insert(args, val.val)
+        
+    end
     if debug then
         local s = 'running cmd:' .. name
         for _, value in ipairs(args) do
@@ -229,6 +233,7 @@ local function run_cmd(cmd)
                 break
             end
         end
+
         Luall.api.exec(target_cmd, table.unpack(args))
     end
 end
@@ -238,8 +243,45 @@ local function parser(cmd)
     local tokens = tokenize(cmd)
     print_tokens(tokens, 0)
     print()
+
+    if #tokens[1].val == 1 then
+        run_cmd( tokens[1].val[1] )
+    else
+        -- handle pipes!
+    end
+end
+
+local function test_run_cmd()
+    print('parser.test_run_cmd')
+    local tokens = tokenize('echo hello this is echo')
+    print_tokens(tokens, 0)
+    print()
+
     run_cmd( tokens[1].val[1] )
 end
 
+local function test_pipes()
+    print(Luall.inner.full_color(64, 255, 128) .. 'parser.test_pipes' .. Luall.inner.reset_color())
+    local echo = Luall.api.process.new('/bin/echo', 'hello', 'this', 'is', 'echo')
+    local wc = Luall.api.process.new('/bin/grep', 'test')
+    local pipe = Luall.api.pipe.new()
+
+    Luall.api.process.bind_pipe(echo, pipe, "out")
+    Luall.api.process.bind_pipe(wc, pipe, "in")
+
+    Luall.api.pipe.close(pipe)
+
+    local echo_pid = Luall.api.process.run(echo)
+    local wc_pid = Luall.api.process.run(wc)
+
+    Luall.api.process.wait(echo_pid)
+    Luall.api.process.wait(wc_pid)
+
+
+end
+
+table.insert(Luall.testing, test_run_cmd )
+table.insert(Luall.testing, test_pipes )
+print('lua tests... #' .. #Luall.testing)
 
 return parser
