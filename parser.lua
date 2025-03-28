@@ -234,27 +234,33 @@ local function run_cmd(cmd)
 
     if Luall.extend[name] ~= nil then
         Luall.extend[name](args)
-    elseif Luall.util[name] ~= nil then
-        Luall.util[name](args)
-    elseif Luall.api[name] ~= nil then
-        Luall.api[name](args)
-    else
-        if Luall.vars.debug then
-            print('running exec...')
-        end
-        -- check all possible dirs in which cmd could be
-        local possible_locs = parse_env(Luall.vars.env.PATH)
-        local target_cmd = ''
-        for _, path in pairs(possible_locs) do
-            local candidate = path ..'/' .. name
-            if Luall.api.exists(candidate) then
-                target_cmd = candidate
-                break
-            end
-        end
-
-        Luall.api.exec(target_cmd, table.unpack(args))
+        return
     end
+    if Luall.util[name] ~= nil then
+        Luall.util[name](args)
+        return
+    end
+    if Luall.api[name] ~= nil then
+        Luall.api[name](args)
+        return
+    end
+
+    if Luall.vars.debug then
+        print('running exec...')
+    end
+    -- check all possible dirs in which cmd could be
+    local possible_locs = parse_env(Luall.vars.env.PATH)
+    local target_cmd = ''
+    for _, path in pairs(possible_locs) do
+        local candidate = path ..'/' .. name
+        if Luall.api.exists(candidate) then
+            target_cmd = candidate
+            break
+        end
+    end
+
+    Luall.api.exec(target_cmd, table.unpack(args))
+    
 end
 
 ---@param tokens {[1]: Process, [2]: Pipe, [3]: Process}
