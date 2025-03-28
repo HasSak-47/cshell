@@ -59,8 +59,8 @@ Luall = {
             end
         end,
     },
-    -- this are commands that behave like an alias
-    overwrite = {
+    -- this are commands that extend the utility of the api
+    extend = {
         cd = function(args)
             if #args == 0 then
                 Luall.api.cd(Luall.vars.user.home)
@@ -68,6 +68,16 @@ Luall = {
                 local path = Luall.inner.expand_path(args[1])
                 Luall.api.cd(path)
             end
+        end,
+    },
+    -- the alias are blueprints for process.new
+    alias = {
+        ls = function(...)
+            return {'ls', {'--color', table.unpack(...)}}
+        end,
+
+        ll = function(...)
+            return {'ls', {'--color', '-lA', table.unpack(...)}}
         end,
     },
     -- this are not commands but usefull stuff
