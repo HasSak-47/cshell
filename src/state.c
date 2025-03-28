@@ -1,6 +1,8 @@
 #include <lauxlib.h>
 #include <lua.h>
+
 #include <state.h>
+#include <testing.h>
 
 #include <pwd.h>
 
@@ -30,7 +32,11 @@ char* cwd  = NULL;
 char* host = NULL;
 // last error code
 int error = 0;
+#ifdef TEST
+bool debug = true;
+#else
 bool debug = false;
+#endif /* ifdef TEST */
 
 /**
  * sets the state of the shell

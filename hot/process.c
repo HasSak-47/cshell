@@ -40,9 +40,6 @@ void close_pipe(struct Pipe* p){
 struct Command new_command(const char* cmd){
     struct Command c = {
         .cmd = strdup(cmd),
-        .args = NULL,
-        .argc = 0,
-        .argcap = 0,
         .foreground = false,
 
         .pipe = {NULL, NoneBind},
@@ -56,39 +53,22 @@ struct Command new_command(const char* cmd){
     return c;
 }
 
+void bind_pipe(struct Command *cmd, struct Pipe *pipe, enum BindType type){
+    struct PipeBind binding = { pipe, type };
+
+    cmd->pipe = binding;
+}
+
+
 void command_reserve_size(struct Command *cmd, size_t argc){
-    if (debug) {
-        printf("reserving size for cmd of: %lu\n", argc);
-    }
-    cmd->args = malloc((argc + 1) * sizeof(char*));
-    cmd->argc = argc;
+    vector_reserve(cmd->args, argc);
 }
 
 void add_arg(struct Command *cmd, const char *arg){
     if (debug) {
         printf("adding arg: %s\n", arg);
     }
-    // resize if necessary
-    if (cmd->argc + 1 >= cmd->argcap) {
-        size_t new_argcap = 2 * (cmd->argc + 1) * sizeof(char*);
-        char** aux = realloc(cmd->args, new_argcap);
-        if (aux == NULL) 
-            temporal_suicide();
-        cmd->args = aux;
-        cmd->argcap = new_argcap;
-    }
-    if(arg != NULL){
-        cmd->args[cmd->argc++] = strdup(arg);
-    }
-    else{
-        cmd->args[cmd->argc++] = NULL;
-    }
-}
-
-void bind_pipe(struct Command *cmd, struct Pipe *pipe, enum BindType type){
-    struct PipeBind binding = { pipe, type };
-
-    cmd->pipe = binding;
+    vector_push(cmd->args, arg);
 }
 
 /*
@@ -102,8 +82,8 @@ pid_t run(struct Command* p){
     add_arg(p, NULL);
     if (debug) {
         printf("[parent]: running command: %s", p->cmd);
-        for (size_t i = 0; i < p->argc; ++i) {
-            printf(" %s", p->args[i]);
+        for (size_t i = 0; i < p->args.len; ++i) {
+            printf(" %s", p->args.data[i]);
         }
         printf("\n");
     }
@@ -141,7 +121,7 @@ pid_t run(struct Command* p){
         if (debug) {
             printf("[child]: executing cmd...\n");
         }
-        int r = execv(p->cmd, p->args);
+        int r = execv(p->cmd, p->args.data);
         if (r < 0)
             temporal_suicide_msg("[child] didn't exec :)");
     }
@@ -153,17 +133,17 @@ pid_t run(struct Command* p){
     if (debug) {
         printf("[parent]: cleaning command data\n");
     }
-    for (char** arg = p->args; *arg != NULL; ++arg) {
+    for (char** arg = p->args.data; *arg != NULL; ++arg) {
         free(*arg);
     }
 
-    free(p->args);
+    free(p->args.data);
     free(p->cmd);
     if (debug) {
         printf("[parent]: returning pid\n");
     }
     p->cmd = NULL;
-    p->args = NULL;
+    p->args.data = NULL;
     return pid;
 }
 
@@ -177,7 +157,8 @@ void test_process(){
     add_arg(&cmds[0], "-lA");
     add_arg(&cmds[0], "--color");
 
-    cmds[1] = new_command("/bin/less");
+    cmds[1] = new_command("/bin/wc");
+    add_arg(&cmds[1], "-l");
 
     struct Pipe p = new_pipe();
 

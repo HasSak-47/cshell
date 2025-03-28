@@ -1,6 +1,7 @@
 #ifndef __PROCESS_H_
 #define __PROCESS_H_
 
+#include "utils.h"
 #include <stdbool.h>
 #include <unistd.h>
 
@@ -20,11 +21,11 @@ struct PipeBind{
     enum BindType ty;
 };
 
+DefineVector(Args, char*);
+
 struct Command{
     char* cmd;
-    char** args;
-    size_t argc;
-    size_t argcap;
+    struct VectorArgs args;
     bool foreground;
 
     struct PipeBind pipe;

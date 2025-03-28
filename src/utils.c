@@ -31,7 +31,7 @@ void set_to_foreground(){
         temporal_suicide_msg("could not set group id");
 }
 
-void __vector_push(struct __Vector* v, void* data, size_t size){
+void __vector_push(struct __Vector* v, const void* data, const size_t size){
     if (v->len >= v->cap) {
         size_t t_cap = (v->cap + 1) * 2;
         void* aux = realloc(v->data, size * t_cap);
@@ -46,7 +46,15 @@ void __vector_push(struct __Vector* v, void* data, size_t size){
     v->len++;
 }
 
-void __vector_pop (struct __Vector* v, size_t size){
+void __vector_pop (struct __Vector* v, const size_t size){
     // probably should clear data but meh
     v->len--;
+}
+
+void __vector_reserve(struct __Vector* v, const size_t cap, const size_t size){
+    void* aux = realloc(v->data, size * cap);
+    if (aux == NULL) 
+        temporal_suicide_crash("could not resize vector", 0);
+    v->data = aux;
+    v->cap = cap;
 }
