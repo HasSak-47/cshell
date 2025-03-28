@@ -4,7 +4,6 @@
 #include <hot.h>
 #include <state.h>
 
-
 #include <lua.h>
 #include <lualib.h>
 #include <lauxlib.h>

@@ -1,4 +1,3 @@
-
 #include <ctype.h>
 #include <state.h>
 
@@ -28,6 +27,9 @@ void update_lua_state(lua_State* L){
     lua_pushinteger(L, error);
     lua_setfield(L, -2, "error");
 
+    lua_pushboolean(L, debug);
+    lua_setfield(L, -2, "debug");
+
     lua_pushstring(L, host);
     lua_setfield(L, -2, "host");
 
@@ -41,6 +43,7 @@ void update_lua_state(lua_State* L){
 
     lua_pushstring(L, user.name);
     lua_setfield(L, -2, "name");
+
     lua_pop(L, 2);
 }
 
@@ -48,9 +51,14 @@ void prompt(lua_State* L){
     lua_getglobal(L, "Luall");
     lua_getfield(L, -1, "prompts");
     lua_getfield(L, -1, "prompt");
-    lua_call(L, 0, 1);
-    const char* prompt = lua_tostring(L, -1);
-    printf("%s", prompt);
+    if(lua_pcall(L, 0, 1, 0) == 0){
+        const char* prompt = lua_tostring(L, -1);
+        printf("%s", prompt);
+    }
+    else{
+        printf("%s\nfallback>", lua_tostring(L, -1));
+    }
+    lua_pop(L, lua_gettop(L));
 }
 
 // WARN: this is a bad name for the function
