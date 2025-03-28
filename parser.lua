@@ -207,7 +207,7 @@ local function run_cmd(cmd)
     for _, val in ipairs(cmd.val) do
         table.insert(args, val.val)
     end
-    if debug then
+    if Luall.vars.debug then
         local s = 'running cmd:' .. name
         for _, value in ipairs(args) do
             s = s .. ' ' .. value
@@ -241,7 +241,9 @@ end
 
 ---@param tokens {[1]: Process, [2]: Pipe, [3]: Process}
 local function run_piped(tokens)
-    print_tokens(tokens, 0)
+    if Luall.vars.debug then
+        print_tokens(tokens, 0)
+    end
 
     local src = tokens[1]
     local _pipe = tokens[2]
@@ -300,17 +302,57 @@ local function run_piped(tokens)
 end
 
 ---@param cmd string
-local function parser(cmd)
+local function handle_shell_like(cmd)
     local tokens = tokenize(cmd)
 
     if #tokens[1].val == 1 then
         run_cmd( tokens[1].val[1] )
     else
         run_piped( tokens[1].val )
-        -- local _, ok = pcall(run_piped, tokens[1].val )
-        -- if not ok then
-        --     print('failed to run!')
-        -- end
+    end
+end
+
+---@param line string
+local function handle_singleline(line)
+     local start  = line:find('lua')
+    if start == 1 then
+        line = line:gsub('lua', '')
+        Luall.util.lua({line})
+    else -- run "normal shell"
+        handle_shell_like(line)
+    end
+end
+
+---@param input string
+local function parser(input)
+    local set_debug = input.sub(input, 1, 1) == '!';
+    if set_debug then
+        input = string.sub(input, 2)
+        Luall.api.set_debug()
+    end
+    if input == nil or input == '' then
+        return;
+    end
+
+    local lines = {}
+    local i = 1
+    -- split into lines
+    for line in input:gmatch('[^\n]*') do
+        if line == '' then
+            goto continue
+        end
+        lines[i] = line
+        i = i + 1
+        ::continue::
+    end
+
+    if #lines then -- single line
+        handle_singleline(lines[1])
+    else -- multi line
+    end
+
+    if set_debug then
+        Luall.api.unset_debug()
     end
 end
 
@@ -344,8 +386,8 @@ local function test_pipes()
 
 end
 
--- table.insert(Luall.testing, test_run_cmd )
+
+table.insert(Luall.testing, test_run_cmd )
 table.insert(Luall.testing, test_pipes )
-print('lua tests... #' .. #Luall.testing)
 
 return parser
