@@ -169,19 +169,15 @@ static int api_process_bind_pipe(lua_State* L){
 
     enum BindType ty = NoneBind;
     if (strcmp(action, "out") == 0) {
-        ty = WriteBind;
+        ty |= WriteBind;
     }
     else if (strcmp(action, "in") == 0) {
-        ty = ReadBind;
+        ty |= ReadBind;
     }
     else if (strcmp(action, "err") == 0) {
-        ty = ErrorBind;
+        ty |= ErrorBind;
     }
 
-    if (debug) {
-        printf("binding %p(%d %d) pipe for cmd %p with bind %d\n", pipe, pipe->p[0], pipe->p[1], cmd, (int)ty);
-    
-    }
     bind_pipe(cmd, pipe, ty);
 
     return 0;
