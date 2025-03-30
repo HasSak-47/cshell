@@ -11,12 +11,14 @@ The shell allows modifications to its behavior at runtime including prompts, com
 - Configurable initialization scripts.
 - Configurable at runtime
 
+## Demonstrations
+
 ## How to use
 ### dependencies
 To build and run this project, you will need:
-- **Lua*** 5.4
-- **gcc***
-- **make***
+- **Lua** 5.4
+- **gcc**
+- **make**
 
 to build all: `make all`
 to run: `make run` or `./luall` after building
