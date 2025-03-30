@@ -12,6 +12,7 @@ The shell allows modifications to its behavior at runtime including prompts, com
 - Configurable at runtime
 
 ## Demonstrations
+![luall](https://github.com/user-attachments/assets/2281a342-ae71-4fcf-833f-c42934e052ab)
 
 ## How to use
 ### dependencies
