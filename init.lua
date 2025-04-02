@@ -1,7 +1,10 @@
----@type function
-local LuallParser = nil
-Luall = {
 
+local parser_ok, parser = pcall(require,'parser')
+if not parser_ok then
+    print('could not load parser')
+end
+
+Luall = {
     ---list of functions that will be tested
     ---@type function[]
     testing = {},
@@ -125,7 +128,7 @@ Luall = {
             end
 
             table.insert(Luall.vars.history, input)
-            LuallParser(input)
+            parser.parser(input)
         end,
 
         ---@param index number
@@ -157,7 +160,7 @@ Luall = {
             local function color_text(text, r, g, b)
                 return fc(r, g, b) .. text .. rc()
             end
-            return debug .. color_text(user.name, 32, 255, 64) .. "@" .. vars.host .. ' ' .. color_text(cwd, 32, 255, 64) .. err .. "\n" .. color_text(">", 255, 255, 128)
+            return debug .. color_text(Luall.vars.user.name, 32, 255, 64) .. "@" .. vars.host .. ' ' .. color_text(cwd, 32, 255, 64) .. err .. "\n" .. color_text(">", 255, 255, 128)
         end,
         right_prompt = function() return "" end,
         greeting = function() return "" end,
@@ -173,4 +176,11 @@ Luall = {
 
 }
 
-LuallParser = require('parser')
+if parser_ok then
+    local ok, _ = pcall(parser.config)
+    if not ok then
+        print('could not config parser...')
+    end
+else
+    Luall.api.exit()
+end
