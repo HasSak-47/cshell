@@ -1,8 +1,8 @@
 use std::{ffi::{c_char, c_int, CStr}, ptr::null};
 
-use clap::Parser;
+use clap::{builder::OsStr, Parser};
 
-#[derive(Parser, Debug)]
+#[derive(Parser, Debug, Default)]
 #[command(version, about, long_about = None)]
 struct Args{
     #[arg(short, long, default_value_t = false)]
@@ -11,7 +11,7 @@ struct Args{
 }
 
 #[unsafe(no_mangle)]
-unsafe extern "C" fn parse_args(argc: c_int, argv: *const *const c_char) -> Box<Args>{
+unsafe extern "C" fn parse_args(argc: c_int, argv: *const *const c_char) -> *mut Args{
     let mut args = Vec::new();
     unsafe{
         for i in 0..(argc as usize){
@@ -23,22 +23,39 @@ unsafe extern "C" fn parse_args(argc: c_int, argv: *const *const c_char) -> Box<
     }
 
 
-    Box::new(Args::parse_from(args))
+    let args = Args::parse_from(args);
+    return Box::into_raw(Box::new(args));
 }
 
 #[unsafe(no_mangle)]
-unsafe extern "C" fn is_debug(args: &Box<Args>) -> bool{
-    return args.debug;
+unsafe extern "C" fn is_debug(args: *const Args) -> bool{
+    if args.is_null() {
+        return false;
+    }
+    unsafe{
+        return (&*args).debug;
+    }
 }
 
 #[unsafe(no_mangle)]
-unsafe extern "C" fn get_script(args: &Box<Args>) -> *const c_char{
-    if let Some(s) = &args.script {
-        return s.as_ptr() as *const c_char;
+unsafe extern "C" fn get_script(args: *const Args) -> *const c_char{
+    if args.is_null() {
+        return null();
+    }
+    unsafe{
+        if let Some(s) = &(&*args).script {
+            return s.as_ptr() as *const c_char;
+        }
     }
 
     return null();
 }
 
 #[unsafe(no_mangle)]
-unsafe extern "C" fn free_args(_: Box<Args>) { }
+unsafe extern "C" fn free_args(args: *mut Args) {
+    if !args.is_null() {
+        unsafe{
+            drop( Box::from_raw(args) );
+        }
+    }
+}

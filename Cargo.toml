@@ -7,3 +7,6 @@ edition = "2024"
 anyhow = "1.0.97"
 clap = { version = "4.5.35", features = ["derive"] }
 thiserror = "2.0.12"
+
+[lib]
+crate-type = ["cdylib"]

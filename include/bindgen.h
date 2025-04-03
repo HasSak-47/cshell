@@ -13,11 +13,11 @@
 
 typedef struct Args Args;
 
-void free_args(struct Args*);
+void free_args(struct Args *args);
 
-const char *get_script(struct Args *const *args);
+const char *get_script(const struct Args *args);
 
-bool is_debug(struct Args *const *args);
+bool is_debug(const struct Args *args);
 
 struct Args *parse_args(int argc, const char *const *argv);
 
