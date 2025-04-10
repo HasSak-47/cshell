@@ -417,4 +417,5 @@ local function config()
     table.insert(Luall.testing, test_pipes )
 end
 
-return {parser=parser, tokenize=tokenize, config=config}
+return {
+    parser=parser, tokenize=tokenize, config=config}

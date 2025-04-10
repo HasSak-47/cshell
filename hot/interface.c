@@ -1,3 +1,4 @@
+#include "utils.h"
 #include <ctype.h>
 #include <state.h>
 
@@ -157,19 +158,22 @@ void create_env(lua_State* L){
 
 void lua_setup(lua_State* L){
     debug_printf("loading lua stdlibs\n");
-    luaL_openlibs(L);
+    // luaL_openlibs(L);
+    luaL_requiref(L, "base", luaopen_base, true);
+    luaL_requiref(L, "math", luaopen_math, true);
+    luaL_requiref(L, "table", luaopen_table, true);
+    luaL_requiref(L, "package", luaopen_package, true);
+    luaL_requiref(L, "string", luaopen_string, true);
 
     // load blueprint
     debug_printf("loading blueprint\n");
     if(luaL_dofile(L, init_path) != LUA_OK){
         // if it doesn't load just nuke it
         running = false;
+        temporal_suicide_msg("could not load init");
         return;
     }
-    if (debug) {
-        printf("setting up state\n");
-    
-    }
+    debug_printf("setting up state\n");
     update_lua_state(L);
 
     lua_getglobal(L, "Luall");
