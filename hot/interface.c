@@ -81,7 +81,7 @@ void handle_input(lua_State* L){
 
         int error = lua_pcall(L, 1, 1, 0);
         if(error != LUA_OK){
-            luaL_error(L, "Prompt Error: %s\n", lua_tostring(L, -1));
+            temporal_suicide_msg("Luall.inner.parse crashed\n");
             return;
         }
     }

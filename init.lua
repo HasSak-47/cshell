@@ -33,6 +33,7 @@ Luall = {
         -- it only exists durent this current session
         history = {
             'lua print("hello world")',
+            '!ls -lA',
         },
         -- special vars that don't get updated at each cycle
         -- changes to env should trigger an env update
@@ -91,7 +92,7 @@ Luall = {
             if debug then
                 print(cmd)
             end
-            Luall.api.exec(cmd, args) 
+            Luall.api.exec(cmd, ...)
         end
     },
     -- the alias are blueprints for process.new
@@ -118,7 +119,12 @@ Luall = {
         end,
         ---@param path string
         format_path = function (path)
-            return Luall.inner.expand_path(path)
+            local _beg, _ = path:find(Luall.vars.user.home);
+            if _beg == nil or _beg > 1 then
+                return path
+            end
+
+            return path:gsub(Luall.vars.user.home, '~')
         end,
         ---@param r integer
         ---@param g integer
@@ -139,17 +145,9 @@ Luall = {
             parser.parser(input)
         end,
 
+        ---@param input string
         txt_format = function (input)
             local tokens = parser.tokenize(input)
-        end,
-
-        ---@param input string
-		tokenize = function(input)
-            if input == '' then
-                return
-            end
-            local tokens = parser.tokenize(input)
-            return tokens;
         end,
 
         ---@param index number
