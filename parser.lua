@@ -12,8 +12,8 @@
 ---
 ---@alias Token {type: TokenType, val: (string | Token), }
 ---
----@alias Command  {span: {[1]: number, [2]: number}, val: string , type: "command"}
----@alias Argument {span: {[1]: number, [2]: number}, val: string, type: "argument"}
+---@alias Command  {span: {[1]: number, [2]: number}, val: string, type: "command"}
+---@alias Argument {span: {[1]: number, [2]: number}, val: string, type: "argument", subtype: "path" | "string" | "ws_string"}
 ---@alias Process  {span: {[1]: number, [2]: number}, val: {[1]: Command, [2]: Argument}, type: "process"}
 ---@alias Pipe     {span: {[1]: number, [2]: number}, val: "|" | "|&", type: "pipe"}
 
