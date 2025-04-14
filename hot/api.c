@@ -57,6 +57,7 @@ static int api_cd(lua_State* L){
     if( path == NULL ){
         return 0;
     }
+    debug_printf("cd to %s\n", path);
     error = chdir(path);
     return 0;
 }
@@ -246,6 +247,7 @@ static void __print_param(lua_State* L, size_t i){
 
 static int api_io_print(lua_State* L){
     size_t params = lua_gettop(L);
+
     for (size_t i = 0; i < params - 1; ++i) {
         __print_param(L, i + 1);
         printf("\t");
@@ -255,6 +257,10 @@ static int api_io_print(lua_State* L){
 }
 
 static int api_io_debug_print(lua_State* L){
+    if (debug) 
+        return 0;
+
+    api_io_debug_print(L);
 
     return 0;
 }

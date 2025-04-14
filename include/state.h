@@ -16,6 +16,8 @@
 #include <stdbool.h>
 #include <lua.h>
 
+#include "./path.h"
+
 extern bool running;
 extern bool reload;
 extern lua_State* L;
@@ -28,9 +30,11 @@ extern char* hot_path;
 // Luall.vars
 struct User{
     char* name;
+    // TODO: change to path struct
     char* home;
 };
 
+extern struct Path path;
 extern struct User user;
 extern char* cwd;
 extern char* host;
