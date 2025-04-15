@@ -51,6 +51,29 @@ struct Path root_path(){
     return path;
 }
 
+static struct PathSegment make_segment(struct Path path, struct VectorChars cs, size_t beg, size_t end){
+    struct VectorChars name = substring(cs, beg, end);
+
+    if (string_cmp(name, ".")) {
+        free(name.data);
+        return (struct PathSegment){
+            .name = {},
+            .ty = CURR_PATH,
+        };
+    }
+    else if (string_cmp(name, "..")) {
+        free(name.data);
+        return (struct PathSegment){
+            .name = {},
+            .ty = PREV_PATH,
+        };
+    }
+    return (struct PathSegment){
+        .name = name,
+        .ty = NAMED_PATH,
+    };
+}
+
 struct Path parse_path(const char *path){
     struct Path _path = {};
     size_t start = 0; 
@@ -65,35 +88,15 @@ struct Path parse_path(const char *path){
 
     for (; i < cs.len; ++i) {
         if(cs.data[i].ty == NORMAL_CHARACTER && cs.data[i].data == '/'){
-            struct VectorChars name = substring(cs, start, i);
-
-            if (string_cmp(name, ".")) {
-                push_segment(&_path, (struct PathSegment){
-                    .name = {},
-                    .ty = CURR_PATH,
-                });
-                free(name.data);
-            }
-            else if (string_cmp(name, "..")) {
-                push_segment(&_path, (struct PathSegment){
-                    .name = {},
-                    .ty = PREV_PATH,
-                });
-                free(name.data);
-            }
-            else{
-                push_segment(&_path, (struct PathSegment){
-                    .name = name,
-                    .ty = NAMED_PATH,
-                });
-            }
+            push_segment(&_path, make_segment(_path, cs, start, i));
 
             start = i + 1;
         }
     }
 
-    free(cs.data);
+    push_segment(&_path, make_segment(_path, cs, start, cs.len));
 
+    free(cs.data);
     return _path;
 }
 
