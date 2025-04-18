@@ -94,7 +94,9 @@ struct Path parse_path(const char *path){
         }
     }
 
-    push_segment(&_path, make_segment(_path, cs, start, cs.len));
+    if (start < cs.len) {
+        push_segment(&_path, make_segment(_path, cs, start, cs.len));
+    }
 
     free(cs.data);
     return _path;
@@ -125,6 +127,7 @@ char* get_path_string(const struct Path path){
         } 
         vector_push(str, '/');
     }
+    vector_pop(str);
     vector_push(str, '\0');
     size_t len = str.len;
     char* d = realloc(str.data, len);

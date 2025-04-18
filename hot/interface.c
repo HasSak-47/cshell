@@ -1,6 +1,5 @@
 #include <utils.h>
 #include <ctype.h>
-#include <state.h>
 
 #include <lua.h>
 #include <lualib.h>
@@ -15,6 +14,9 @@
 #include <sys/wait.h>
 #include <sys/stat.h>
 
+#include <path.h>
+#include <state.h>
+#include <str.h>
 #include <api.h>
 #include <testing.h> 
 #include <debug.h> 
@@ -34,13 +36,17 @@ void update_lua_state(lua_State* L){
     lua_pushstring(L, host);
     lua_setfield(L, -2, "host");
 
-    lua_pushstring(L, "");
+    char* _cwd = get_path_string(cwd);
+    lua_pushstring(L, _cwd);
     lua_setfield(L, -2, "cwd");
+    free(_cwd);
 
     lua_getfield(L, -1, "user");
 
-    lua_pushstring(L, "");
+    char* _home = get_path_string(user.home);
+    lua_pushstring(L, _home);
     lua_setfield(L, -2, "home");
+    free(_home);
 
     lua_pushstring(L, user.name);
     lua_setfield(L, -2, "name");
@@ -166,7 +172,7 @@ void lua_setup(lua_State* L){
     luaL_requiref(L, "string", luaopen_string, true);
 
     // load blueprint
-    debug_printf("loading blueprint @ %s\n", init_path);
+    debug_printf("loading blueprint @ \"%s\"\n", init_path);
     if(luaL_dofile(L, init_path) != LUA_OK){
         // if it doesn't load just nuke it
         running = false;
