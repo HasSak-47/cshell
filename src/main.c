@@ -105,6 +105,7 @@ int main(const int argc, const char* argv[]){
 
 void chdir_path(struct Path* path){
     char* _path = get_path_string(*path);
+    printf("changing path to: %s\n", _path);
     chdir( _path);
     free(_path);
 }
@@ -151,6 +152,8 @@ void load(){
     // init api
     debug_printf("initing api\n");
     lua_setup(L);
+
+    chdir_path(&cwd);
 }
 
 void unload(){
