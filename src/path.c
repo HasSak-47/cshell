@@ -1,3 +1,4 @@
+#include "debug.h"
 #include "str.h"
 #include "vectors.h"
 #include <stdio.h>
@@ -102,6 +103,33 @@ struct Path parse_path(const char *path){
     return _path;
 }
 
+void expand_path(struct Path *self, const struct Path *const cwd){
+    if (self->_inner.data[0].ty == CURR_PATH) {
+        struct Path cpy = {};
+
+        for (size_t i = 0; i < cwd->_inner.len; ++i){
+            struct PathSegment segment = {};
+            segment.ty = cwd->_inner.data[i].ty;
+            vector_clone(segment.name, cwd->_inner.data[i].name);
+
+            push_segment(&cpy, segment);
+        }
+
+        for (size_t i = 1; i < self->_inner.len; ++i){
+            struct PathSegment segment = {};
+            segment.ty = self->_inner.data[i].ty;
+            vector_clone(segment.name, self->_inner.data[i].name);
+
+            push_segment(&cpy, segment);
+        }
+
+        destruct_path(self);
+
+        *self = cpy;
+    }
+    return;
+}
+
 char* get_path_string(const struct Path path){
     struct VectorString str = {};
     vector_reserve(str, path._inner.len * 5);
@@ -137,8 +165,10 @@ char* get_path_string(const struct Path path){
 
 void destruct_path(struct Path* path){
     for (size_t i = 0; i < path->_inner.len; ++i) {
-        free(path->_inner.data[i].name.data);
+        struct PathSegment seg = path->_inner.data[i];
+        free(seg.name.data);
     }
     free(path->_inner.data);
     path->_inner.data = NULL;
+    path->_inner.len  = 0;
 }

@@ -27,6 +27,9 @@ struct Path{
 char* get_path_string(const struct Path path);
 void push_name(struct Path* path, const char* name);
 void push_segment(struct Path* path, const struct PathSegment segment);
+
+void expand_path(struct Path* self, const struct Path* const cwd);
+
 struct Path root_path();
 struct Path parse_path(const char* path);
 

@@ -1,18 +1,19 @@
-#include "debug.h"
-#include "path.h"
+
 #include <lauxlib.h>
 #include <lua.h>
 
-#include <state.h>
-#include <stdio.h>
 #include <testing.h>
+#include <state.h>
+#include <debug.h>
+#include <path.h>
 
-#include <pwd.h>
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 
 #include <unistd.h>
+#include <pwd.h>
 
 // event loop control
 
@@ -22,9 +23,9 @@ lua_State* L = NULL;
 
 // Luall.vars.config
 
-char* config_path = NULL;
-char* init_path   = NULL;
-char* hot_path    = NULL;
+struct Path config_path = {};
+struct Path init_path   = {};
+struct Path hot_path    = {};
 
 char** history = NULL;
 
@@ -45,10 +46,6 @@ bool debug = false;
  * sets the state of the shell
  */
 void init_shell_state(){
-    config_path = strdup(CONFIG_PATH);
-    init_path   = strdup(INIT_PATH);
-    hot_path    = strdup(HOT_PATH);
-
     host = malloc(256);
     gethostname(host, 256);
 
@@ -60,6 +57,14 @@ void init_shell_state(){
 
     const char* _cwd = getenv("PWD");
     cwd = parse_path(_cwd);
+
+    init_path   = parse_path(INIT_PATH);
+    hot_path    = parse_path(HOT_PATH);
+    config_path = parse_path(INIT_PATH);
+
+    expand_path(&init_path, &cwd);
+    expand_path(&hot_path, &cwd);
+    expand_path(&config_path, &cwd);
 }
 
 /**
@@ -71,13 +76,18 @@ void get_current_state(){ }
  * cleanins the shell state
  */
 void end_shell_state(){
-    destruct_path(&cwd);
     free(host);
 
     free(user.name);
-    destruct_path(&user.home);
 
-    free(config_path);
-    free(init_path);
-    free(hot_path);
+    debug_printf("deleting cwd\n");
+    destruct_path(&cwd);
+    debug_printf("deleting home\n");
+    destruct_path(&user.home);
+    debug_printf("deleting init\n");
+    destruct_path(&init_path);
+    debug_printf("deleting hot\n");
+    destruct_path(&hot_path);
+    debug_printf("deleting config\n");
+    destruct_path(&config_path);
 }

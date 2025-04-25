@@ -58,3 +58,13 @@ void __vector_reserve(struct __Vector* v, const size_t cap, const size_t size){
     v->data = aux;
     v->cap = cap;
 }
+
+void __vector_clone(struct __Vector *dst, const struct __Vector *const src, const size_t size){
+    dst->data = malloc(size * src->len);
+    dst->len = src->len;
+    dst->cap = src->len;
+
+    for (size_t i = 0; i < size * src->len; ++i)
+        ((char*)dst->data)[i] = ((char*)src->data)[i];
+}
+
