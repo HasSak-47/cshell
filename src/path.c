@@ -55,24 +55,7 @@ struct Path root_path(){
 static struct PathSegment make_segment(struct Path path, struct VectorChars cs, size_t beg, size_t end){
     struct VectorChars name = substring(cs, beg, end);
 
-    if (string_cmp(name, ".")) {
-        free(name.data);
-        return (struct PathSegment){
-            .name = {},
-            .ty = CURR_PATH,
-        };
-    }
-    else if (string_cmp(name, "..")) {
-        free(name.data);
-        return (struct PathSegment){
-            .name = {},
-            .ty = PREV_PATH,
-        };
-    }
-    return (struct PathSegment){
-        .name = name,
-        .ty = NAMED_PATH,
-    };
+    return build_segment(name);
 }
 
 struct Path parse_path(const char *path){
@@ -161,6 +144,17 @@ char* get_path_string(const struct Path path){
     char* d = realloc(str.data, len);
 
     return d;
+}
+
+void pop_segment(struct Path *path){
+    if(path->_inner.len < 1){
+        return;
+    }
+
+    struct PathSegment end = path->_inner.data[path->_inner.len - 1];
+    free(end.name.data);
+
+    vector_pop(path->_inner);
 }
 
 void destruct_path(struct Path* path){

@@ -1,4 +1,5 @@
 #include "debug.h"
+#include "path.h"
 #include <process.h>
 #include <state.h>
 #include <utils.h>
@@ -58,7 +59,36 @@ static int api_cd(lua_State* L){
         return 0;
     }
     debug_printf("cd to %s\n", path);
+
     error = chdir(path);
+    if (error != 0) {
+        return 0;
+    }
+
+    struct Path c_path = parse_path(path);
+
+    if (c_path._inner.data[0].ty == ROOT_PATH) {
+        chdir(path);
+        destruct_path(&cwd);
+        cwd = c_path;
+    }
+    else{
+        char* cc_path = get_path_string(c_path);
+        debug_printf("c_path: %s\n",cc_path);
+        free(cc_path);
+        for (size_t i = 0; i < c_path._inner.len; ++i) {
+            if(c_path._inner.data[i].ty == PREV_PATH){
+                debug_printf("prev!\n");
+                pop_segment(&cwd);
+            }
+            else if(c_path._inner.data[i].ty == NAMED_PATH){
+                push_segment(&cwd, c_path._inner.data[i]);
+            }
+        }
+        free(c_path._inner.data);
+    }
+
+
 
     return 0;
 }
