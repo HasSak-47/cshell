@@ -1,7 +1,7 @@
-#include "path.h"
 #include <bindgen.h>
 #include <debug.h>
 #include <hot.h>
+#include <path.h>
 #include <state.h>
 #include <string.h>
 #include <testing.h>
@@ -56,7 +56,9 @@ int test();
 int main(const int argc, const char* argv[]) {
     struct Args* args  = NULL;
     const char* script = NULL;
-    args               = parse_args(argc, argv);
+
+    args = parse_args(argc, argv);
+
     if (is_debug(args)) {
         debug = true;
     }
@@ -78,7 +80,8 @@ int main(const int argc, const char* argv[]) {
     debug_printf("running: %i\n", running);
     if (script != NULL) {
         luaL_dofile(L, script);
-    } else {
+    }
+    else {
         while (running) {
             error = 0;
             debug_printf("handling input\n");
