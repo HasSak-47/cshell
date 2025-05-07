@@ -1,0 +1,46 @@
+IndentWidth: 4
+AlignArrayOfStructures: Right
+AlignConsecutiveAssignments:
+  Enabled: true
+  AcrossEmptyLines: false
+  AcrossComments: false
+  AlignFunctionDeclarations: true
+
+AlignConsecutiveShortCaseStatements:
+  Enabled: true
+  AcrossEmptyLines: true
+  AcrossComments: true
+  AlignCaseColons: false
+
+PointerAlignment: Left
+ColumnLimit: 80
+
+BreakBeforeBraces: Custom
+BraceWrapping:
+  BeforeElse: true
+  AfterStruct: false
+  AfterControlStatement: false
+  SplitEmptyFunction: false # Keep `{}`
+  SplitEmptyRecord: false
+  SplitEmptyNamespace: false
+
+AlignAfterOpenBracket: DontAlign
+AllowShortFunctionsOnASingleLine: Inline # Helps keep static one-liners like yours tight
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLoopsOnASingleLine: true
+
+# Keep includes grouped and ordered
+SortIncludes: true
+IncludeBlocks: Preserve
+IncludeCategories:
+  - Regex: '^<.*\.h>'
+    Priority: 1
+  - Regex: '^"'
+    Priority: 2
+
+# Keep function pointers tidy
+DerivePointerAlignment: false
+SpacesBeforeTrailingComments: 1
+
+# Don't break string literals
+BreakStringLiterals: false

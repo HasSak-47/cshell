@@ -1,14 +1,14 @@
-#include <testing.h>
-#include <state.h>
-#include <utils.h>
-#include <process.h>
 #include <debug.h>
+#include <process.h>
+#include <state.h>
+#include <testing.h>
+#include <utils.h>
 
 #include <errno.h>
-#include <string.h>
-#include <termios.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <termios.h>
 
 #include <stddef.h>
 #include <sys/wait.h>
@@ -19,21 +19,21 @@
 /*
  * cmd | cmd
  * cmd > &fd/file
- * cmd >> &fd/file 
+ * cmd >> &fd/file
  *
  * cmd |& cmd === cmd 2>&1 | cmd
  */
 
-struct Pipe new_pipe(){
+struct Pipe new_pipe() {
     struct Pipe p = {};
-    int r = pipe(p.p);
-    if(r < 0)
+    int r         = pipe(p.p);
+    if (r < 0)
         temporal_suicide_msg("failed to create new pipe");
 
     return p;
 }
 
-void close_pipe(struct Pipe* p){
+void close_pipe(struct Pipe* p) {
     close(p->p[0]);
     close(p->p[1]);
 }
@@ -41,10 +41,10 @@ void close_pipe(struct Pipe* p){
 /*
  * takes an string cmd and clones it
  */
-struct Command new_command(const char* cmd){
+struct Command new_command(const char* cmd) {
     struct Command c = {
-        .cmd = strdup(cmd),
-        .args = { 0, 0, 0 },
+        .cmd        = strdup(cmd),
+        .args       = {0, 0, 0},
         .foreground = false,
 
         .pipe = {NULL, NoneBind},
@@ -56,22 +56,22 @@ struct Command new_command(const char* cmd){
     return c;
 }
 
-void bind_pipe(struct Command *cmd, struct Pipe *pipe, enum BindType type){
-    struct PipeBind binding = { pipe, type };
-    debug_printf("binding %p(%d %d) pipe for cmd %p with bind %d\n", pipe, pipe->p[0], pipe->p[1], cmd, (int)type);
+void bind_pipe(struct Command* cmd, struct Pipe* pipe, enum BindType type) {
+    struct PipeBind binding = {pipe, type};
+    debug_printf("binding %p(%d %d) pipe for cmd %p with bind %d\n", pipe,
+        pipe->p[0], pipe->p[1], cmd, (int)type);
 
     cmd->pipe = binding;
 }
 
-
-void command_reserve_size(struct Command *cmd, size_t argc){
+void command_reserve_size(struct Command* cmd, size_t argc) {
     vector_reserve(cmd->args, argc);
 }
 
 /*
  * takes an string and and clones it
  */
-void add_arg(struct Command *cmd, const char *arg){
+void add_arg(struct Command* cmd, const char* arg) {
     debug_printf("add_arg: %p %s\n", arg, arg);
     char* clone_arg = arg != NULL ? strdup(arg) : NULL;
     vector_push(cmd->args, clone_arg);
@@ -83,7 +83,7 @@ void add_arg(struct Command *cmd, const char *arg){
  * It frees all the command info at exit
  * returns the pid of the child, it does not wait for it to stop
  */
-pid_t run(struct Command* p){
+pid_t run(struct Command* p) {
     // all commands must end with a trailing NULL
     add_arg(p, NULL);
     if (debug) {
@@ -95,7 +95,7 @@ pid_t run(struct Command* p){
     }
 
     pid_t pid = fork();
-    if(pid == 0){ // child
+    if (pid == 0) { // child
         debug_printf("[child]: name: %s\n", p->cmd);
         if (p->foreground) {
             debug_printf("[child]: setting to foreground\n");
@@ -105,34 +105,34 @@ pid_t run(struct Command* p){
         }
         debug_printf("[child]: setting pipes\n");
         if (p->pipe.pipe != NULL) {
-            if (p->pipe.ty & ReadBind){
+            if (p->pipe.ty & ReadBind) {
                 int error = dup2(p->pipe.pipe->p[0], STDIN_FILENO);
                 if (error == -1) {
                     printf("errno: %d\n", errno);
                     temporal_suicide_msg("[child]: could not bind in");
                 }
             }
-            else{
+            else {
                 close(p->pipe.pipe->p[0]);
             }
 
-            if (p->pipe.ty & WriteBind){
+            if (p->pipe.ty & WriteBind) {
                 int error = dup2(p->pipe.pipe->p[1], STDOUT_FILENO);
                 if (error == -1) {
                     temporal_suicide_msg("[child]: could not bind out");
                 }
             }
-            else{
+            else {
                 close(p->pipe.pipe->p[1]);
             }
 
-            if (p->pipe.ty & ErrorBind){
+            if (p->pipe.ty & ErrorBind) {
                 int error = dup2(p->pipe.pipe->p[1], STDERR_FILENO);
                 if (error == -1) {
                     temporal_suicide_msg("[child]: could not bind error");
                 }
             }
-            else{
+            else {
                 close(p->pipe.pipe->p[1]);
             }
         }
@@ -142,7 +142,7 @@ pid_t run(struct Command* p){
         if (r < 0)
             temporal_suicide_msg("[child] didn't exec :)");
     }
-    else if(pid < 0){
+    else if (pid < 0) {
         temporal_suicide_msg("[parent]: didn't fork?");
     }
 
@@ -156,16 +156,16 @@ pid_t run(struct Command* p){
     free(p->args.data);
     free(p->cmd);
     debug_printf("[parent]: returning pid\n");
-    p->cmd = NULL;
+    p->cmd       = NULL;
     p->args.data = NULL;
     return pid;
 }
 
 #ifdef TEST
 
-void test_process(){
+void test_process() {
     printf("testing process...\n");
-    struct Command* cmds = malloc( sizeof(struct Command) * 2);
+    struct Command* cmds = malloc(sizeof(struct Command) * 2);
 
     cmds[0] = new_command("/bin/ls");
     add_arg(&cmds[0], "-lA");
@@ -178,7 +178,6 @@ void test_process(){
 
     bind_pipe(&cmds[0], &p, WriteBind);
     bind_pipe(&cmds[1], &p, ReadBind);
-
 
     pid_t pid0 = run(&cmds[0]);
     pid_t pid1 = run(&cmds[1]);

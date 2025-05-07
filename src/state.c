@@ -2,18 +2,17 @@
 #include <lauxlib.h>
 #include <lua.h>
 
-#include <testing.h>
-#include <state.h>
 #include <debug.h>
 #include <path.h>
+#include <state.h>
+#include <testing.h>
 
-
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
-#include <unistd.h>
 #include <pwd.h>
+#include <unistd.h>
 
 // event loop control
 
@@ -31,9 +30,9 @@ char** history = NULL;
 
 // Luall.vars
 
-struct User user = { NULL, NULL };
+struct User user = {NULL, NULL};
 struct Path cwd  = {};
-char* host = NULL;
+char* host       = NULL;
 // last error code
 int error = 0;
 #ifdef TEST
@@ -45,18 +44,18 @@ bool debug = false;
 /**
  * sets the state of the shell
  */
-void init_shell_state(){
+void init_shell_state() {
     host = malloc(256);
     gethostname(host, 256);
 
     uid_t uid = getuid();
     // no getpwuid_r cuz it is ez and I (hopefully) just need a single thread
     struct passwd* p = getpwuid(uid);
-    user.name = strdup(p->pw_name);
-    user.home = parse_path(p->pw_dir);
+    user.name        = strdup(p->pw_name);
+    user.home        = parse_path(p->pw_dir);
 
     const char* _cwd = getenv("PWD");
-    cwd = parse_path(_cwd);
+    cwd              = parse_path(_cwd);
 
     init_path   = parse_path(INIT_PATH);
     hot_path    = parse_path(HOT_PATH);
@@ -70,12 +69,12 @@ void init_shell_state(){
 /**
  * updates state where it is needed
  */
-void get_current_state(){ }
+void get_current_state() {}
 
 /**
  * cleanins the shell state
  */
-void end_shell_state(){
+void end_shell_state() {
     free(host);
 
     free(user.name);
