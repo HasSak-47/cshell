@@ -77,7 +77,7 @@ void render_input(struct Input* in) {
 }
 
 /**
- * takes an string and makes it the buffer of input
+ * Takes an string and makes it the buffer of an input
  */
 void set_string(struct Input* in, char* str) {
     free(in->str.data);
@@ -89,7 +89,7 @@ void set_string(struct Input* in, char* str) {
 }
 
 /**
- * takes an string and clones it to make it the buffer of input
+ * Takes an string, clones it into buffer of input
  */
 void copy_string(struct Input* in, char* str) {
     free(in->str.data);
@@ -132,6 +132,9 @@ void prev_entry(struct InputState* state) {
     state->index--;
 }
 
+/**
+ * does something with control characters
+ */
 void handle_ctrl(struct InputState* in, char c) {
     if (c == 0x08 || c == 0x7f) { // backspace
         delete_char(&in->in);

@@ -1,0 +1,22 @@
+cargo:rerun-if-changed=hot/api.c
+cargo:rerun-if-changed=hot/interface.c
+cargo:rerun-if-changed=hot/testing.c
+cargo:rerun-if-changed=hot/process.c
+cargo:rerun-if-changed=hot/input.c
+file: ./hot/api.c
+file: ./hot/interface.c
+file: ./hot/testing.c
+file: ./hot/process.c
+new_pipe
+
+new_command
+cmd: const char *
+
+add_arg
+cmd: struct Command *
+arg: const char *
+
+run
+p: struct Command *
+
+file: ./hot/input.c
