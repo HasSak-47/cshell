@@ -1,6 +1,21 @@
-cargo:rerun-if-changed=hot/api.c
-cargo:rerun-if-changed=hot/input.c
-cargo:rerun-if-changed=hot/interface.c
-cargo:rerun-if-changed=hot/process.c
-cargo:rerun-if-changed=hot/testing.c
-file: ./hot/api.c
+cargo:rerun-if-changed=src/debug.c
+cargo:rerun-if-changed=src/lib.rs
+cargo:rerun-if-changed=src/main.c
+cargo:rerun-if-changed=src/path.c
+cargo:rerun-if-changed=src/state.c
+cargo:rerun-if-changed=src/testing.c
+cargo:rerun-if-changed=src/utils.c
+cargo:rerun-if-changed=src/str.c
+version: clang version 19.1.7 (Fedora 19.1.7-3.fc41)
+file: ./src/debug.c
+file: ./src/lib.rs
+file: ./src/main.c
+file: ./src/path.c
+file: ./src/state.c
+file: ./src/testing.c
+file: ./src/utils.c
+file: ./src/str.c
+string_cmp -> int => int => int
+c: struct VectorChars => struct VectorChars => struct VectorChars
+str: const char * => const char * => str
+
