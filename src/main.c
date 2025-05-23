@@ -1,4 +1,5 @@
-#include "utils.h"
+#include <errno.h>
+#include <utils.h>
 #include <testing.h>
 
 #include <hot.h>
@@ -26,8 +27,14 @@ struct termios orig_termios;
 bool got_original = false;
 
 void unset_raw_mode(){
+
     if(got_original)
         tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig_termios);
+    else{
+        if (debug) {
+            printf("there is no original termios?\n");
+        }
+    }
 }
 
 void set_raw_mode(){
@@ -93,10 +100,29 @@ void load(){
         return;
     }
 
-    handler      = dlopen("units/bundle.so", RTLD_NOW);
+    if(debug){
+        printf("loading handler and bundle\n");
+    }
+
+    // RTLD_LAZY because for some reason in fedora atomic inside a toolbox
+    // it doesn't load :)
+    handler = dlopen("./units/bundle.so", RTLD_LAZY);
+
+    if (handler == NULL) {
+        unrecoverable_error("could not find bundle");
+    }
+
     handle_input = dlsym(handler, "handle_input");
     lua_setup    = dlsym(handler, "lua_setup");
     lua_cleanup  = dlsym(handler, "lua_cleanup");
+
+    if(debug){
+        printf("symbols loaded:\n");
+        printf("handler: %p\n", handler);
+        printf("handle_input: %p\n", handle_input);
+        printf("lua_setup: %p\n", lua_setup);
+        printf("lua_input: %p\n", lua_cleanup);
+    }
 
 #ifdef TEST
     tester = dlsym(handler, "__test");
@@ -109,6 +135,9 @@ void load(){
     free(cwd);
 
     // init api
+    if(debug){
+        printf("initing api\n");
+    }
     lua_setup(L);
 }
 
