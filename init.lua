@@ -10,6 +10,11 @@ Luall = {
 		},
 		error = 0,
         debug = false,
+        -- this variable is lua only
+        -- it only exists durent this current session
+        history = {
+            'lua print("hello world")',
+        },
         -- special vars that don't get updated at each cycle
         -- changes to env should trigger an env update
         env = {},
@@ -37,7 +42,16 @@ Luall = {
                     print('failed to run')
                 end
             end
-        end
+        end,
+
+        history = function()
+            if Luall.vars.history == nil then
+                return
+            end
+            for key, value in pairs(Luall.vars.history) do
+                print(key, value)
+            end
+        end,
     },
     overwrite = {
         cd = function(args)
@@ -73,7 +87,34 @@ Luall = {
         reset_color = function ()
             return '\x1b[0m'
         end,
-		parse = require('parser')
+        ---@param input string
+		parse = function(input)
+            local parser = require('parser')
+            if Luall.vars.history == nil then
+                Luall.vars.history = {input}
+            else
+                table.insert(Luall.vars.history, input)
+            end
+            parser(input)
+        end,
+
+        ---gets a element of the current history
+        ---if index is negative it returns from the top
+        ---@param index number
+        history = function(index)
+            local len = 0
+            if Luall.vars.history ~= nil then
+                len = #Luall.vars.history
+            end
+            if index < 0 then
+                index = 1 + len + index
+            end
+            if index > len then
+                index = len
+            end
+
+            return Luall.vars.history[index]
+        end,
 	},
     prompts = {
         prompt = function()

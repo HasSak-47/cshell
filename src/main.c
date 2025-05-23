@@ -68,6 +68,7 @@ int main(){
     // interaction loop
     // this is so fucking ass
     while (running) {
+        error = 0;
         handle_input(L);
         if (reload) {
             printf("reloading...\n");
