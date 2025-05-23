@@ -34,7 +34,7 @@ struct User{
 };
 
 extern struct User user;
-extern struct Path path;
+extern struct Path cwd;
 extern char* host;
 extern int error;
 extern bool debug;

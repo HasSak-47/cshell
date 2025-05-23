@@ -10,7 +10,6 @@ enum SegmentType{
     NAMED_PATH,
 };
 
-
 struct PathSegment{
     struct VectorChars name;
     enum SegmentType ty;

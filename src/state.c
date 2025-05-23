@@ -1,8 +1,10 @@
+#include "debug.h"
 #include "path.h"
 #include <lauxlib.h>
 #include <lua.h>
 
 #include <state.h>
+#include <stdio.h>
 #include <testing.h>
 
 #include <pwd.h>
@@ -54,11 +56,14 @@ void init_shell_state(){
     // no getpwuid_r cuz it is ez and I (hopefully) just need a single thread
     struct passwd* p = getpwuid(uid);
     user.name = strdup(p->pw_name);
+    user.home = parse_path(p->pw_dir);
+
+    const char* _cwd = getenv("PWD");
+    cwd = parse_path(_cwd);
 }
 
 /**
- * gets the current state of the shell
- * like the cwd, host, and user
+ * updates state where it is needed
  */
 void get_current_state(){ }
 
@@ -66,11 +71,11 @@ void get_current_state(){ }
  * cleanins the shell state
  */
 void end_shell_state(){
-    // free(cwd);
+    destruct_path(&cwd);
     free(host);
 
     free(user.name);
-    // free(user.home);
+    destruct_path(&user.home);
 
     free(config_path);
     free(init_path);

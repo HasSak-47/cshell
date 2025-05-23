@@ -84,7 +84,6 @@ Luall = {
     extend = {
         cd = function(args)
             if args == nil or #args == 0 then
-                print(Luall.vars.user.home)
                 Luall.api.cd(Luall.vars.user.home)
             else
                 local path = Luall.inner.expand_path(args[1])
@@ -146,7 +145,11 @@ Luall = {
             end
 
             table.insert(Luall.vars.history, input)
-            parser.parser(input)
+            local ok, err = pcall(parser.parser,input)
+            if not ok then
+                print(err)
+                Luall.api.exit()
+            end
         end,
 
         ---@param input string
@@ -188,20 +191,7 @@ Luall = {
         greeting = function() return "" end,
     },
 
-    setup = function()
-        local config = Luall.vars.config
-        local expand_path = Luall.inner.expand_path
-        config.config_path = expand_path(config.config_path)
-        config.init_path   = expand_path(config.init_path)
-        config.hot_path    = expand_path(config.hot_path)
-        if Luall.vars.start_in_home then
-            if Luall.vars.debug then
-                print('cd to home...')
-            end
-            Luall.extend.cd()
-        end
-    end,
-
+    setup = function() end,
 }
 
 if parser_ok then
