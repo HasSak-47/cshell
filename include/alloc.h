@@ -1,7 +1,7 @@
 #ifndef __ALLOC_H__
 #define __ALLOC_H__
 
-#define __DEBUG_MEM
+// #define __DEBUG_MEM
 
 #include <stddef.h>
 typedef void* (*__reallocator)(void* ,size_t);

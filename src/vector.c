@@ -62,3 +62,10 @@ void __vector_delete(void **vector, usize size_of, struct allocator a){
 	a.d(header);
 	*vector = NULL;
 }
+
+void __vector_resize(void **vector, usize len, usize size_of, struct allocator a){
+	//get header
+	struct vector_header* header = (*vector) - __SIZE_H;
+	a.d(header);
+	*vector = NULL;
+}

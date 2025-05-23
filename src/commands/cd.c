@@ -7,11 +7,10 @@ const char* get_name(){
 	return "cd";
 }
 
-int run(char **params) {
-	if(params == NULL){
-		printf("no commands provided");
+int run(char vectored** params) {
+	if(v_len(params) < 2){
+		printf("no commands provided\n");
 		return -1;
-
 	}
 	return chdir(params[0]);
 }

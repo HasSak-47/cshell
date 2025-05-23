@@ -1,17 +1,17 @@
-build_shell:
-	gcc -g -I include src/*.c -o cshell
+shell:
+	gcc -g -I include src/*.c -export-dynamic -o cshell
 
-build_cmds:
-	gcc -g -I include src/commands/cd.c -shared -o utils/cd.so
+cmds:
+	make -C src/commands/ build
 
 run:
-	make build_shell
+	make shell
 	./cshell
 
-build_all:
-	make build_shell
-	make build_cmds
+all:
+	make shell
+	make cmds
 
 valgrind:
-	make build_all
+	make all
 	valgrind ./cshell

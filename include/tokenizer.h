@@ -20,7 +20,7 @@ struct token{
 
 void print_token(struct token token);
 struct token vectored* make_tokens(char*);
-char vectored* split_into_args(struct token vectored** vector);
+char vectored* vectored* split_into_args(struct token vectored* vector);
 
 
 #endif
