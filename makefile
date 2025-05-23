@@ -1,5 +1,5 @@
 SRC_DIR := src
-UNI_DIR := src/commands
+UNI_DIR := hot
 
 OBJ_DIR := build
 SHR_DIR := units
