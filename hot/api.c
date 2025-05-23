@@ -27,11 +27,23 @@ static int api_exit(lua_State* L){
 // Luall.vars.debug
 static int api_set_debug(lua_State* L){
     debug = true;
+    lua_getglobal(L, "Luall");
+    lua_getfield(L, -1, "vars");
+    lua_pushboolean(L, true);
+    lua_setfield(L, -2, "debug");
+
+    lua_pop(L, 2);
     return 0;
 }
 
 static int api_unset_debug(lua_State* L){
     debug = false;
+    lua_getglobal(L, "Luall");
+    lua_getfield(L, -1, "vars");
+    lua_pushboolean(L, false);
+    lua_setfield(L, -2, "debug");
+
+    lua_pop(L, 2);
     return 0;
 }
 
@@ -66,6 +78,13 @@ static int api_exists(lua_State* L){
  */
 static int api_exec(lua_State* L){
     const size_t argc = lua_gettop(L);
+    if (debug) {
+        printf("params:\n");
+        for(size_t i = 1; i <= argc; ++i){
+            const char* arg = lua_tostring(L, i);
+            printf("param %lu %s\n", i, arg);
+        }
+    }
     const char* path = lua_tostring(L, 1);
     if (path == NULL) {
         error = -1;

@@ -195,6 +195,7 @@ end
 
 ---@param cmd Process
 local function run_cmd(cmd)
+
     if cmd.type == nil then
         error('did not got a token!');
     end
@@ -207,6 +208,7 @@ local function run_cmd(cmd)
     for _, val in ipairs(cmd.val) do
         table.insert(args, val.val)
     end
+
     if Luall.vars.debug then
         local s = 'running cmd: ' .. name
         for _, value in ipairs(args) do
@@ -227,8 +229,10 @@ local function run_cmd(cmd)
         name = b[1]
         args = b[2]
         if Luall.vars.debug then
-            print(name)
-            print(args)
+            print('new name:', name)
+            for _, arg in ipairs(args) do
+                print('\t', arg)
+            end
         end
     end
 
@@ -259,6 +263,12 @@ local function run_cmd(cmd)
         end
     end
 
+    if Luall.vars.debug then
+        print('target cmd:', target_cmd)
+        for _, arg in ipairs(args) do
+            print('\t', arg)
+        end
+    end
     Luall.extend.exec(target_cmd, table.unpack(args))
     
 end
@@ -328,7 +338,13 @@ end
 ---@param cmd string
 local function handle_shell_like(cmd)
     local tokens = tokenize(cmd)
+    if Luall.vars.debug then
+        print('handling shell like:')
+        print_tokens(tokens, 0)
+    end
 
+    --- check if the token list is just 1
+    --- if there is more than 2 it means there is a pipe there
     if #tokens[1].val == 1 then
         run_cmd( tokens[1].val[1] )
     else
@@ -338,8 +354,9 @@ end
 
 ---@param line string
 local function handle_singleline(line)
-     local start  = line:find('lua')
+    local start  = line:find('lua')
     if start == 1 then
+        ---TODO: change it so it only takes the first lua
         line = line:gsub('lua', '')
         Luall.util.lua({line})
     else -- run "normal shell"
@@ -349,11 +366,10 @@ end
 
 ---@param input string
 local function parser(input)
-    local set_debug = input.sub(input, 1, 1) == '!';
+    local set_debug = input:sub(1, 1) == '!';
     if set_debug then
         input = string.sub(input, 2)
         Luall.api.set_debug()
-        print('set debug for this cmd')
     end
     if input == nil or input == '' then
         return;
@@ -371,7 +387,7 @@ local function parser(input)
         ::continue::
     end
 
-    if #lines then -- single line
+    if #lines == 1 then -- single line
         handle_singleline(lines[1])
     else -- multi line
     end
