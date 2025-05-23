@@ -10,7 +10,11 @@
 ---| "str"
 ---| "undefined"
 ---
----@alias Token {val: string | Token, type: TokenType}
+---@alias Token {type: TokenType, val: (string | Token), }
+---
+---@alias Command {val: string , type: "command"}
+---@alias Argument {val: string , type: "argument"}
+---@alias Process {val: {[1]: Command, [2]: Argument}, type: "argument"}
 
 -- <statement> ::= <process> (<pipe>  <process> )* (<redirection> (<fd> | <string>))
 -- <process>   ::= <string> (<string>)*
@@ -52,7 +56,7 @@ end
 local pipe_set, redir_set, fd_set = setify_table(pipe_operators), setify_table(redir_operators), setify_table(filedesc)
 
 ---@param tokens Token[]
----@return Token
+---@return Process
 local function take_process(tokens)
     local i = 0
     for idx, token in ipairs(tokens) do
@@ -122,29 +126,6 @@ local function tokenize(input)
         end
     end
 
-    return tokens
-end
-
-
----@param t Token[]
----@param depth number
-local function print_tokens(t, depth)
-    for _, value in ipairs(t) do
-        local tab = string.rep("\t", depth)
-        if type(value.val) == "string" then
-            print(tab .. value.type .. ': "' .. value.val .. '"')
-        else
-            print(tab .. value.type)
-            print_tokens(value.val, depth + 1)
-        end
-
-    end
-end
-
---- testing function
-local function main()
-    local tokens  = tokenize("echo 'test this out' this is wack | cat out.txt | test | other stuff >> &1");
-    -- mark special symbols
     for _, token in ipairs(tokens) do
         if pipe_set[token.val] ~= nil then
             token.type = "pipe"
@@ -181,17 +162,83 @@ local function main()
         ::continue::
     end
 
-    print_tokens({statement}, 0)
+    return {statement}
+end
+
+
+---@param t Token[]
+---@param depth number
+local function print_tokens(t, depth)
+    for _, value in ipairs(t) do
+        local tab = string.rep("\t", depth)
+        if type(value.val) == "string" then
+            print(tab .. value.type .. ': "' .. value.val .. '"')
+        else
+            print(tab .. value.type)
+            print_tokens(value.val, depth + 1)
+        end
+
+    end
 
 end
 
-if not package.loaded[...] then
-    main()
+---@param cmd Process
+local function run_cmd(cmd)
+    if cmd.type == nil then
+        error('did not got a token!');
+    end
+    if cmd.type ~= "process" then
+        error('wrong type expected process got' .. cmd.type);
+    end
+
+    local name = table.remove(cmd.val, 1).val
+    local args = {}
+    if debug then
+        local s = 'running cmd:' .. name
+        for _, value in ipairs(args) do
+            s = s .. ' ' .. value
+        end
+
+        print(s)
+    end
+
+    if Luall.overwrite[name] ~= nil then
+        Luall.overwrite[name](args)
+    elseif Luall.util[name] ~= nil then
+        Luall.util[name](args)
+    elseif Luall.api[name] ~= nil then
+        Luall.api[name](args)
+    else
+
+         --- @param var string
+        local function parse_env(var)
+            local result = {}
+            for part in string.gmatch(var, "([^:]+)") do
+                table.insert(result, part)
+            end
+            return result
+        end
+
+        -- check all possible dirs in which cmd could be
+        local possible_locs = parse_env(Luall.vars.env.PATH)
+        local target_cmd = ''
+        for _, path in pairs(possible_locs) do
+            local candidate = path ..'/' .. name
+            if Luall.api.exists(candidate) then
+                target_cmd = candidate
+                break
+            end
+        end
+        Luall.api.exec(target_cmd, table.unpack(args))
+    end
 end
 
 ---@param cmd string
 local function parser(cmd)
-    error('in testing...');
+    local tokens = tokenize(cmd)
+    print_tokens(tokens, 0)
+    print()
+    run_cmd( tokens[1].val[1] )
 end
 
 

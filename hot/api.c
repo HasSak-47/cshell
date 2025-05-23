@@ -73,17 +73,17 @@ static int api_exec(lua_State* L){
     struct Command p = new_command(path);
     command_reserve_size(&p, argc);
 
-    // last arg must be null
-    p.args.data[argc] = NULL;
-    
-    for(size_t i = 0; i < argc; ++i){
+    // the first command was already found!
+    for(size_t i = 1; i < argc; ++i){
         // lua indices start at 1 for some fucking reason
         const char* arg = lua_tostring(L, i + 1);
         // something weird was passed as an argument just ignore
         if(arg == NULL)
             continue;
-        p.args.data[i] = strdup(arg);
+        vector_push(p.args, arg);
     }
+    // last arg must be null
+    vector_push(p.args, NULL);
 
     // so it takes over
     p.foreground = true;
@@ -133,7 +133,7 @@ static int api_process_new(lua_State* L){
         // something weird was passed as an argument just ignore
         if(arg == NULL)
             continue;
-        p->args.data[i] = strdup(arg);
+        vector_push(p->args, arg);
     }
 
     return 1;
