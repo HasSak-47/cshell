@@ -59,6 +59,13 @@ void __add_to_tracker(void* ptr){
         fprintf(log_out, "will not add nullptr to trackerptr!");
 		return;
 	}
+	for(size_t i = 0; i < inited_ptrs.cap; ++i){
+		if(inited_ptrs.ptr[i] == NULL){
+			fprintf(log_out, "found null at %lu, filling with ptr %p\n", i, ptr);
+			inited_ptrs.ptr[i] = ptr;
+			return;
+		}
+	}
     if(inited_ptrs.cap == inited_ptrs.size){
         size_t new_cap = inited_ptrs.cap != 0 ? inited_ptrs.cap * 2: 1;
         fprintf(log_out, "resized tracker to: %lu entries\n", new_cap);
@@ -78,7 +85,6 @@ void __remove_from_tracker(void* ptr){
     for(size_t i = 0; i < inited_ptrs.size; ++i){
         if(inited_ptrs.ptr[i] == ptr){
             inited_ptrs.ptr[i] = NULL;
-            inited_ptrs.size--;
             return;
         }
     }
@@ -93,7 +99,13 @@ void* realloc_debug(void* ptr, usize len){
 		return malloc_debug(len);
 	}
     fprintf(log_out, "reallocating %p to %lu bytes\n", ptr, len);
-    return realloc(ptr, len);
+	void* aux = realloc(ptr, len);
+	if(aux != ptr){
+		fprintf(log_out, "data moved from %p to %p\n", ptr, aux);
+		__remove_from_tracker(ptr);
+		__add_to_tracker(aux);
+	}
+    return aux;
 }
 
 void* malloc_debug(usize len){

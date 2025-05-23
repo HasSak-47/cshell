@@ -23,7 +23,6 @@ struct so_cmd{
 
 MAKE_STRUCT_VECTOR_NAMED(dirent, struct dirent);
 MAKE_STRUCT_VECTOR_NAMED(so_cmd, struct so_cmd);
-
 struct vector_dirent path_execs = {};
 struct vector_so_cmd so_execs = {};
 
@@ -48,7 +47,7 @@ void load_so_names(){
 		cmd.lib = dlopen(cmd.path, RTLD_LAZY);
 		lib_get_name name = dlsym(cmd.lib, "get_name");
 		strcpy(cmd.name, name());
-		push(so_execs, cmd);
+		v_push(so_execs, cmd);
 	}
 
 	closedir(so_dir);

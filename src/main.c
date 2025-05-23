@@ -1,12 +1,10 @@
-#include "vector.h"
+#include <stdio.h>
+#include <vector.h>
 #include <defs.h>
 #include <alloc.h>
 #include <command.h>
 #include <tokenizer.h>
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <stdbool.h>
 
 #include <pwd.h>
@@ -17,29 +15,7 @@
 
 typedef const char* const cchar;
 
-char* read_line(){
-	char* buffer = (char*)stdalloc.a(sizeof(char));
-	size_t size = 0;
-	size_t esize = 1;
-	char c;
-	while((c = getchar()) != '\n'){
-		buffer[size++] = c;
-		if(size == esize){
-			esize *= 2;
-			void* aux = realloc(buffer, esize);
-			if(aux == NULL) exit(EXIT_FAILURE);
-			buffer = aux;
-
-		}
-	}
-
-	void* aux = realloc(buffer, size + 1);
-	if(aux == NULL) exit(EXIT_FAILURE);
-	buffer = aux;
-	buffer[size] = 0;
-
-	return buffer;
-}
+MAKE_STRUCT_VECTOR(i32);
 
 #define __DEBUG
 
@@ -47,8 +23,27 @@ int main(){
 #ifdef __DEBUG_MEM
     __mem_debug_init();
 #endif
-	load_so_names();
-	unload_so_names();
+	// struct vector_token tokens = make_tokens("this is a \"test string\" yahooo");
+
+	struct vector_i32 v = {};
+	for(size_t i = 0; i < 16; ++i)
+		v_push(v, i);
+	for(size_t i = 16; i < 32; ++i)
+		v_insert(v, i, 0);
+
+	for(size_t i = 0; i < v.len; ++i)
+		printf("%2d ", v.ptr[i]);
+	printf("\n");
+
+	for(size_t i = 8; i < 16; ++i)
+		v_remove(v, i);
+
+	for(size_t i = 0; i < v.len; ++i)
+		printf("%2d ", v.ptr[i]);
+	printf("\n");
+
+	del_alloc(v.ptr);
+	
 END:
 #ifdef __DEBUG_MEM
     __mem_debug_end();
