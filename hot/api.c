@@ -1,3 +1,4 @@
+#include "debug.h"
 #include <process.h>
 #include <state.h>
 #include <utils.h>
@@ -16,6 +17,7 @@
 #include <sys/stat.h>
 
 static int api_exit(lua_State* L){
+    debug_printf("ending session...\n");
     running = false;
     return 0;
 }

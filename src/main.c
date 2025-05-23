@@ -70,8 +70,10 @@ int main(int argc, char* argv[]){
     load();
     // interaction loop
     // this is so fucking ass
+    debug_printf("running: %i\n", running);
     while (running) {
         error = 0;
+        debug_printf("handling input\n");
         handle_input(L);
         if (reload) {
             printf("reloading...\n");
@@ -79,6 +81,7 @@ int main(int argc, char* argv[]){
             load();
             reload = false;
         }
+        debug_printf("reloading state\n");
         get_current_state();
     }
     if(debug)

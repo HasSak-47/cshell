@@ -412,8 +412,9 @@ local function test_pipes()
 
 end
 
+local function config()
+    table.insert(Luall.testing, test_run_cmd )
+    table.insert(Luall.testing, test_pipes )
+end
 
-table.insert(Luall.testing, test_run_cmd )
-table.insert(Luall.testing, test_pipes )
-
-return parser
+return {parser=parser, config=config}
