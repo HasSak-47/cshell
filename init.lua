@@ -1,4 +1,19 @@
+---@type function
+local LuallParser = nil
 Luall = {
+
+    ---list of functions that will be tested
+    ---@type function[]
+    testing = {},
+
+    test = function()
+        print('lua tests... #' .. #Luall.testing)
+        for _, value in ipairs(Luall.testing) do
+            print('test...')
+            value()
+        end
+    end,
+
 	vars = {
         -- this vars are set up at runtime and
         -- the values here are just placeholders
@@ -86,9 +101,8 @@ Luall = {
                 return
             end
 
-            local parser = require('parser')
             table.insert(Luall.vars.history, input)
-            parser(input)
+            LuallParser(input)
         end,
 
         ---@param index number
@@ -124,5 +138,8 @@ Luall = {
         config.config_path = expand_path(config.config_path)
         config.init_path   = expand_path(config.init_path)
         config.hot_path    = expand_path(config.hot_path)
-    end
+    end,
+
 }
+
+LuallParser = require('parser')

@@ -73,18 +73,22 @@ static int api_exec(lua_State* L){
     struct Command p = new_command(path);
     command_reserve_size(&p, argc);
 
-    // the first command was already found!
+    if (debug) {
+        printf("argc: %lu\n", argc);
+    }
+    // the first command was already there!
     for(size_t i = 1; i < argc; ++i){
         // lua indices start at 1 for some fucking reason
         const char* arg = lua_tostring(L, i + 1);
         // something weird was passed as an argument just ignore
         if(arg == NULL)
             continue;
-        vector_push(p.args, arg);
-    }
-    // last arg must be null
-    vector_push(p.args, NULL);
 
+        if (debug) {
+            printf("adding arg: %s\n", arg);
+        }
+        add_arg(&p, arg);
+    }
     // so it takes over
     p.foreground = true;
     // if the cmd does not exists just don't execute it
@@ -124,16 +128,13 @@ static int api_process_new(lua_State* L){
     *p = new_command(path);
     command_reserve_size(p, argc);
 
-    // last arg must be null
-    p->args.data[argc] = NULL;
-    
-    for(size_t i = 0; i < argc; ++i){
+    for(size_t i = 1; i < argc; ++i){
         // lua indices start at 1 for some fucking reason
         const char* arg = lua_tostring(L, i + 1);
         // something weird was passed as an argument just ignore
         if(arg == NULL)
             continue;
-        vector_push(p->args, arg);
+        add_arg(p, arg);
     }
 
     return 1;
@@ -167,16 +168,20 @@ static int api_process_bind_pipe(lua_State* L){
     const char* action = lua_tostring(L, 3);
 
     enum BindType ty = NoneBind;
-    if (strcmp(action, "out")) {
-        ty |= WriteBind;
+    if (strcmp(action, "out") == 0) {
+        ty = WriteBind;
     }
-    if (strcmp(action, "in")) {
-        ty |= ReadBind;
+    else if (strcmp(action, "in") == 0) {
+        ty = ReadBind;
     }
-    if (strcmp(action, "err")) {
-        ty |= ErrorBind;
+    else if (strcmp(action, "err") == 0) {
+        ty = ErrorBind;
     }
 
+    if (debug) {
+        printf("binding %p(%d %d) pipe for cmd %p with bind %d\n", pipe, pipe->p[0], pipe->p[1], cmd, (int)ty);
+    
+    }
     bind_pipe(cmd, pipe, ty);
 
     return 0;
@@ -193,15 +198,28 @@ static int api_pipe_new(lua_State* L){
     return 1;
 }
 
+/*
+ * Creates a new pipe
+ */
+static int api_pipe_close(lua_State* L){
+    // create command
+    struct Pipe* p = lua_touserdata(L, -1);
+    close_pipe(p);
+
+    return 1;
+}
+
 luaL_Reg api_process[] = {
     {"new", api_process_new},
     {"run", api_process_run},
+    {"wait", api_process_wait},
     {"bind_pipe", api_process_bind_pipe},
     {NULL, NULL},
 };
 
 luaL_Reg api_pipe[] = {
     {"new", api_pipe_new},
+    {"close", api_pipe_close},
     {NULL, NULL},
 };
 

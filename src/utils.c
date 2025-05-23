@@ -36,7 +36,7 @@ void __vector_push(struct __Vector* v, const void* data, const size_t size){
         size_t t_cap = (v->cap + 1) * 2;
         void* aux = realloc(v->data, size * t_cap);
         if (aux == NULL) 
-            temporal_suicide_crash("could not resize vector", 0);
+            temporal_suicide_msg("could not resize vector");
         v->data = aux;
         v->cap = t_cap;
     }

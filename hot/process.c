@@ -43,12 +43,13 @@ void close_pipe(struct Pipe* p){
 struct Command new_command(const char* cmd){
     struct Command c = {
         .cmd = strdup(cmd),
+        .args = { 0, 0, 0 },
         .foreground = false,
 
         .pipe = {NULL, NoneBind},
     };
     if (debug) {
-        printf("creating cmd for path: %s\n", cmd);
+        printf("creating cmd for path: %p %s\n", cmd, cmd);
     }
     // first arg is the name
     add_arg(&c, cmd);
@@ -68,11 +69,11 @@ void command_reserve_size(struct Command *cmd, size_t argc){
 }
 
 /*
- * takes an string md and clones it
+ * takes an string and and clones it
  */
 void add_arg(struct Command *cmd, const char *arg){
     if (debug) {
-        printf("adding arg: %s\n", arg);
+        printf("add_arg: %p %s\n", arg, arg);
     }
     char* clone_arg = arg != NULL ? strdup(arg) : NULL;
     vector_push(cmd->args, clone_arg);
@@ -114,13 +115,17 @@ pid_t run(struct Command* p){
             printf("[child]: setting pipes\n");
         }
         if (p->pipe.pipe != NULL) {
-            if (p->pipe.ty & ReadBind)
+            if (p->pipe.ty & ReadBind){
+                printf("[child]: bind in (%d)\n", p->pipe.pipe->p[0]);
                 dup2(p->pipe.pipe->p[0], STDIN_FILENO);
+            }
             else
                 close(p->pipe.pipe->p[0]);
 
-            if (p->pipe.ty & WriteBind)
+            if (p->pipe.ty & WriteBind){
+                printf("[child]: bind out (%d)\n", p->pipe.pipe->p[1]);
                 dup2(p->pipe.pipe->p[1], STDOUT_FILENO);
+            }
             else
                 close(p->pipe.pipe->p[1]);
         }
@@ -142,7 +147,7 @@ pid_t run(struct Command* p){
     }
     for (char** arg = p->args.data; *arg != NULL; ++arg) {
         if (debug) 
-            printf("[parent]: removing arg: %s\n", *arg);
+            printf("[parent]: removing arg: %p %s\n", *arg, *arg);
         free(*arg);
     }
 
