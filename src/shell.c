@@ -4,7 +4,6 @@
 #include <lauxlib.h>
 
 #include <shell.h>
-#include <cmds.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -46,6 +45,9 @@ void parse(const char* prompt){
             return;
         }
     }
+    else{
+        printf("error Luall.inner.parse is not a function");
+    }
     lua_pop(L, 2);
 }
 
@@ -80,12 +82,15 @@ void shell(){
         if(reload){
             unload();
             load();
+            reload = false;
         }
+        update_variables();
     }
 }
 
 void* handler = NULL;
-struct luaL_Reg* api_cmds = NULL;
+struct luaL_Reg* (* get_api)() = NULL;
+void (* take_api)(struct luaL_Reg*) = NULL;
 
 void load(){
     printf("inited state\n");
@@ -97,29 +102,43 @@ void load(){
         luaL_error(L, "Could not init the Luall: %s\n", lua_tostring(L, -1));
     }
 
-    printf("updating values\n");
-    update_values();
+    printf("updating variables...\n");
+    update_variables();
 
     printf("building api\n");
-    int exit = system("make cmd");
+    int exit = system("make hot");
     if(exit != 0){
-        printf("error could not build api\n");
+        printf("could not build api\n");
         return;
     }
     else{
         handler = dlopen("units/cmds.so", RTLD_NOW);
-        api_cmds = dlsym(handler, "api_cmds");
+        get_api = dlsym(handler, "get_api");
+        take_api = dlsym(handler, "take_api");
     }
 
     printf("init api\n");
     init_api();
 }
 
+void init_api(){
+    lua_getglobal(L, "Luall");
+
+    // WARN: magic numbres bad!
+    lua_createtable(L, 4, 4);
+    luaL_setfuncs(L, get_api(), 0);
+
+    lua_setfield(L, -2, "api");
+
+    lua_pop(L, 1);
+}
+
 void unload(){
     if(handler != NULL){
         dlclose(handler);
         handler = NULL;
-        api_cmds = NULL;
+        get_api = NULL;
+        take_api = NULL;
     }
     lua_close(L);
 }

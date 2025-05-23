@@ -35,7 +35,7 @@ local function first_pass(input)
 end
 
 Luall = {
-	values = {
+	variables = {
 		host = "",
 		cwd  = "",
 		user = {
@@ -44,31 +44,48 @@ Luall = {
 		},
 		error = 0,
         debug = false,
+        env  = {
+            path = {},
+        },
 	},
+
+    ---@type function[]
 	api = {},
+    overwrite = {
+        ---@param ... ...
+        cd = function(...)
+            if arg == nil then
+                Luall.api.cd(Luall.values.user.home)
+            else
+                Luall.api.cd(arg[1])
+            end
+        end,
+    },
 	inner = {
 		parse = function(input)
-            if input == "exit" then
-                Luall.api.exit()
-            end
             local tokens = first_pass(input)
+            ---@type string[]
             local args = {}
             for _, token in pairs(tokens) do
                 table.insert(args, token.val)
             end
+
             local cmd = table.remove(args, 1)
-            if cmd == "exit" then
-                Luall.api.exit()
-            elseif cmd == "cd" then
-                Luall.api.cd(cmd)
-            elseif cmd == "reload" then
-                Luall.api.reload()
-            elseif cmd == "lua_info" then
-                Luall.api.lua_info()
-            elseif type(cmd) ~= "nil" then
-                Luall.api.execv(cmd, table.unpack(args))
+
+            print("cmd: " .. cmd)
+            if Luall.overwrite[cmd] ~= nil then
+                Luall.overwrite[cmd](table.unpack(args))
+            elseif Luall.api[cmd] ~= nil then
+                if #args == 0 then
+                    Luall.api[cmd]()
+                else
+                    Luall.api[cmd](table.unpack(args))
+                end
             else
-                print(cmd)
+                local ok, _ = pcall(Luall.api.exec, cmd, table.unpack(args))
+                if not ok then
+                    print("could not find command")
+                end
             end
 		end
 	},

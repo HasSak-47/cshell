@@ -9,7 +9,7 @@ extern lua_State* L;
 void shell();
 
 void load();
-void update_values();
+void update_variables();
 void init_api();
 void unload();
 
