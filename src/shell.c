@@ -155,6 +155,8 @@ void init_api(){
     lua_getglobal(L, "Luall");
 
     // WARN: magic numbres bad!
+    // I think the magic numbers are just a how much there may be
+    // So it may be ok to just leave it like this
     lua_createtable(L, 4, 4);
     luaL_setfuncs(L, get_api(), 0);
 
@@ -164,13 +166,13 @@ void init_api(){
 }
 
 void unload(){
-    lua_close(L);
     if(handler != NULL){
         dlclose(handler);
         handler = NULL;
         get_api = NULL;
         take_api = NULL;
     }
+    lua_close(L);
 }
 
 int last_return_code = 0;

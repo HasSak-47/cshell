@@ -106,6 +106,10 @@ Luall = {
             end
 
             local cmd = table.remove(args, 1)
+            if cmd == nil then
+                Luall.api.set_error(-1)
+                return
+            end
 
             print("cmd : " .. cmd)
             print("argc: " .. #args)
@@ -131,7 +135,11 @@ Luall = {
         prompt = function()
             local vars = Luall.vars;
             local user = vars.user;
-            return user.name .. "@" .. vars.host .. vars.cwd .. ">"
+            local err = ''
+            if Luall.vars.error ~= 0 then
+                err = '[' .. Luall.vars.error .. ']'
+            end
+            return user.name .. "@" .. vars.host .. vars.cwd .. ' ' .. err .. ">"
         end,
         right_prompt = function() return "" end,
         greeting = function() return "" end,
