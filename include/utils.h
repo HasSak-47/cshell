@@ -28,20 +28,24 @@ struct __Vector{
 
 #define DefineVector(Name, T) \
 struct Vector##Name{ \
-    T* data;   \
-    size_t len;   \
-    size_t cap;   \
-};
+    T* data; \
+    size_t len; \
+    size_t cap; \
+}; \
 
-void __vector_push(struct __Vector* v, void* data, size_t size);
-void __vector_pop (struct __Vector* v, size_t size);
+void __vector_push(struct __Vector* v, const void* data, const size_t size);
+void __vector_pop (struct __Vector* v, const size_t size);
+void __vector_reserve(struct __Vector* v, const size_t cap, const size_t size);
 
-#define vector_push(vector, data){ \
-    typeof(data) __vector_data; \
-    __vector_push((struct __Vector)&vector, &__vector_data, sizeof(*vector.data))\
+#define vector_push(__vector, __v_data){ \
+    const typeof(*__vector.data) __vector_data = __v_data; \
+    __vector_push((struct __Vector*)&__vector, &__vector_data, sizeof(*__vector.data));\
 }
 
 #define vector_pop(vector)\
-    __vector_pop((struct __Vector)&vector, sizeof(*vector.data))
+    __vector_pop((struct __Vector*)&vector, sizeof(*vector.data))
+
+#define vector_reserve(vector, cap)\
+    __vector_reserve((struct __Vector*)&vector, cap, sizeof(*vector.data))
 
 #endif

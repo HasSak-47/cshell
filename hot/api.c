@@ -74,7 +74,7 @@ static int api_exec(lua_State* L){
     command_reserve_size(&p, argc);
 
     // last arg must be null
-    p.args[argc] = NULL;
+    p.args.data[argc] = NULL;
     
     for(size_t i = 0; i < argc; ++i){
         // lua indices start at 1 for some fucking reason
@@ -82,7 +82,7 @@ static int api_exec(lua_State* L){
         // something weird was passed as an argument just ignore
         if(arg == NULL)
             continue;
-        p.args[i] = strdup(arg);
+        p.args.data[i] = strdup(arg);
     }
 
     // so it takes over
@@ -125,7 +125,7 @@ static int api_process_new(lua_State* L){
     command_reserve_size(p, argc);
 
     // last arg must be null
-    p->args[argc] = NULL;
+    p->args.data[argc] = NULL;
     
     for(size_t i = 0; i < argc; ++i){
         // lua indices start at 1 for some fucking reason
@@ -133,7 +133,7 @@ static int api_process_new(lua_State* L){
         // something weird was passed as an argument just ignore
         if(arg == NULL)
             continue;
-        p->args[i] = strdup(arg);
+        p->args.data[i] = strdup(arg);
     }
 
     return 1;
