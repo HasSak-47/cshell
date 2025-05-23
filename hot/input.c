@@ -89,7 +89,12 @@ void render_input(struct Input* in){
 }
 
 void set_string(struct Input* in, char* str){
+    free(in->buf);
     size_t len = strlen(str);
+
+    in->buf = str;
+    in->len = len;
+    in->cur = len;
 
 }
 
@@ -122,13 +127,7 @@ void handle_ctrl(struct InputState* in, char c){
                     in->index++;
                     return;
                 }
-
-                free(in->in.buf);
-                size_t len = strlen(v);
-
-                in->in.buf = v;
-                in->in.len = len;
-                in->in.cur = 0;
+                set_string(&in->in, v);
             }
             break;
             // down
@@ -138,13 +137,7 @@ void handle_ctrl(struct InputState* in, char c){
                     in->index--;
                     return;
                 }
-
-                free(in->in.buf);
-                size_t len = strlen(v);
-
-                in->in.buf = v;
-                in->in.len = len;
-                in->in.cur = 0;
+                set_string(&in->in, v);
             }
             break;
             case 'C': // right
