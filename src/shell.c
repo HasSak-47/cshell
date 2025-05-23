@@ -81,6 +81,7 @@ void load_env(){
         lua_setfield(L, -2, name);
         free(name);
     }
+    lua_setfield(L, -2, "env");
     lua_pop(L, 3);
 }
 
