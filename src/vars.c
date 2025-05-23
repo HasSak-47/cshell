@@ -79,29 +79,43 @@ void update_config_variables(){
     lua_getfield(L, -1, "config");
 
     lua_getfield(L, -1, "init_path");
-    if(lua_isstring(L, -1) == LUA_OK){
+    // waos protection!
+    // rare
+    if(lua_isstring(L, -1)){
         init_path = strdup(lua_tostring(L, -1));
     }
     else{
+        lua_pop(L, 1);
+        lua_pushstring(L, INIT_PATH);
+        lua_setfield(L, -2, "init_path");
         init_path = strdup(INIT_PATH);
     }
     lua_pop(L, 1);
 
     lua_getfield(L, -1, "config_path");
-    if(lua_isstring(L, -1) == LUA_OK){
+    if(lua_isstring(L, -1)){
+        printf("config path: %s\n", lua_tostring(L, -1));
         config_path = strdup(lua_tostring(L, -1));
     }
     else{
+        lua_pop(L, 1);
+        lua_pushstring(L, CONFIG_PATH);
+        lua_setfield(L, -2, "config_path");
         config_path = strdup(CONFIG_PATH);
     }
     lua_pop(L, 1);
 
     lua_getfield(L, -1, "hot_path");
-    hot_path = strdup(lua_tostring(L, -1));
+    if(lua_isstring(L, -1)){
+        hot_path = strdup(lua_tostring(L, -1));
+    }
+    else{
+        lua_pop(L, 1);
+        lua_pushstring(L, HOT_PATH);
+        lua_setfield(L, -2, "hot_path");
+        hot_path = strdup(HOT_PATH);
+    }
     lua_pop(L, 1);
-
-
-
 }
 
 void update_variables(){
