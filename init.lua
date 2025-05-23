@@ -118,7 +118,7 @@ Luall = {
         end,
         ---@param path string
         format_path = function (path)
-            return path:gsub(Luall.vars.home, '~')
+            return Luall.inner.expand_path(path)
         end,
         ---@param r integer
         ---@param g integer
@@ -137,6 +137,10 @@ Luall = {
 
             table.insert(Luall.vars.history, input)
             parser.parser(input)
+        end,
+
+        txt_format = function (input)
+            local tokens = parser.tokenize(input)
         end,
 
         ---@param input string
@@ -161,12 +165,11 @@ Luall = {
     prompts = {
         prompt = function()
             local vars = Luall.vars;
-            local user = vars.user;
             local err = ''
             if Luall.vars.error ~= 0 then
                 err = ' [' .. Luall.vars.error .. ']'
             end
-            local cwd = string.gsub(vars.cwd, user.home, '~');
+            local cwd = Luall.inner.format_path(vars.cwd);
             local rc = Luall.inner.reset_color;
             local fc = Luall.inner.full_color;
             local debug = ''
