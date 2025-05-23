@@ -4,7 +4,13 @@
 #include <lua.h>
 #include <stdbool.h>
 
-void shell(lua_State* L);
+extern lua_State* L;
+
+void shell();
+
+void load();
+void unload();
+
 extern int last_return_code;
 extern bool run;
 

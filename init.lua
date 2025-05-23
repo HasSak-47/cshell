@@ -50,25 +50,16 @@ Luall = {
 			---@param line string
 			---@return string
 			parse = function(line)
-				line = string.gsub(line, "\n", " ")
-				line = string.gsub(line, "\t", " ")
-				while string.match(line, "  ") do
-					line = string.gsub(line, "  ", " ")
-				end
-				local parts = {}
-				for str in string.gmatch(line, '"([^"]+)"|%w+') do
-					table.insert(parts, str)
-				end
-				for part in parts do
-					print(part)
-				end
-
+                print(line)
                 return ""
 			end
 		},
 	},
     prompts = {
-        prompt = function() return ">" end,
+        prompt = function()
+            local user = Luall.values.user;
+            return user.name .. "@" .. Luall.values.host .. Luall.values.cwd .. ">"
+        end,
         right_prompt = function() return "" end,
         greeting = function() return "" end,
     }
