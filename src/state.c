@@ -7,20 +7,24 @@
 
 #include <unistd.h>
 
+// event loop control
 
 bool reload  = false;
 bool running = true;
 lua_State* L = NULL;
 
 // Luall.vars.config
+
 char* config_path = NULL;
 char* init_path   = NULL;
 char* hot_path    = NULL;
 
 // Luall.vars
+
 struct User user = { NULL, NULL };
 char* cwd  = NULL;
 char* host = NULL;
+// last error code
 int error = 0;
 bool debug = true;
 
@@ -64,7 +68,7 @@ void get_current_state(){
 }
 
 /**
- * cleaning :)
+ * cleanins the shell state
  */
 void end_shell_state(){
     free(cwd);

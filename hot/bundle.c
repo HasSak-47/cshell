@@ -56,7 +56,7 @@ static int api_exec(lua_State* L){
     else if(pid > 0){ // parent
         waitpid(pid, &error, 0);
     }
-    else{
+    else { // not found
         printf("could not exec\n");
         error = -1;
     }
@@ -77,6 +77,16 @@ luaL_Reg api[] = {
     REG(exec),
     {NULL, NULL},
 };
+
+/**
+ * env table is a metatable
+ * everytime you add or remove from the metatable
+ * it should update the env
+ *
+ * I have no idea how to archive this
+ */
+void setup_env(){
+}
 
 void update_lua_state(lua_State* L){
     lua_getglobal(L, "Luall");
@@ -116,11 +126,16 @@ void handle_input(lua_State* L){
     update_lua_state(L);
     prompt(L);
 
+    // since it is raw mode make sure to print the prompt
+    fflush(stdout);
+
     // NOTE: dumb way to do increase an array len
     char* input = NULL;
     size_t len = 0; 
-    int c = getc(stdin);
+    int c = 0;
+    read(STDIN_FILENO, &c, 1);
     while (c != '\n') {
+        printf("%c", c);
         void* aux = realloc(input, len + 1);
         if (aux == NULL) {
             exit(-1);
@@ -129,6 +144,7 @@ void handle_input(lua_State* L){
         input[len++] = c;
         c = getc(stdin);
     }
+    printf("\n");
 
     // make the input null terminated
     void* aux = realloc(input, len + 1);
@@ -189,6 +205,15 @@ void lua_setup(lua_State* L){
     luaL_setfuncs(L, api, 0);
     lua_setfield(L, -2, "api");
 
+    // load user config
+    if(luaL_dofile(L, config_path) != LUA_OK){
+        // just like before if it doesn't load just nuke it
+        running = false;
+        return;
+    }
+
+    // setup make sure everything in the config
+    // that was a relative path is now an absolute path
     lua_getfield(L, -1, "setup");
     if(lua_isfunction(L, -1)){
         lua_call(L, 0, 0);
