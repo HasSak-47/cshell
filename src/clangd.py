@@ -14,7 +14,6 @@ def lsp_write_message(lsp:Popen, msg: Dict):
     if lsp.stdout == None:
         exit(-1)
 
-# pyright lsp.stdout not null
 def lsp_read_message(lsp: Popen):
     assert lsp.stdout is not None
 
@@ -31,14 +30,6 @@ def lsp_read_message(lsp: Popen):
 
     return json.loads(content)
 
-# def lsp_read_error(lsp: Popen):
-#     assert lsp.stderr is not None
-#     while True:
-#         line: str = lsp.stderr.readline().decode('utf-8')
-#         print('ERROR:', line)
-#         if line == '':
-#             break
-
 def open_document(lsp:Popen, name: str):
     with open(name, 'r') as file:
         text = file.read()
@@ -46,7 +37,6 @@ def open_document(lsp:Popen, name: str):
         lsp_write_message(lsp, {
             'jsonrpc': '2.0',
             'method': 'textDocument/didOpen',
-            'id': 1,
             'params': {
                 'textDocument': {
                     'uri': uri,
