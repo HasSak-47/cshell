@@ -6,17 +6,9 @@
 
 int main(){
     // set initial settings
-    init_path = malloc(sizeof(INIT_PATH));
-    strncpy(init_path, INIT_PATH, sizeof(INIT_PATH) - 1);
-    init_path[sizeof(INIT_PATH) - 1] = 0;
-
-    config_path = malloc(sizeof(CONFIG_PATH));
-    strncpy(config_path, CONFIG_PATH, sizeof(CONFIG_PATH) - 1);
-    config_path[sizeof(CONFIG_PATH) - 1] = 0;
-
-    hot_path = malloc(sizeof(HOT_PATH));
-    strncpy(hot_path, HOT_PATH, sizeof(HOT_PATH) - 1);
-    hot_path[sizeof(HOT_PATH) - 1] = 0;
+    config_path = strdup(CONFIG_PATH);
+    init_path = strdup(INIT_PATH);
+    hot_path = strdup(HOT_PATH);
 
     load();
     set_conf_variables();

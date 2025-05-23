@@ -110,7 +110,7 @@ void load(){
     printf("building api\n");
 
     // this is so wack
-    char* cwd = getcwd(NULL, 0);;
+    char* cwd = getcwd(NULL, 0);
     if(cwd == NULL){
         printf("error: could not move to hot dir\n");
         last_return_code = -1;
@@ -164,13 +164,13 @@ void init_api(){
 }
 
 void unload(){
+    lua_close(L);
     if(handler != NULL){
         dlclose(handler);
         handler = NULL;
         get_api = NULL;
         take_api = NULL;
     }
-    lua_close(L);
 }
 
 int last_return_code = 0;

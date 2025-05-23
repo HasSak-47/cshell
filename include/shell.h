@@ -21,14 +21,16 @@ extern lua_State* L;
 void shell();
 
 void load();
+void set_env_variables();
+void set_conf_variables();
 void setup();
 /**
 Update Luall.vars.* except env
 env variables should are set to the values in Luall.vars.env
  */
 void update_variables();
-void set_env_variables();
-void set_conf_variables();
+void update_config_variables();
+void update_env_variables();
 void init_api();
 void unload();
 
