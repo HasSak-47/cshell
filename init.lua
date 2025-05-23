@@ -125,7 +125,9 @@ Luall = {
                     Luall.api[cmd](table.unpack(args))
                 end
             else
-                local ok, _ = pcall(Luall.api['exec'], cmd, table.unpack(args))
+                -- TODO: should check PATH instead of just putting /bin/
+                local path = '/bin/' .. cmd
+                local ok, _ = pcall(Luall.api['exec'], path, table.unpack(args))
                 if not ok then
                     print("could not find command")
                 end
