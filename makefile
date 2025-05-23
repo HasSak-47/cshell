@@ -11,6 +11,7 @@ OBJS := $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o,$(SRCS))
 SHRD := $(patsubst $(UNI_DIR)/%.c, $(SHR_DIR)/%.so,$(UNTS))
 
 OUT := luall
+BUNDLE := $(SHR_DIR)/bundle.so
 
 C := gcc
 CFLAGS := -g -I include -c
@@ -34,10 +35,14 @@ $(OBJ_DIR):
 run : shell
 	./$(OUT)
 
-hot: $(SHRD)
+hot: $(BUNDLE)
+
+$(BUNDLE): $(SHRD)
+	$(C) -fPIC -shared $(SHRD) -o $(BUNDLE)
+
 
 $(SHR_DIR)/%.so: $(UNI_DIR)/%.c | $(SHR_DIR)
-	@$(C) $(UFLAGS) $< -o $@
+	$(C) $(UFLAGS) $< -o $@
 
 $(SHR_DIR):
 	mkdir -p $(SHR_DIR)
