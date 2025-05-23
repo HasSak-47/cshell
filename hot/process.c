@@ -36,6 +36,9 @@ struct Pipe new_pipe() {
     return p;
 }
 
+/**
+ * @luabind Luall.api.Pipe:close
+ */
 void close_pipe(struct Pipe* p) {
     close(p->p[0]);
     close(p->p[1]);
@@ -60,6 +63,9 @@ struct Command new_command(const char* cmd) {
     return c;
 }
 
+/**
+ * @luabind Luall.api.Command:bind_pipe
+ */
 void bind_pipe(struct Command* cmd, struct Pipe* pipe, enum BindType type) {
     struct PipeBind binding = {pipe, type};
     debug_printf("binding %p(%d %d) pipe for cmd %p with bind %d\n", pipe,
@@ -68,6 +74,9 @@ void bind_pipe(struct Command* cmd, struct Pipe* pipe, enum BindType type) {
     cmd->pipe = binding;
 }
 
+/**
+ * @luabind Luall.api.Command:
+ */
 void command_reserve_size(struct Command* cmd, size_t argc) {
     vector_reserve(cmd->args, argc);
 }

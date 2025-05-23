@@ -1,7 +1,7 @@
-#include "utils.h"
 #include <stdlib.h>
 #include <str.h>
 #include <string.h>
+#include "utils.h"
 
 static void read_escape(
     struct VectorChars* cs, const char* chrs, size_t i, const size_t len) {

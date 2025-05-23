@@ -78,6 +78,7 @@ void render_input(struct Input* in) {
 
 /**
  * Takes an string and makes it the buffer of an input
+ * @luabind Luall.api.input.set
  */
 void set_string(struct Input* in, char* str) {
     free(in->str.data);
