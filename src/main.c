@@ -1,3 +1,6 @@
+#define __DEBUG
+
+#include <stdio.h>
 #include <vector.h>
 #include <defs.h>
 #include <alloc.h>
@@ -12,20 +15,27 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
-typedef const char* const cchar;
-
-
-#define __DEBUG
 
 int main(){
 #ifdef __DEBUG_MEM
     __mem_debug_init();
 #endif
-	char test_str[] = "  this     is a    \"test string\" yahooo    \" wacky sttttt222\" lmaoo o o o ";
-	struct vector_token tokens = make_tokens(test_str);
+	i32 vectored* vector = NULL;
+	for(size_t i = 0; i < 16; ++i){
+		v_push(vector, i);
+	}
+	for(size_t i = 16; i < 32; ++i){
+		v_insert(vector, i, 0);
+	}
+	for(size_t i = 8; i < 16; ++i){
+		v_remove(vector, 8);
+	}
+	for(size_t i = 8; i < v_len(vector); ++i)
+		printf("%d\n", vector[i]);
 
-	del_alloc(tokens.ptr);
-	
+	while(vector != NULL){
+		v_pop(vector);
+	}
 END:
 #ifdef __DEBUG_MEM
     __mem_debug_end();
