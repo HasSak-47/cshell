@@ -1,5 +1,5 @@
 Luall = {
-	vars= {
+	vars = {
         -- this vars are set up at runtime and
         -- the values here are just placeholders
 		host = '',

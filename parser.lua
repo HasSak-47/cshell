@@ -2,14 +2,12 @@
 ---@alias TokenType "statement"
 ---| "process"
 ---| "pipe"
----| "redirection"
+---| "redir"
 ---| "fd"
----| "string"
----@alias Statement {1:Process, 2:(Pipe | Redir(Fd | string) Process)[]}
----@alias Process string[]
----@alias Pipe "|"|"|&"
----@alias Redir ">"|">>"|"<"|"<<"
----@alias Fd "&0"|"&1"|"&2"
+---| "str"
+---
+---@alias Token {val: any, type: TokenType}
+
 
 -- <statement> ::= <process> ( (<pipe> | <redirection> (<fd> | <string>)) <process> )*
 -- <process>   ::= <string> (<string>)*
@@ -39,26 +37,54 @@ local filedesc = {
     "&2",
 }
 
+---@param t table
+local function setify_table(t)
+    local s = {};
+    for _, value in ipairs(t) do
+        s[value] = true
+    end
+    return s;
+end
+
+local pipe_set, redir_set, fd_set = setify_table(pipe_operators), setify_table(redir_operators), setify_table(filedesc)
+
 ---@param tokens string[]
----@return Process
+---@return Token
 local function take_process(tokens)
-    return {}
-end
+    local i = 0
+    for idx, token in ipairs(tokens) do
+        if pipe_set[token] ~= nil then
+            i = idx
+            break
+        end
+        if redir_set[token] ~= nil then
+            i = idx
+            break
+        end
+        if fd_set[token] ~= nil then
+            i = idx
+            break
+        end
+    end
 
----@param tokens string[]
----@return Statement
-local function take_statement(tokens)
-    ---@type Process
     local process = {}
-    ---@type Statement
-    local statement = {process}
+    for _ = 1, i, 1 do
+        local str = table.remove(tokens, 1)
+        table.insert(process, {val=str, type="string"})
+    end
+
+    return {val=process, type="process"}
 end
 
----@param input string
+local function take_statement(tokens)
+    return {val= {take_process(tokens)}, type= "statement"}
+
+end
+
+---@return Token
 local function tokenize(input)
     local i = 1
     local len = #input
-    ---@type string[]
     local tokens = {}
 
     while i <= len do
@@ -95,13 +121,38 @@ local function parser()
     error('in testing...');
 end
 
+---@param t Token[]
+---@param depth number
+local function print_tokens(t, depth)
+    for _, value in ipairs(t) do
+        local tab = string.rep("\t", depth)
+        if value.type == "str" then
+            goto bottom
+        end
+        if value.type == "pipe" then
+            goto bottom
+        end
+        if value.type == "redir" then
+            goto bottom
+        end
+
+            print(tab .. value.type)
+            print_tokens(value.val, depth + 1)
+        goto continue
+
+        ::bottom::
+            print(tab .. 'val: "' .. value.val .. '" ' .. value.type)
+        goto continue
+
+        ::continue::
+    end
+end
+
 --- testing function
 local function main()
     local tokens = tokenize("echo 'test this out' this is wack >> out.txt");
-    for _, val in pairs(tokens) do
-        print(val)
-        
-    end
+    local process = take_process(tokens)
+    print_tokens({process}, 0)
 end
 
 if not package.loaded[...] then
