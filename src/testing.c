@@ -1,34 +1,33 @@
-#include <path.h>
 #include <ctype.h>
+#include <path.h>
 #include <stdlib.h>
 #include <str.h>
 #include <string.h>
 #include <testing.h>
 
-#include <stdio.h>
-#include <state.h>
 #include <hot.h>
+#include <state.h>
+#include <stdio.h>
 
 #ifdef TEST
 
-void test_lua(){
+void test_lua() {
     printf("testing lua functions\n");
     lua_getglobal(L, "Luall");
     lua_getfield(L, -1, "test");
     lua_call(L, 0, 0);
 }
 
-void test_strings(){
-    const char* str = "/home/user/Document\\ with\\ spaces\\ and\\ \\/slashes";
+void test_strings() {
+    const char *str = "/home/user/Document\\ with\\ spaces\\ and\\ \\/slashes";
     struct Path path = parse_path(str);
-    char* cpy = get_path_string(path);
+    char *cpy = get_path_string(path);
     printf("%s == %s", cpy, str);
     free(cpy);
     destruct_path(&path);
 }
 
-
-int test(){
+int test() {
     printf("testing...\n");
 
     test_strings();
@@ -53,7 +52,6 @@ int test(){
     printf("end shell state...\n");
     end_shell_state();
     */
-
 
     return 0;
 }

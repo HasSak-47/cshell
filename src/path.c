@@ -1,50 +1,41 @@
 #include "debug.h"
 #include "str.h"
 #include "vectors.h"
-#include <stdio.h>
-#include <utils.h>
 #include <path.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <utils.h>
 
-static struct PathSegment build_segment(const struct VectorChars name){
+static struct PathSegment build_segment(const struct VectorChars name) {
     // not optimal but meaningful!
     if (string_cmp(name, ".")) {
-        return (struct PathSegment){
-            .ty = CURR_PATH,
-            .name = NULL
-        };
+        return (struct PathSegment){.ty = CURR_PATH, .name = NULL};
     }
     if (string_cmp(name, "..")) {
-        return (struct PathSegment){
-            .ty = PREV_PATH,
-            .name = NULL
-        };
+        return (struct PathSegment){.ty = PREV_PATH, .name = NULL};
     }
 
     return (struct PathSegment){
-        .ty = NAMED_PATH,
+        .ty   = NAMED_PATH,
         .name = name,
     };
 }
 
-void push_name(struct Path* path, const char* name){
-    size_t len = strlen(name);
-    struct VectorChars nname = read_nstring(name, len);
+void push_name(struct Path* path, const char* name) {
+    size_t len                 = strlen(name);
+    struct VectorChars nname   = read_nstring(name, len);
     struct PathSegment segment = build_segment(nname);
 
     vector_push(path->_inner, segment);
 }
 
-void push_segment(struct Path* path, const struct PathSegment segment){
+void push_segment(struct Path* path, const struct PathSegment segment) {
     vector_push(path->_inner, segment);
 }
 
-struct Path root_path(){
-    struct PathSegment segment = {
-        .ty = ROOT_PATH,
-        .name = NULL
-    };
+struct Path root_path() {
+    struct PathSegment segment = {.ty = ROOT_PATH, .name = NULL};
 
     struct Path path = {};
     push_segment(&path, segment);
@@ -52,26 +43,29 @@ struct Path root_path(){
     return path;
 }
 
-static struct PathSegment make_segment(struct Path path, struct VectorChars cs, size_t beg, size_t end){
+static struct PathSegment make_segment(
+    struct Path path, struct VectorChars cs, size_t beg, size_t end) {
     struct VectorChars name = substring(cs, beg, end);
 
     return build_segment(name);
 }
 
-struct Path parse_path(const char *path){
+struct Path parse_path(const char* path) {
     struct Path _path = {};
-    size_t start = 0; 
-    size_t i = 0;
+
+    size_t start = 0;
+    size_t i     = 0;
+
     if (path[0] == '/') {
         _path = root_path();
         start = 1;
-        i = 1;
+        i     = 1;
     }
 
     struct VectorChars cs = read_nstring(path, strlen(path));
 
     for (; i < cs.len; ++i) {
-        if(cs.data[i].ty == NORMAL_CHARACTER && cs.data[i].data == '/'){
+        if (cs.data[i].ty == NORMAL_CHARACTER && cs.data[i].data == '/') {
             push_segment(&_path, make_segment(_path, cs, start, i));
 
             start = i + 1;
@@ -86,21 +80,21 @@ struct Path parse_path(const char *path){
     return _path;
 }
 
-void expand_path(struct Path *self, const struct Path *const cwd){
+void expand_path(struct Path* self, const struct Path* const cwd) {
     if (self->_inner.data[0].ty == CURR_PATH) {
         struct Path cpy = {};
 
-        for (size_t i = 0; i < cwd->_inner.len; ++i){
+        for (size_t i = 0; i < cwd->_inner.len; ++i) {
             struct PathSegment segment = {};
-            segment.ty = cwd->_inner.data[i].ty;
+            segment.ty                 = cwd->_inner.data[i].ty;
             vector_clone(segment.name, cwd->_inner.data[i].name);
 
             push_segment(&cpy, segment);
         }
 
-        for (size_t i = 1; i < self->_inner.len; ++i){
+        for (size_t i = 1; i < self->_inner.len; ++i) {
             struct PathSegment segment = {};
-            segment.ty = self->_inner.data[i].ty;
+            segment.ty                 = self->_inner.data[i].ty;
             vector_clone(segment.name, self->_inner.data[i].name);
 
             push_segment(&cpy, segment);
@@ -113,41 +107,40 @@ void expand_path(struct Path *self, const struct Path *const cwd){
     return;
 }
 
-char* get_path_string(const struct Path path){
+char* get_path_string(const struct Path path) {
     struct VectorString str = {};
     vector_reserve(str, path._inner.len * 5);
     for (size_t i = 0; i < path._inner.len; ++i) {
         switch (path._inner.data[i].ty) {
-            case ROOT_PATH:
-                break;
-            case CURR_PATH:
-                vector_push(str, '.');
-                break;
-            case PREV_PATH:
-                vector_push(str, '.');
-                vector_push(str, '.');
-                break;
-            case NAMED_PATH:{
-                    char* start = to_cstring( path._inner.data[i].name );
-                    for (char* inn = start; *inn != 0; ++inn)
-                        vector_push(str, *inn);
-                    
-                    free(start);
-                }
-                break;
-        } 
+        case ROOT_PATH:
+            break;
+        case CURR_PATH:
+            vector_push(str, '.');
+            break;
+        case PREV_PATH:
+            vector_push(str, '.');
+            vector_push(str, '.');
+            break;
+        case NAMED_PATH: {
+            char* start = to_cstring(path._inner.data[i].name);
+            for (char* inn = start; *inn != 0; ++inn)
+                vector_push(str, *inn);
+
+            free(start);
+        } break;
+        }
         vector_push(str, '/');
     }
     vector_pop(str);
     vector_push(str, '\0');
     size_t len = str.len;
-    char* d = realloc(str.data, len);
+    char* d    = realloc(str.data, len);
 
     return d;
 }
 
-void pop_segment(struct Path *path){
-    if(path->_inner.len < 1){
+void pop_segment(struct Path* path) {
+    if (path->_inner.len < 1) {
         return;
     }
 
@@ -157,7 +150,7 @@ void pop_segment(struct Path *path){
     vector_pop(path->_inner);
 }
 
-void destruct_path(struct Path* path){
+void destruct_path(struct Path* path) {
     for (size_t i = 0; i < path->_inner.len; ++i) {
         struct PathSegment seg = path->_inner.data[i];
         free(seg.name.data);
