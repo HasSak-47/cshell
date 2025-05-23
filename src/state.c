@@ -1,15 +1,18 @@
 #include <pwd.h>
-#include <signal.h>
 #include <state.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
+
+bool reload  = false;
+bool running = true;
+lua_State* L = NULL;
+
 // Luall.vars.config
 char* config_path = NULL;
 char* init_path = NULL;
 char* hot_path = NULL;
-bool running = true;
 
 // Luall.vars
 struct User user = { NULL, NULL };

@@ -15,12 +15,16 @@
 #define CONFIG_PATH "./config.lua"
 #endif
 
+#include <lua.h>
+
+extern bool running;
+extern bool reload;
+lua_State* L;
 
 // Luall.vars.config
 extern char* config_path;
 extern char* init_path;
 extern char* hot_path;
-extern bool running;
 
 // Luall.vars
 struct User{
@@ -38,5 +42,8 @@ extern bool debug;
 
 void init_shell_state();
 void end_shell_state();
+
+void get_current_state();
+void update_current_state();
 
 #endif
