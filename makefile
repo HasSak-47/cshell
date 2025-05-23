@@ -46,6 +46,7 @@ run : shell
 hot: $(BUNDLE)
 
 $(BUNDLE): $(SHRD)
+	touch build.rs
 	$(C) -fPIC -shared $(SHRD) -o $(BUNDLE)
 
 

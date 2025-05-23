@@ -5,6 +5,23 @@ use std::{
 
 use clang::{Clang, EntityKind, Index};
 
+fn make_bind(name: &str, params: Vec<(&str, &str)>, com: String) -> String {
+    let line = com
+        .lines()
+        .filter(|line| line.find("@luabind").is_some())
+        .next()
+        .unwrap()
+        .to_string();
+
+    let bind_name = format!("api_bind_{name}");
+    for (name, ty) in params{
+    }
+
+
+    let mut s = String::new();
+    return s;
+}
+
 fn main() {
     let mut out_file = File::create("testing.txt").unwrap();
 
@@ -55,6 +72,7 @@ fn main() {
         for function in functions {
             let f_name = function.get_name().unwrap();
             let def = function.get_arguments().unwrap();
+            let com = function.get_comment().unwrap();
 
             out_file.write(format!("{f_name}\n").as_bytes()).unwrap();
             for child in def {
