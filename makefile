@@ -38,11 +38,11 @@ run : shell
 hot: $(BUNDLE)
 
 $(BUNDLE): $(SHRD)
-	@$(C) -fPIC -shared $(SHRD) -o $(BUNDLE)
+	$(C) -fPIC -shared $(SHRD) -o $(BUNDLE)
 
 
 $(SHR_DIR)/%.so: $(UNI_DIR)/%.c | $(SHR_DIR)
-	@$(C) $(UFLAGS) $< -o $@
+	$(C) $(UFLAGS) $< -o $@
 
 $(SHR_DIR):
 	mkdir -p $(SHR_DIR)
@@ -51,6 +51,7 @@ clean:
 	rm $(OBJS)
 
 clean_units:
+	rm $(SHR_DIR)/bundle.so
 	rm $(SHRD)
 
 valgrind: shell

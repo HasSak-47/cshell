@@ -1,5 +1,5 @@
 #ifndef TESTING_H
 
-// #define TEST
+#define TEST
 
 #endif // !TESTING_H

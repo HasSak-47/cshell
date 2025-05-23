@@ -1,3 +1,4 @@
+#include "utils.h"
 #include <testing.h>
 
 #include <hot.h>
@@ -92,13 +93,16 @@ void load(){
         return;
     }
 
-    handler = dlopen("units/bundle.so", RTLD_NOW);
+    handler      = dlopen("units/bundle.so", RTLD_NOW);
     handle_input = dlsym(handler, "handle_input");
-    lua_setup = dlsym(handler, "lua_setup");
-    lua_cleanup = dlsym(handler, "lua_cleanup");
+    lua_setup    = dlsym(handler, "lua_setup");
+    lua_cleanup  = dlsym(handler, "lua_cleanup");
 
 #ifdef TEST
     tester = dlsym(handler, "__test");
+    if(tester == NULL){
+        temporal_suicide_msg("could not load test function");
+    }
 #endif
 
     chdir(cwd);
