@@ -94,18 +94,14 @@ void handle_ctrl(struct InputState* in, char c){
             case 'B': // down
                 return;
             case 'C': // right
-                // if(in->in.cur < in->in.len){
-                //     printf("\e[C");
-                //     fflush(stdout);
-                //     in->in.cur++;
-                // }
+                if(in->in.cur < in->in.len){
+                    in->in.cur++;
+                }
                 return;
             case 'D': // left
-                // if(in->in.cur > 0){
-                //     printf("\e[D");
-                //     fflush(stdout);
-                //     in->in.cur--;
-                // }
+                if(in->in.cur > 0){
+                    in->in.cur--;
+                }
                 return;
         }
     
@@ -137,7 +133,12 @@ char* interactive_input(){
         }
 
         insert_char(&state.in, c);
-        printf("%c", c);
+        for (size_t i = state.in.cur - 1; i < state.in.len; ++i) {
+            printf("%c", state.in.buf[i]);
+        }
+        if (state.in.len > 0) {
+            printf("\e[%luD", state.in.len - (state.in.cur - 1));
+        }
         fflush(stdout);
     }
     char* buffer = realloc(state.in.buf, state.in.len + 1);
