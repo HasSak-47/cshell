@@ -1,4 +1,4 @@
-// #include <errno.h>
+#include <errno.h>
 #include <string.h>
 #include <termios.h>
 #include <testing.h>
@@ -27,7 +27,7 @@ struct Pipe new_pipe(){
     struct Pipe p = {};
     int r = pipe(p.p);
     if(r < 0)
-        temporal_suicide_msg("failed to create pipes");
+        temporal_suicide_msg("failed to create new pipe");
 
     return p;
 }
@@ -59,6 +59,9 @@ struct Command new_command(const char* cmd){
 
 void bind_pipe(struct Command *cmd, struct Pipe *pipe, enum BindType type){
     struct PipeBind binding = { pipe, type };
+    if (debug) {
+        printf("binding %p(%d %d) pipe for cmd %p with bind %d\n", pipe, pipe->p[0], pipe->p[1], cmd, (int)type);
+    }
 
     cmd->pipe = binding;
 }
@@ -116,22 +119,39 @@ pid_t run(struct Command* p){
         }
         if (p->pipe.pipe != NULL) {
             if (p->pipe.ty & ReadBind){
-                printf("[child]: bind in (%d)\n", p->pipe.pipe->p[0]);
-                dup2(p->pipe.pipe->p[0], STDIN_FILENO);
+                int error = dup2(p->pipe.pipe->p[0], STDIN_FILENO);
+                if (error == -1) {
+                    printf("errno: %d\n", errno);
+                    temporal_suicide_msg("[child]: could not bind in");
+                }
             }
-            else
+            else{
                 close(p->pipe.pipe->p[0]);
+            }
 
             if (p->pipe.ty & WriteBind){
-                printf("[child]: bind out (%d)\n", p->pipe.pipe->p[1]);
-                dup2(p->pipe.pipe->p[1], STDOUT_FILENO);
+                int error = dup2(p->pipe.pipe->p[1], STDOUT_FILENO);
+                if (error == -1) {
+                    temporal_suicide_msg("[child]: could not bind out");
+                }
             }
-            else
+            else{
                 close(p->pipe.pipe->p[1]);
+            }
+
+            if (p->pipe.ty & ErrorBind){
+                int error = dup2(p->pipe.pipe->p[1], STDERR_FILENO);
+                if (error == -1) {
+                    temporal_suicide_msg("[child]: could not bind error");
+                }
+            }
+            else{
+                close(p->pipe.pipe->p[1]);
+            }
         }
 
         if (debug) {
-            printf("[child]: executing cmd...\n");
+            printf("[child]: executing cmd %s...\n", p->cmd);
         }
         int r = execv(p->cmd, p->args.data);
         if (r < 0)
