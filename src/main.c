@@ -1,18 +1,19 @@
 #include <utils.h>
 #include <testing.h>
-
+#include <debug.h>
 #include <hot.h>
 #include <state.h>
 
-#include <dlfcn.h>
 
 #include <lua.h>
 #include <lualib.h>
 #include <lauxlib.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <termios.h>
+#include <dlfcn.h>
 
 HandleInput handle_input = NULL;
 LuaSetup lua_setup = NULL;
@@ -26,13 +27,10 @@ struct termios orig_termios;
 bool got_original = false;
 
 void unset_raw_mode(){
-
     if(got_original)
         tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig_termios);
     else{
-        if (debug) {
-            printf("there is no original termios?\n");
-        }
+        debug_printf("there is no original termios?\n");
     }
 }
 
@@ -90,9 +88,7 @@ void load(){
 
     // load dynamic symbols
     char* cwd = getcwd(NULL, 0);
-    if(debug){
-        printf("changing to dir: %s\n", hot_path);
-    }
+    debug_printf("changing to dir: %s\n", hot_path);
     chdir(hot_path);
     int exit = system("make hot");
     if( exit != 0) {
@@ -100,9 +96,7 @@ void load(){
         return;
     }
 
-    if(debug){
-        printf("loading handler and bundle\n");
-    }
+    debug_printf("loading handler and bundle\n");
 
     // RTLD_LAZY because for some reason in fedora atomic inside a toolbox
     // it doesn't load :)
@@ -116,13 +110,11 @@ void load(){
     lua_setup    = dlsym(handler, "lua_setup");
     lua_cleanup  = dlsym(handler, "lua_cleanup");
 
-    if(debug){
-        printf("symbols loaded:\n");
-        printf("handler: %p\n", handler);
-        printf("handle_input: %p\n", handle_input);
-        printf("lua_setup: %p\n", lua_setup);
-        printf("lua_input: %p\n", lua_cleanup);
-    }
+    debug_printf("symbols loaded:\n");
+    debug_printf("handler: %p\n", handler);
+    debug_printf("handle_input: %p\n", handle_input);
+    debug_printf("lua_setup: %p\n", lua_setup);
+    debug_printf("lua_input: %p\n", lua_cleanup);
 
 #ifdef TEST
     tester = dlsym(handler, "__test");
@@ -135,9 +127,7 @@ void load(){
     free(cwd);
 
     // init api
-    if(debug){
-        printf("initing api\n");
-    }
+    debug_printf("initing api\n");
     lua_setup(L);
 }
 

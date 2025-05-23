@@ -1,4 +1,3 @@
-#include <testing.h> 
 
 #include <ctype.h>
 #include <state.h>
@@ -17,6 +16,8 @@
 #include <sys/stat.h>
 
 #include <api.h>
+#include <testing.h> 
+#include <debug.h> 
 #include <interface.h>
 #include <input.h>
 
@@ -147,15 +148,11 @@ void create_env(lua_State* L){
 }
 
 void lua_setup(lua_State* L){
-    if (debug) {
-        printf("loading lua stdlibs\n");
-    }
+    debug_printf("loading lua stdlibs\n");
     luaL_openlibs(L);
 
     // load blueprint
-    if (debug) {
-        printf("loading blueprint\n");
-    }
+    debug_printf("loading blueprint\n");
     if(luaL_dofile(L, init_path) != LUA_OK){
         // if it doesn't load just nuke it
         running = false;
