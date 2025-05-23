@@ -2,15 +2,15 @@
 ---@alias TokenType "statement"
 ---| "process"
 ---| "pipe"
+---| "pipe-process"
 ---| "redir"
 ---| "fd"
 ---| "str"
 ---| "undefined"
 ---
----@alias Token {val: any, type: TokenType}
+---@alias Token {val: string | Token, type: TokenType}
 
-
--- <statement> ::= <process> ( (<pipe> | <redirection> (<fd> | <string>)) <process> )*
+-- <statement> ::= <process> (<pipe>  <process> )* (<redirection> (<fd> | <string>))
 -- <process>   ::= <string> (<string>)*
 -- <pipe>      ::= "|" | "|&"
 -- <redirection> ::= "<" | ">" | ">>" | "<<"
@@ -54,15 +54,15 @@ local pipe_set, redir_set, fd_set = setify_table(pipe_operators), setify_table(r
 local function take_process(tokens)
     local i = 0
     for idx, token in ipairs(tokens) do
-        if pipe_set[token] ~= nil then
+        if pipe_set[token.val] ~= nil then
             i = idx
             break
         end
-        if redir_set[token] ~= nil then
+        if redir_set[token.val] ~= nil then
             i = idx
             break
         end
-        if fd_set[token] ~= nil then
+        if fd_set[token.val] ~= nil then
             i = idx
             break
         end
@@ -70,20 +70,21 @@ local function take_process(tokens)
 
     ---@type Token[]
     local process = {}
-    for _ = 1, i - 1, 1 do
-        local str = table.remove(tokens, 1)
-        table.insert(process, {val=str, type="str"})
+    if i == 0 then
+        i = #tokens
+    else
+        i = i - 1
+    end
+
+    for _ = 1, i, 1 do
+        local tkn = table.remove(tokens, 1)
+        table.insert(process, tkn)
     end
 
     return {val=process, type="process"}
 end
 
-local function take_statement(tokens)
-    return {val= {take_process(tokens)}, type= "statement"}
-
-end
-
----@return Token
+---@return Token[]
 local function tokenize(input)
     local i = 1
     local len = #input
@@ -135,16 +136,22 @@ local function print_tokens(t, depth)
         if value.type == "pipe" then
             goto bottom
         end
+        if value.type == "fd" then
+            goto bottom
+        end
         if value.type == "redir" then
             goto bottom
         end
+        if value.type == "undefined" then
+            goto bottom
+        end
 
-            print(tab .. value.type)
-            print_tokens(value.val, depth + 1)
+        print(tab .. value.type)
+        print_tokens(value.val, depth + 1)
         goto continue
 
         ::bottom::
-            print(tab .. 'val: "' .. value.val .. '" ' .. value.type)
+        print(tab .. value.type .. ': "' .. value.val .. '"')
         goto continue
 
         ::continue::
@@ -153,9 +160,46 @@ end
 
 --- testing function
 local function main()
-    local tokens  = tokenize("echo 'test this out' this is wack >> out.txt");
-    local process = take_process(tokens)
-    print_tokens({process}, 0)
+    local tokens  = tokenize("echo 'test this out' this is wack | cat out.txt | test | other stuff >> &1");
+    -- mark special symbols
+    for _, token in ipairs(tokens) do
+        if pipe_set[token.val] ~= nil then
+            token.type = "pipe"
+        elseif redir_set[token.val] ~= nil then
+            token.type = "redir"
+        elseif fd_set[token.val] ~= nil then
+            token.type = "fd"
+        else
+            token.type = "str"
+        end
+    end
+
+    local statement = {val = {take_process(tokens), }, type="statement"}
+
+    while #tokens > 0 do
+        if tokens[1].type == "pipe" then
+            local pipe = table.remove(tokens, 1)
+            local process = take_process(tokens)
+
+            table.insert(statement.val, pipe)
+            table.insert(statement.val, process)
+            goto continue
+        end
+
+        if tokens[1].type == "redir" then
+            local redir = table.remove(tokens, 1)
+            local target = table.remove(tokens, 1)
+
+            table.insert(statement.val, redir)
+            table.insert(statement.val, target)
+            
+        end
+
+        ::continue::
+    end
+
+    print_tokens({statement}, 0)
+
 end
 
 if not package.loaded[...] then
