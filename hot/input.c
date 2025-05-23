@@ -1,4 +1,3 @@
-#include <utils.h>
 #include <ctype.h>
 #include <state.h>
 
@@ -11,8 +10,7 @@
 #include <api.h>
 #include <input.h>
 #include <interface.h>
-
-DefineVector(String, char)
+#include <vectors.h>
 
 struct Input{
     struct VectorString str;
