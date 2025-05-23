@@ -23,6 +23,8 @@ struct vector_header {
 
 void __vector_push(void** vector, usize size_of, struct allocator a);
 void __vector_pop(void** vector, usize size_of, struct allocator a);
+void __vector_delete(void** vector, usize size_of, struct allocator a);
+
 
 #define v_len(v) (((struct vector_header*)((void*)v - __SIZE_H))->len)
 
@@ -54,6 +56,10 @@ void __vector_pop(void** vector, usize size_of, struct allocator a);
 	}\
 	__vector_pop((void**)&v, sizeof(*v), cur_alloc);\
 }
+
+#define v_delete(v) \
+	__vector_delete((void**)&v, sizeof(*v), cur_alloc)
+
 
 #ifdef __cplusplus
 }

@@ -7,12 +7,10 @@ typedef const char* (*lib_get_name)();
 
 #ifndef SHELL_CMDS
 
-int run(char* cmd, char** params);
-void load_path_names();
-void unload_path_names();
+int run(char* cmd, char* params[]);
 
-void load_so_names();
-void unload_so_names();
+void load_commands();
+void unload_commands();
 
 #else
 

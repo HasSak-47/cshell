@@ -1,6 +1,6 @@
+#include <stdlib.h>
 #define __DEBUG
 
-#include <stdio.h>
 #include <vector.h>
 #include <defs.h>
 #include <alloc.h>
@@ -19,26 +19,15 @@
 int main(){
 #ifdef __DEBUG_MEM
     __mem_debug_init();
+	atexit(__mem_debug_end);
 #endif
-	i32 vectored* vector = NULL;
-	for(size_t i = 0; i < 16; ++i){
-		v_push(vector, i);
-	}
-	for(size_t i = 16; i < 32; ++i){
-		v_insert(vector, i, 0);
-	}
-	for(size_t i = 8; i < 16; ++i){
-		v_remove(vector, 8);
-	}
-	for(size_t i = 8; i < v_len(vector); ++i)
-		printf("%d\n", vector[i]);
+	load_commands();
+	char* ls_args[] = {"--color"};
+	char* cd_args[] = {".."};
 
-	while(vector != NULL){
-		v_pop(vector);
-	}
-END:
-#ifdef __DEBUG_MEM
-    __mem_debug_end();
-#endif
+	run("ls", ls_args);
+	run("cd", cd_args);
+	run("ls", ls_args);
+	unload_commands();
 	return 0;
 }

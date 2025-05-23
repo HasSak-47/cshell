@@ -3,7 +3,6 @@
 
 #include "vector.h"
 
-/*
 enum token_type{
 	TokenText,
 	TokenUndetermined,
@@ -19,12 +18,9 @@ struct token{
 	enum token_type type;
 };
 
-MAKE_STRUCT_VECTOR_NAMED(token, struct token);
-
-struct vector_token make_tokens(char*);
-
-struct vector_char split_into_args(struct vector_token* vector);
-*/
+void print_token(struct token token);
+struct token vectored* make_tokens(char*);
+char vectored* split_into_args(struct token vectored** vector);
 
 
 #endif
