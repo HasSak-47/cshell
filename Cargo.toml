@@ -10,3 +10,6 @@ thiserror = "2.0.12"
 
 [lib]
 crate-type = ["cdylib"]
+
+[build-dependencies]
+clang = "2.0.0"
