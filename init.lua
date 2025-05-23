@@ -58,6 +58,19 @@ Luall = {
                 end
             end
         end,
+
+        ---@param args table 
+        alias = function (args)
+            local name = table.remove(args, 1)
+
+            local func, _ = load(args[1])
+            if func == nil then
+                print('could not create alias!')
+                return
+            end
+
+            Luall.alias[name] = func
+        end
     },
     -- this are commands that extend the utility of the api
     extend = {
