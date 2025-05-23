@@ -1,7 +1,9 @@
+#include <testing.h>
+
 #include <hot.h>
 #include <state.h>
 
-#include<dlfcn.h>
+#include <dlfcn.h>
 
 #include <lua.h>
 #include <lualib.h>
@@ -14,6 +16,7 @@
 HandleInput handle_input = NULL;
 LuaSetup lua_setup = NULL;
 LuaCleanup lua_cleanup = NULL;
+Tester tester = NULL;
 void* handler = NULL;
 
 struct termios orig_termios;
@@ -33,11 +36,20 @@ void set_raw_mode(){
 
     struct termios raw = orig_termios;
     raw.c_lflag &= ~(ECHO | ICANON | ISIG | IEXTEN);
+    raw.c_cc[VMIN] = 0;
+    raw.c_cc[VTIME] = 1;
 
     tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
 }
+#ifdef TEST
+int test();
+#endif
 
 int main(){
+#ifdef TEST
+    test();
+    return 0;
+#endif
     set_raw_mode();
 
     init_shell_state();
@@ -83,6 +95,10 @@ void load(){
     // update_variables = dlsym(handler, "update_variables");
     lua_setup = dlsym(handler, "lua_setup");
     lua_cleanup = dlsym(handler, "lua_cleanup");
+
+#ifdef TEST
+    tester = dlsym(handler, "__test");
+#endif
 
     chdir(cwd);
     free(cwd);
