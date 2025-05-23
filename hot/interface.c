@@ -172,28 +172,23 @@ void lua_setup(lua_State* L){
     luaL_requiref(L, "string", luaopen_string, true);
 
     // load blueprint
-    debug_printf("loading blueprint @ \"%s\"\n", init_path);
-    if(luaL_dofile(L, init_path) != LUA_OK){
+    char* _init_path = get_path_string(init_path);
+    debug_printf("loading blueprint @ \"%s\"\n", _init_path);
+    if(luaL_dofile(L, _init_path) != LUA_OK){
         // if it doesn't load just nuke it
         running = false;
         unrecoverable_error("could not load init");
+        free(_init_path);
         return;
     }
+    free(_init_path);
+
     debug_printf("setting up state\n");
     update_lua_state(L);
 
     lua_getglobal(L, "Luall");
     lua_getfield(L, -1, "vars");
     lua_getfield(L, -1, "config");
-
-    lua_pushstring(L, hot_path);
-    lua_setfield(L, -2, "hot_path");
-
-    lua_pushstring(L, config_path);
-    lua_setfield(L, -2, "config_path");
-
-    lua_pushstring(L, init_path);
-    lua_setfield(L, -2, "init_path");
 
     lua_pop(L, 2);
 
@@ -216,11 +211,11 @@ void lua_setup(lua_State* L){
     lua_pop(L, 1);
 
     // load user config
-    if(luaL_dofile(L, config_path) != LUA_OK){
-        // just like before if it doesn't load just nuke it
-        running = false;
-        return;
-    }
+    // if(luaL_dofile(L, config_path) != LUA_OK){
+    //     // just like before if it doesn't load just nuke it
+    //     running = false;
+    //     return;
+    // }
 
     // setup makes sure that everything in the config
     // that was a relative path is now an absolute path
@@ -230,27 +225,6 @@ void lua_setup(lua_State* L){
     }
 
     // just clean the stack
-    lua_pop(L, lua_gettop(L));
-
-    // bring the expanded paths to the global state
-    free(hot_path);
-    free(config_path);
-    free(init_path);
-
-    lua_getglobal(L, "Luall");
-    lua_getfield(L, -1, "vars");
-    lua_getfield(L, -1, "config");
-
-    lua_getfield(L, -1, "hot_path");
-    hot_path = strdup(lua_tostring(L, -1));
-    lua_pop(L, 1);
-
-    lua_getfield(L, -1, "config_path");
-    config_path = strdup(lua_tostring(L, -1));
-    lua_pop(L, 1);
-
-    lua_getfield(L, -1, "init_path");
-    init_path = strdup(lua_tostring(L, -1));
     lua_pop(L, lua_gettop(L));
 }
 

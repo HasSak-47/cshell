@@ -1,3 +1,4 @@
+#include "path.h"
 #include <bindgen.h>
 #include <string.h>
 #include <utils.h>
@@ -102,17 +103,21 @@ int main(const int argc, const char* argv[]){
     return 0;
 }
 
+void chdir_path(struct Path* path){
+    char* _path = get_path_string(*path);
+    chdir( _path);
+    free(_path);
+}
+
 void load(){
     // init blank lua state
     L = luaL_newstate();
 
     // load dynamic symbols
-    char* cwd = getcwd(NULL, 0);
-    debug_printf("changing to dir: %s\n", hot_path);
-    chdir(hot_path);
+    chdir_path(&hot_path);
     int exit = system("make hot");
     if( exit != 0) {
-        chdir(cwd);
+        chdir_path(&cwd);
         return;
     }
 
@@ -142,9 +147,6 @@ void load(){
         temporal_suicide_msg("could not load test function");
     }
 #endif
-
-    chdir(cwd);
-    free(cwd);
 
     // init api
     debug_printf("initing api\n");

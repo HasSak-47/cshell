@@ -36,10 +36,19 @@ struct Vector##Name{ \
 void __vector_push(struct __Vector* v, const void* data, const size_t size);
 void __vector_pop (struct __Vector* v, const size_t size);
 void __vector_reserve(struct __Vector* v, const size_t cap, const size_t size);
+void __vector_clone(struct __Vector* dst, const struct __Vector* const src, const size_t size);
 
 #define vector_push(__vector, __v_data){ \
     const typeof(__v_data) __vector_data = __v_data; \
     __vector_push((struct __Vector*)&__vector, &__vector_data, sizeof(*__vector.data));\
+}
+
+#define vector_clone(__dst, __src){ \
+    __vector_clone(\
+        (struct __Vector*)&__dst,\
+        (struct __Vector*)&__src,\
+        sizeof(*__src.data)\
+    );\
 }
 
 #define vector_pop(vector)\

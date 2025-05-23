@@ -23,9 +23,9 @@ extern bool reload;
 extern lua_State* L;
 
 // Luall.vars.config
-extern char* config_path;
-extern char* init_path;
-extern char* hot_path;
+extern struct Path config_path;
+extern struct Path init_path;
+extern struct Path hot_path;
 
 // Luall.vars
 struct User{

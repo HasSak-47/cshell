@@ -59,6 +59,14 @@ static int api_cd(lua_State* L){
     }
     debug_printf("cd to %s\n", path);
     error = chdir(path);
+
+    char* cwd = getcwd(NULL, 0);
+    lua_getglobal(L, "Luall");
+    lua_getfield(L, -1, "vars");
+    lua_pushstring(L, cwd);
+    lua_setfield(L, -2, "cwd");
+    lua_pop(L, 2);
+
     return 0;
 }
 
