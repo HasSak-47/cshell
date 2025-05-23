@@ -36,11 +36,11 @@ end
 
 Luall = {
 	vars= {
-		host = "",
-		cwd  = "",
+		host = '',
+		cwd  = '',
 		user = {
-			name = "",
-			home = "",
+			name = '',
+			home = '',
 		},
 		error = 0,
         debug = false,
@@ -74,10 +74,10 @@ Luall = {
         cd = function(args)
             if #args == 0 then
                 Luall.api.cd(Luall.vars.user.home)
-                -- print('cd to home')
+                print('cd to home')
             else
                 local path = Luall.inner.expand_path(args[1])
-                -- print('cd to: ' .. path)
+                print('cd to: ' .. path)
                 Luall.api.cd(path)
             end
         end,
@@ -138,9 +138,10 @@ Luall = {
             local user = vars.user;
             local err = ''
             if Luall.vars.error ~= 0 then
-                err = '[' .. Luall.vars.error .. ']'
+                err = ' [' .. Luall.vars.error .. ']'
             end
-            return user.name .. "@" .. vars.host .. vars.cwd .. ' ' .. err .. ">"
+            local cwd = string.gsub(vars.cwd, user.home, '~');
+            return user.name .. "@" .. vars.host .. ' ' .. cwd .. err .. ">"
         end,
         right_prompt = function() return "" end,
         greeting = function() return "" end,
@@ -148,8 +149,9 @@ Luall = {
 
     setup = function()
         local config = Luall.vars.config
-        Luall.vars.config.config_path = Luall.inner.expand_path(config.config_path)
-        Luall.vars.config.init_path   = Luall.inner.expand_path(config.init_path)
-        Luall.vars.config.hot_path    = Luall.inner.expand_path(config.hot_path)
+        local expand_path = Luall.inner.expand_path
+        config.config_path = expand_path(config.config_path)
+        config.init_path   = expand_path(config.init_path)
+        config.hot_path    = expand_path(config.hot_path)
     end
 }
