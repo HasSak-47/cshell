@@ -141,5 +141,10 @@ Luall = {
         local settings = Luall.vars.settings
         settings.config = expand_path(settings.config)
         settings.init = expand_path(settings.init)
+        settings.hot = expand_path(settings.hot)
+        print('settings: ')
+        print('config: ', settings.config)
+        print('init  : ', settings.init)
+        print('hot   : ', settings.hot)
     end
 }
