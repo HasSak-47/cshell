@@ -63,27 +63,27 @@ struct InputState{
 };
 
 void render_input(struct Input* in){
-    // if this is not here it will move left when backspace is pressed
-    // idk why tho
     if (in->len == 0) {
+        putchar(' ');
+        printf("\e[D");
+        fflush(stdout);
         return;
     }
     for (size_t i = 0; i < in->len; ++i)
         putchar(in->buf[i]);
     
     printf("\e[%luD", in->len);
-    if (in->cur != 0) {
+
+    if (in->cur > 0)
         printf("\e[%luC", in->cur);
-    }
+
     fflush(stdout);
-    if (in->len == 0)
-        return;
-    if (in->cur != 0) {
+    if (in->cur > 0)
         printf("\e[%luD", in->cur);
-    }
+
     for (size_t i = 0; i < in->len; ++i)
         putchar(' ');
-    printf("\e[%luD", in->len);
+    printf("\e[%luD", in->cur);
 }
 
 
