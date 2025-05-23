@@ -1,3 +1,5 @@
+use std::{ffi::{c_char, c_int, CStr}, ptr::null};
+
 use clap::Parser;
 
 #[derive(Parser, Debug)]
@@ -5,4 +7,38 @@ use clap::Parser;
 struct Args{
     #[arg(short, long, default_value_t = false)]
     debug: bool,
+    script: Option<String>,
 }
+
+#[unsafe(no_mangle)]
+unsafe extern "C" fn parse_args(argc: c_int, argv: *const *const c_char) -> Box<Args>{
+    let mut args = Vec::new();
+    unsafe{
+        for i in 0..(argc as usize){
+            let arg = CStr::from_ptr(*(argv.add(i)));
+            if let Ok(s) = arg.to_str(){
+                args.push(s.to_string());
+            }
+        }
+    }
+
+
+    Box::new(Args::parse_from(args))
+}
+
+#[unsafe(no_mangle)]
+unsafe extern "C" fn is_debug(args: &Box<Args>) -> bool{
+    return args.debug;
+}
+
+#[unsafe(no_mangle)]
+unsafe extern "C" fn get_script(args: &Box<Args>) -> *const c_char{
+    if let Some(s) = &args.script {
+        return s.as_ptr() as *const c_char;
+    }
+
+    return null();
+}
+
+#[unsafe(no_mangle)]
+unsafe extern "C" fn free_args(_: Box<Args>) { }
