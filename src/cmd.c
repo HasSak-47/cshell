@@ -20,7 +20,7 @@ size_t cpath = 0;
 
 char* ALLOCATED get_name(const char* name){
 	char* target = malloc(1024);
-	strcpy(target, "utils/"); 
+	strcpy(target, "./units/"); 
 	char* r  = strcat(target, name);
 	if(r == NULL){
 		free(target);
@@ -30,7 +30,7 @@ char* ALLOCATED get_name(const char* name){
 }
 
 void load_cmds(){
-	DIR* dir = opendir("./utils");
+	DIR* dir = opendir("./units");
 	struct dirent* entry; 
 	size_t count = 0;
 	while( (entry = readdir(dir)) != NULL)
@@ -56,9 +56,8 @@ void load_cmds(){
 		}
 		hot[count].handle = handle;
 
-		struct Command* c = (struct Command*)dlsym("cmd", RTLD_DEFAULT);
+		struct Command* c = (struct Command*)dlsym(handle, "cmd");
 		if(c != NULL){
-			printf("cmd position %p\n", c);
 			hot[count].cmd = *c;
 		}
 		else{
@@ -67,6 +66,7 @@ void load_cmds(){
 		count++;
 	}
 	chot = count;
+	closedir(dir);
 }
 
 void unload_cmds(){

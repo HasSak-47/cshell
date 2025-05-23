@@ -13,20 +13,20 @@ SHRD := $(patsubst $(UNI_DIR)/%.c, $(SHR_DIR)/%.so,$(UNTS))
 OUT := luall
 
 C := gcc
-CFLAGS := -g -I include
-UFLAGS := -g -I include -shared -fpic
+CFLAGS := -g -I include -c
+UFLAGS := -g -shared -I include
 
 LDFLAGS := -o $(OUT) -export-dynamic
 
 all: $(OUT) units
 
 $(OUT): $(OBJS)
-	$(C) $(CFLAGS) $(OBJS) $(LDFLAGS)
+	$(C) $(OBJS) $(LDFLAGS)
 
 shell: $(OUT)
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | $(OBJ_DIR)
-	$(C) $(CFLAGS) -c $< -o $@
+	$(C) $(CFLAGS) $< -o $@
 
 $(OBJ_DIR):
 	mkdir -p $(OBJ_DIR)
@@ -37,7 +37,7 @@ run : shell
 cmd : $(SHRD)
 
 $(SHR_DIR)/%.so: $(UNI_DIR)/%.c | $(SHR_DIR)
-	$(C) $(UFLAGS) -c $< -o $@
+	$(C) $(UFLAGS) $< -o $@
 
 $(SHR_DIR):
 	mkdir -p $(SHR_DIR)
