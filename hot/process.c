@@ -162,6 +162,8 @@ pid_t run(struct Command* p){
     if (debug) {
         printf("[parent]: returning pid\n");
     }
+    p->cmd = NULL;
+    p->args = NULL;
     return pid;
 }
 
