@@ -1,6 +1,4 @@
-
-
-local parser_ok, parser = pcall(require,'parser')
+local parser_ok, parser = pcall(require, 'parser')
 if not parser_ok then
     print('could not load parser')
 end
@@ -18,27 +16,27 @@ Luall = {
         end
     end,
 
-	vars = {
+    vars = {
         -- this vars are set up at runtime and
         -- the values here are just placeholders
-		host = '',
-		cwd  = '',
-		user = {
-			name = '',
-			home = '',
-		},
-		error = 0,
-        debug = false,
+        host          = '',
+        cwd           = '',
+        user          = {
+            name = '',
+            home = '',
+        },
+        error         = 0,
+        debug         = false,
         -- this variable is lua only
         -- it only exists durent this current session
-        history = {
+        history       = {
             'lua print("hello world")',
             '!ls -lA',
         },
         -- special vars that don't get updated at each cycle
         -- changes to env should trigger an env update
-        env = {},
-        config = {
+        env           = {},
+        config        = {
             init_path = '',
             config_path = '',
             hot_path = '',
@@ -46,14 +44,14 @@ Luall = {
 
         -- vars that c will not  see
         start_in_home = true,
-	},
+    },
 
     -- this is set up by c
     api = {},
     -- this are commands that only exist in lua
     util = {
         ---@param args table
-        lua = function (args)
+        lua = function(args)
             if #args == 0 then
                 return;
             end
@@ -67,8 +65,8 @@ Luall = {
             end
         end,
 
-        ---@param args table 
-        alias = function (args)
+        ---@param args table
+        alias = function(args)
             local name = table.remove(args, 1)
 
             local func, _ = load(args[1])
@@ -90,7 +88,7 @@ Luall = {
                 Luall.api.cd(path)
             end
         end,
-        exec = function (cmd, ...)
+        exec = function(cmd, ...)
             cmd = Luall.inner.expand_path(cmd)
             if debug then
                 print(cmd)
@@ -101,19 +99,19 @@ Luall = {
     -- the alias are blueprints for process.new
     alias = {
         ls = function(...)
-            return {'ls', {'--color', table.unpack(...)}}
+            return { 'ls', { '--color', table.unpack(...) } }
         end,
 
         ll = function(...)
-            return {'ls', {'--color', '-lA', table.unpack(...)}}
+            return { 'ls', { '--color', '-lA', table.unpack(...) } }
         end,
     },
     -- this are not commands but usefull stuff
-	inner = {
+    inner = {
         ---@param path string
         expand_path = function(path)
             local start = path:sub(1, 2)
-            if  start == './' then
+            if start == './' then
                 path = string.gsub(path, '.', Luall.vars.cwd, 1)
             elseif start == '~/' then
                 path = string.gsub(path, '~', Luall.vars.user.home, 1)
@@ -121,7 +119,7 @@ Luall = {
             return path
         end,
         ---@param path string
-        format_path = function (path)
+        format_path = function(path)
             local _beg, _ = path:find(Luall.vars.user.home);
             if _beg == nil or _beg > 1 then
                 return path
@@ -132,20 +130,20 @@ Luall = {
         ---@param r integer
         ---@param g integer
         ---@param b integer
-        full_color = function (r, g, b)
+        full_color = function(r, g, b)
             return '\x1b[38;2;' .. r .. ';' .. g .. ';' .. b .. 'm'
         end,
-        reset_color = function ()
+        reset_color = function()
             return '\x1b[0m'
         end,
         ---@param input string
-		parse = function(input)
+        parse = function(input)
             if input == '' then
                 return
             end
 
             table.insert(Luall.vars.history, input)
-            local ok, err = pcall(parser.parser,input)
+            local ok, err = pcall(parser.parser, input)
             if not ok then
                 print(err)
                 Luall.api.exit()
@@ -153,7 +151,7 @@ Luall = {
         end,
 
         ---@param input string
-        txt_format = function (input)
+        txt_format = function(input)
             local tokens = parser.tokenize(input)
         end,
 
@@ -166,7 +164,7 @@ Luall = {
 
             return Luall.vars.history[indx]
         end,
-	},
+    },
     prompts = {
         prompt = function()
             local vars = Luall.vars;

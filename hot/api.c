@@ -71,7 +71,8 @@ static int api_cd(lua_State* L) {
         chdir(path);
         destruct_path(&cwd);
         cwd = c_path;
-    } else {
+    }
+    else {
         char* cc_path = get_path_string(c_path);
         debug_printf("c_path: %s\n", cc_path);
         free(cc_path);
@@ -79,7 +80,8 @@ static int api_cd(lua_State* L) {
             if (c_path._inner.data[i].ty == PREV_PATH) {
                 debug_printf("prev!\n");
                 pop_segment(&cwd);
-            } else if (c_path._inner.data[i].ty == NAMED_PATH) {
+            }
+            else if (c_path._inner.data[i].ty == NAMED_PATH) {
                 push_segment(&cwd, c_path._inner.data[i]);
             }
         }
@@ -150,7 +152,8 @@ static int api_exec(lua_State* L) {
         }
         set_to_foreground();
         set_raw_mode();
-    } else {
+    }
+    else {
         error = -1;
         printf("file not found!\n");
     }
@@ -216,9 +219,11 @@ static int api_process_bind_pipe(lua_State* L) {
     enum BindType ty = NoneBind;
     if (strcmp(action, "out") == 0) {
         ty |= WriteBind;
-    } else if (strcmp(action, "in") == 0) {
+    }
+    else if (strcmp(action, "in") == 0) {
         ty |= ReadBind;
-    } else if (strcmp(action, "err") == 0) {
+    }
+    else if (strcmp(action, "err") == 0) {
         ty |= ErrorBind;
     }
 
@@ -252,13 +257,17 @@ static int api_pipe_close(lua_State* L) {
 static void __print_param(lua_State* L, size_t i) {
     if (lua_isstring(L, i + 1)) {
         printf("%s", lua_tostring(L, i));
-    } else if (lua_isboolean(L, i)) {
+    }
+    else if (lua_isboolean(L, i)) {
         printf("%s", lua_toboolean(L, i) ? "true" : "false");
-    } else if (lua_isinteger(L, i)) {
+    }
+    else if (lua_isinteger(L, i)) {
         printf("%d", lua_tointeger(L, i));
-    } else if (lua_isnumber(L, i)) {
+    }
+    else if (lua_isnumber(L, i)) {
         printf("%f", lua_tonumber(L, i));
-    } else {
+    }
+    else {
         printf("<%s %p>", luaL_typename(L, i + 1), lua_topointer(L, i + 1));
     }
 }
