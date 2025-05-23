@@ -12,9 +12,10 @@ struct Command{
     char* cmd;
     char** args;
     size_t argc;
-    struct Pipe* in;
-    struct Pipe* out;
-    struct Pipe* err;
+
+    int* in;
+    int* out;
+    int* err;
 };
 
 struct Pipe new_pipe();
