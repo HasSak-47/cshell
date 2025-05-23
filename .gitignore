@@ -5,3 +5,8 @@ vgcore.*
 luall
 .env
 log.txt
+
+
+# Added by cargo
+
+/target
