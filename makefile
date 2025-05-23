@@ -7,7 +7,10 @@ SHR_DIR := units
 SRCS := $(wildcard $(SRC_DIR)/*.c)
 UNTS := $(wildcard $(UNI_DIR)/*.c)
 
-OBJS := $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o,$(SRCS))
+OUT_RUST_LIB := $(OBJ_DIR)/libcshell.so 
+SRC_RUST_LIB := target/release/libcshell.so
+
+OBJS := $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o,$(SRCS)) $(OUT_RUST_LIB)
 SHRD := $(patsubst $(UNI_DIR)/%.c, $(SHR_DIR)/%.so,$(UNTS))
 
 OUT := luall
@@ -19,12 +22,17 @@ UFLAGS := -g -shared -I include -fPIC
 
 LDFLAGS := -o $(OUT) -export-dynamic -llua
 
-all: $(OUT) hot
+all: shell hot
+
+shell: $(OUT)
 
 $(OUT): $(OBJS)
 	$(C) $(OBJS) $(LDFLAGS)
 
-shell: $(OUT)
+$(OUT_RUST_LIB): Cargo.toml
+	cargo build --release
+	cp $(SRC_RUST_LIB) $(OUT_RUST_LIB)
+	cbindgen -c ./cbindgen.toml --output include/bindgen.h
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | $(OBJ_DIR)
 	$(C) $(CFLAGS) $< -o $@
@@ -60,5 +68,5 @@ valgrind: shell
 	valgrind ./$(OUT)
 
 
-.PHONY: all clean cmds source
+.PHONY: all clean cmds source $(OUT_RUST_LIB)
 

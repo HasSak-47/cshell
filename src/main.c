@@ -1,3 +1,4 @@
+#include "bindgen.h"
 #include <string.h>
 #include <utils.h>
 #include <testing.h>
@@ -52,12 +53,16 @@ void set_raw_mode(){
 int test();
 #endif
 
-int main(int argc, char* argv[]){
-    if (argc > 1) {
-        if (strcmp(argv[1], "--debug") == 0) {
-            debug = true;
-            debug_printf("set to debug mode\n");
-        }
+int main(const int argc, const char* argv[]){
+    struct Args* args = NULL;
+    const char* script = NULL;
+    args = parse_args(argc, argv);
+    if (is_debug(args)) {
+        debug = true;
+    }
+    script = get_script(args);
+    if (script != NULL) {
+        debug_printf("running scripting %s\n", script);
     }
 #ifdef TEST
     test();
@@ -71,21 +76,27 @@ int main(int argc, char* argv[]){
     // interaction loop
     // this is so fucking ass
     debug_printf("running: %i\n", running);
-    while (running) {
-        error = 0;
-        debug_printf("handling input\n");
-        handle_input(L);
-        if (reload) {
-            printf("reloading...\n");
-            unload();
-            load();
-            reload = false;
+    if (script != NULL) {
+        luaL_dofile(L, script);
+    }
+    else{
+        while (running) {
+            error = 0;
+            debug_printf("handling input\n");
+            handle_input(L);
+            if (reload) {
+                printf("reloading...\n");
+                unload();
+                load();
+                reload = false;
+            }
+            debug_printf("reloading state\n");
+            get_current_state();
         }
-        debug_printf("reloading state\n");
-        get_current_state();
     }
     if(debug)
         printf("graceful exit...\n");
+    free_args(args);
     unload();
     end_shell_state();
     return 0;
