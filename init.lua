@@ -74,10 +74,8 @@ Luall = {
         cd = function(args)
             if #args == 0 then
                 Luall.api.cd(Luall.vars.user.home)
-                print('cd to home')
             else
                 local path = Luall.inner.expand_path(args[1])
-                print('cd to: ' .. path)
                 Luall.api.cd(path)
             end
         end,
@@ -129,7 +127,7 @@ Luall = {
                 local path = '/bin/' .. cmd
                 local ok, _ = pcall(Luall.api['exec'], path, table.unpack(args))
                 if not ok then
-                    print("could not find command")
+                    print('cmd not found')
                 end
             end
 		end

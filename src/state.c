@@ -1,3 +1,5 @@
+#include <lauxlib.h>
+#include <lua.h>
 #include <state.h>
 
 #include <pwd.h>
@@ -28,8 +30,9 @@ char* host = NULL;
 int error = 0;
 bool debug = true;
 
-// TODO:
-// Luall.vars.env
+
+// Luall.vars.history
+char** history = NULL;
 
 
 /**
