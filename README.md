@@ -21,6 +21,7 @@ To build and run this project, you will need:
 - **gcc**
 - **make**
 
+Clone the project `git clone -b stable https://github.com/HasSak-47/cshell.git`
 to build all: `make all`
 to run: `make run` or `./luall` after building
 
