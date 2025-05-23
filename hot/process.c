@@ -92,6 +92,14 @@ void add_arg(struct Command* cmd, const char* arg) {
 }
 
 /**
+ * takes an string and and clones it
+ * @luabind Luall.api.Command:stdout_bind
+ */
+bool stdout_bind(struct Command* cmd){
+    return false;
+};
+
+/**
  * Runs a given command
  *
  * It frees all the command info at exit

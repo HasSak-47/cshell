@@ -17,8 +17,8 @@ OUT := luall
 BUNDLE := $(SHR_DIR)/bundle.so
 
 C := gcc
-CFLAGS := -g -shared -I include -c
-UFLAGS := -g -shared -I include -fPIC
+CFLAGS := -g -shared -I include -c -Wall -Werror
+UFLAGS := -g -shared -I include -fPIC -Wall -Werror
 
 LDFLAGS := -o $(OUT) -export-dynamic -llua
 

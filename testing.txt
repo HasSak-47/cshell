@@ -1,21 +1,66 @@
-cargo:rerun-if-changed=src/debug.c
-cargo:rerun-if-changed=src/lib.rs
-cargo:rerun-if-changed=src/main.c
-cargo:rerun-if-changed=src/path.c
-cargo:rerun-if-changed=src/state.c
-cargo:rerun-if-changed=src/testing.c
-cargo:rerun-if-changed=src/utils.c
-cargo:rerun-if-changed=src/str.c
-version: clang version 19.1.7 (Fedora 19.1.7-3.fc41)
-file: ./src/debug.c
-file: ./src/lib.rs
-file: ./src/main.c
-file: ./src/path.c
-file: ./src/state.c
-file: ./src/testing.c
-file: ./src/utils.c
-file: ./src/str.c
-string_cmp -> int => int => int
-c: struct VectorChars => struct VectorChars => struct VectorChars
-str: const char * => const char * => str
+cargo:rerun-if-changed=hot/api.c
+cargo:rerun-if-changed=hot/interface.c
+cargo:rerun-if-changed=hot/testing.c
+cargo:rerun-if-changed=hot/process.c
+cargo:rerun-if-changed=hot/input.c
+version: clang version 19.1.7
+file: ./hot/api.c
+file: ./hot/interface.c
+file: ./hot/testing.c
+file: ./hot/process.c
+new_pipe -> struct Pipe => struct Pipe => struct Pipe
+
+close_pipe -> void => void => void
+p: struct Pipe * => struct Pipe *
+
+new_command -> struct Command => struct Command => struct Command
+path: const char * => str
+
+command_reserve_size -> void => void => void
+cmd: struct Command * => struct Command *
+size: unsigned long => unsigned long
+
+bind_pipe -> void => void => void
+cmd: struct Command * => struct Command *
+pipe: struct Pipe * => struct Pipe *
+ty: enum BindType => enum BindType
+
+add_arg -> void => void => void
+cmd: struct Command * => struct Command *
+arg: const char * => str
+
+run -> pid_t => int => int
+p: struct Command * => struct Command *
+
+new_pipe -> struct Pipe => struct Pipe => struct Pipe
+
+close_pipe -> void => void => void
+p: struct Pipe * => struct Pipe *
+
+new_command -> struct Command => struct Command => struct Command
+cmd: const char * => str
+
+bind_pipe -> void => void => void
+cmd: struct Command * => struct Command *
+pipe: struct Pipe * => struct Pipe *
+type: enum BindType => enum BindType
+
+command_reserve_size -> void => void => void
+cmd: struct Command * => struct Command *
+argc: unsigned long => unsigned long
+
+add_arg -> void => void => void
+cmd: struct Command * => struct Command *
+arg: const char * => str
+
+stdout_bind -> _Bool => _Bool => _Bool
+cmd: struct Command * => struct Command *
+
+run -> pid_t => int => int
+p: struct Command * => struct Command *
+
+file: ./hot/input.c
+set_string -> void => void => void
+in: struct Input * => struct Input *
+str: char * => str
 
