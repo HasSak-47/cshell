@@ -2,7 +2,8 @@
 #define __RUN_H__
 #include <stdbool.h>
 
-typedef int command_result;
+typedef int (*lib_command)(char**);
+typedef const char* (*lib_get_name)();
 
 #ifndef SHELL_CMDS
 
@@ -15,8 +16,9 @@ void unload_so_names();
 
 #else
 
-typedef command_result (*__command)(char**);
-void init_shell_cmd(char* name, __command c);
+// this is for the so files to define stuff
+int run(char** params);
+const char* get_name();
 
 #endif
 
