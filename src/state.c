@@ -1,7 +1,10 @@
-#include <pwd.h>
 #include <state.h>
+
+#include <pwd.h>
+
 #include <stdlib.h>
 #include <string.h>
+
 #include <unistd.h>
 
 
@@ -43,10 +46,9 @@ void get_current_state(){
         free(cwd);
     cwd = getcwd(NULL, 0);
 
-    if(host != NULL){
+    if(host != NULL)
         free(host);
-        host = malloc(256);
-    }
+    host = malloc(256);
     gethostname(host, 256);
 
     uid_t uid = getuid();

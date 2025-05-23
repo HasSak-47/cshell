@@ -1,8 +1,6 @@
 #ifndef __STATE_H__
 #define __STATE_H__
 
-#include <stdbool.h>
-
 #ifndef INIT_PATH
 #define INIT_PATH "./init.lua"
 #endif
@@ -15,11 +13,12 @@
 #define CONFIG_PATH "./config.lua"
 #endif
 
+#include <stdbool.h>
 #include <lua.h>
 
 extern bool running;
 extern bool reload;
-lua_State* L;
+extern lua_State* L;
 
 // Luall.vars.config
 extern char* config_path;
@@ -31,7 +30,8 @@ struct User{
     char* name;
     char* home;
 };
-struct User user;
+
+extern struct User user;
 extern char* cwd;
 extern char* host;
 extern int error;
