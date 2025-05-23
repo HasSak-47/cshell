@@ -208,7 +208,7 @@ local function run_cmd(cmd)
         table.insert(args, val.val)
     end
     if Luall.vars.debug then
-        local s = 'running cmd:' .. name
+        local s = 'running cmd: ' .. name
         for _, value in ipairs(args) do
             s = s .. ' ' .. value
         end
@@ -216,14 +216,32 @@ local function run_cmd(cmd)
         print(s)
     end
 
-    if Luall.overwrite[name] ~= nil then
-        Luall.overwrite[name](args)
+    if Luall.vars.debug then
+        print('selecting type')
+    end
+    if Luall.alias[name] ~= nil then
+        if Luall.vars.debug then
+            print('cmd ' .. name .. ' is an alias')
+        end
+        local b = Luall.alias[name](args)
+        name = b[1]
+        args = b[2]
+        if Luall.vars.debug then
+            print(name)
+            print(args)
+        end
+    end
+
+    if Luall.extend[name] ~= nil then
+        Luall.extend[name](args)
     elseif Luall.util[name] ~= nil then
         Luall.util[name](args)
     elseif Luall.api[name] ~= nil then
         Luall.api[name](args)
     else
-
+        if Luall.vars.debug then
+            print('running exec...')
+        end
         -- check all possible dirs in which cmd could be
         local possible_locs = parse_env(Luall.vars.env.PATH)
         local target_cmd = ''
@@ -329,6 +347,7 @@ local function parser(input)
     if set_debug then
         input = string.sub(input, 2)
         Luall.api.set_debug()
+        print('set debug for this cmd')
     end
     if input == nil or input == '' then
         return;
@@ -352,6 +371,7 @@ local function parser(input)
     end
 
     if set_debug then
+        print('unset debug')
         Luall.api.unset_debug()
     end
 end

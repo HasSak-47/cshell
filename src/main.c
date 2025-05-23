@@ -1,3 +1,4 @@
+#include <string.h>
 #include <utils.h>
 #include <testing.h>
 #include <debug.h>
@@ -51,7 +52,13 @@ void set_raw_mode(){
 int test();
 #endif
 
-int main(){
+int main(int argc, char* argv[]){
+    if (argc > 1) {
+        if (strcmp(argv[1], "--debug") == 0) {
+            debug = true;
+            debug_printf("set to debug mode\n");
+        }
+    }
 #ifdef TEST
     test();
     return 0;
