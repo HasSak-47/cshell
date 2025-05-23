@@ -50,20 +50,27 @@ Luall = {
     ---@type function[]
 	api = {},
     util = {
-        print_env = function ()
-            print('there are ' .. #Luall.vars.env .. ' env')
-            for env, val in ipairs(Luall.vars.env) do
-                print(env, val)
+        ---@param args table
+        lua = function (args)
+            if #args == 0 then
+                return;
             end
-        end,
+
+            print("exec: " .. args[1])
+            local func, err = load(args[1])
+            if func ~= nil then
+                pcall(func)
+            end
+        end
     },
     overwrite = {
-        ---@param ... ...
-        cd = function(...)
-            if arg == nil then
+        cd = function(args)
+            if #args == 0 then
                 Luall.api.cd(Luall.vars.user.home)
+                print('cd to home')
             else
-                Luall.api.cd(arg[1])
+                print('cd to: ' .. args[1])
+                Luall.api.cd(args[1])
             end
         end,
     },
@@ -78,11 +85,12 @@ Luall = {
 
             local cmd = table.remove(args, 1)
 
-            print("cmd: " .. cmd)
+            print("cmd : " .. cmd)
+            print("argc: " .. #args)
             if Luall.util[cmd] ~= nil then
-                Luall.util[cmd](table.unpack(args))
+                Luall.util[cmd](args)
             elseif Luall.overwrite[cmd] ~= nil then
-                Luall.overwrite[cmd](table.unpack(args))
+                Luall.overwrite[cmd](args)
             elseif Luall.api[cmd] ~= nil then
                 if #args == 0 then
                     Luall.api[cmd]()

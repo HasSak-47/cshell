@@ -68,23 +68,22 @@ void load_env(){
             val++;
 
         char* end = val;
-        while(*end++ != '\0');
+        while(*end != '\0')
+            end++;
 
         size_t len = val - __environ[i];
         char* name = calloc(len + 1, 1);
         strncpy(name, __environ[i], len);
 
-        printf("loading [%lu]: (%3lu) %.*s\n", i, len, len, __environ[i]);
-        printf("        value: %s ", val + 1);
         if(val == end)
             lua_pushnil(L);
         else
             lua_pushstring(L, val + 1);
-        lua_setfield(L, -2, name);
-
+        lua_setfield(L, 2, name);
         free(name);
     }
-    lua_pop(L, 3);
+
+    lua_pop(L, 2);
 }
 
 void* handler = NULL;

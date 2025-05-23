@@ -1,5 +1,5 @@
 // here all the Luall.api functions are loaded
-//
+
 #include <lua.h>
 #include <lualib.h>
 #include <lauxlib.h>
@@ -12,6 +12,7 @@
 
 #include <unistd.h>
 #include <sys/wait.h>
+#include <dirent.h>
 
 
 static int api_exit(lua_State* L) {
@@ -47,6 +48,31 @@ static int api_reload(lua_State *L){
     return 0;
 }
 
+static int api_in_dir(lua_State* L){
+    const char* path = lua_tostring(L, -2);
+    const char* name = lua_tostring(L, -1);
+    if(path == NULL || name == NULL){
+        lua_pop(L, 2);
+        lua_pushboolean(L, false);
+        return 1;
+    }
+
+    struct dirent* entry = NULL;
+    DIR* dir = opendir(path);
+    while((entry = readdir(dir)) != NULL){
+        bool eq = strcmp(entry->d_name, name) == 0;
+        if(eq){
+            lua_pop(L, 2);
+            lua_pushboolean(L, true);
+            return 1;
+        }
+    }
+
+    lua_pop(L, 2);
+    lua_pushboolean(L, false);
+    return 1;
+}
+
 static int api_execp(lua_State *L){
     size_t argc = lua_gettop(L);
     printf("number of arguments: %lu\n", argc);
@@ -54,18 +80,9 @@ static int api_execp(lua_State *L){
         const char* arg = lua_tostring(L, i);
         printf("arg: %s\n", arg);
     }
-    const char* path = getenv("path");
-    if(path == NULL){
-        last_return_code = -1;
-        return 0;
-    }
-    return 0;
-}
 
-static int api_set_env(lua_State* L){
-    const char* name = lua_tostring(L, 1);
-    const char* val = lua_tostring(L, 2);
-    setenv(name, val, 1);
+
+
     return 0;
 }
 
@@ -74,7 +91,7 @@ struct luaL_Reg api[] = {
     {"cd", api_cd},
     {"reload", api_reload},
     {"exec", api_execp},
-    {"add_env", api_set_env},
+    {"in_dir", api_in_dir},
 
     {NULL, NULL}
 };
