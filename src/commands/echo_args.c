@@ -1,17 +1,21 @@
 #include <stdio.h>
-#include <unistd.h>
-#define SHELL_CMDS
-#include <command.h>
+#define COMMAND_DEFINITION
+#include <cmd.h>
 
-const char* get_name(){
-	return "echo_args";
-}
-
-int run(char vectored**params) {
-	size_t total = v_len(params);
-	for(size_t i = 0; i < total; ++i){
-		printf("%lu) %s\n", i, params[i] ? params[i] : "NULL");
+int echo_args(int argc, char** argv){
+	for(size_t i = 0; i < argc; ++i){
+		printf("%s\n", argv[i]);
 	}
 	return 0;
 }
+const struct String name = {
+	9,
+	"echo_args"
+};
+
+const struct Command cmd = {
+	echo_args,
+	name,
+};
+
 
