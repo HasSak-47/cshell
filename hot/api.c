@@ -226,6 +226,39 @@ static int api_pipe_close(lua_State* L){
     return 1;
 }
 
+static void __print_param(lua_State* L, size_t i){
+    if(lua_isstring(L, i + 1)){
+        printf("%s", lua_tostring(L, i));
+    }
+    else if (lua_isboolean(L, i)) {
+        printf("%s", lua_toboolean(L, i) ? "true" : "false");
+    }
+    else if (lua_isinteger(L, i)) {
+        printf("%d", lua_tointeger(L, i));
+    }
+    else if (lua_isnumber(L, i)) {
+        printf("%f", lua_tonumber(L, i));
+    }
+    else {
+        printf("<%s %p>", luaL_typename(L, i + 1), lua_topointer(L, i + 1));
+    }
+}
+
+static int api_io_print(lua_State* L){
+    size_t params = lua_gettop(L);
+    for (size_t i = 0; i < params - 1; ++i) {
+        __print_param(L, i + 1);
+        printf("\t");
+    }
+    __print_param(L, params - 1);
+    return 0;
+}
+
+static int api_io_debug_print(lua_State* L){
+
+    return 0;
+}
+
 luaL_Reg api_process[] = {
     {"new", api_process_new},
     {"run", api_process_run},

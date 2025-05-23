@@ -43,6 +43,9 @@ Luall = {
             config_path = '',
             hot_path = '',
         },
+
+        -- vars that c will not  see
+        start_in_home = true,
 	},
 
     -- this is set up by c
@@ -80,7 +83,8 @@ Luall = {
     -- this are commands that extend the utility of the api
     extend = {
         cd = function(args)
-            if #args == 0 then
+            if args == nil or #args == 0 then
+                print(Luall.vars.user.home)
                 Luall.api.cd(Luall.vars.user.home)
             else
                 local path = Luall.inner.expand_path(args[1])
@@ -190,6 +194,12 @@ Luall = {
         config.config_path = expand_path(config.config_path)
         config.init_path   = expand_path(config.init_path)
         config.hot_path    = expand_path(config.hot_path)
+        if Luall.vars.start_in_home then
+            if Luall.vars.debug then
+                print('cd to home...')
+            end
+            Luall.extend.cd()
+        end
     end,
 
 }

@@ -1,4 +1,3 @@
-
 ---@alias TokenType "statement"
 ---| "process"
 ---| "command"
