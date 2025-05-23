@@ -26,6 +26,14 @@ To build and run this project, you will need:
 - to build all: `make all`
 - to run: `make run` or `./luall` after building
 
+## Shortcomings 
+### UX
+- No syntax highlighting
+- There is no tab completion
+- Ctrl+c doesn't skip to the next line
+
+### Utils
+- No file globing *
 
 ## Technical Details
 ### Runtime modifications
