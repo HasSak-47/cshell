@@ -52,7 +52,7 @@ struct User api_getuser(){
 }
 
 void update_values(lua_State* L){
-    lua_getglobal(L, "luall");
+    lua_getglobal(L, "Luall");
     lua_getfield(L, -1, "values");
 
     struct String s = api_getcwd();
@@ -97,6 +97,7 @@ int main(){
     lua_State* L = luaL_newstate();
     luaL_openlibs(L);
 
+    /*
     // init luall
     lua_newtable(L);
         // init api
@@ -133,14 +134,13 @@ int main(){
             lua_setfield(L, -2, "right_prompt");
         lua_setfield(L, -2, "functions");
 
-    lua_setglobal(L, "luall");
-
-    update_values(L);
+    lua_setglobal(L, "Luall");
+    */
 
     if (luaL_dofile(L, "./init.lua") != LUA_OK){
-        luaL_error(L, "Error: %s\n", lua_tostring(L, -1));
+        luaL_error(L, "Could not init the Luall: %s\n", lua_tostring(L, -1));
     }
-
+    update_values(L);
     shell(L);
 
     lua_close(L);
