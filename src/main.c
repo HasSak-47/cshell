@@ -28,18 +28,42 @@ struct token vectored* get_args(){
 	return tokens;
 }
 
+char cwd_buf[1024] = {};
+char usr_buf[1024] = {};
+char hos_buf[1024] = {};
+char* cwd_cleaned(){
+	int user_id = getuid();
+	struct passwd* usr = getpwuid(user_id);
+	char buf[1024] = {};
+	getcwd(cwd_buf, 1024);
+	size_t len_pwdir = strlen(usr->pw_dir);
+	char* r = cwd_buf;
+	if(strncmp(cwd_buf, usr->pw_dir, len_pwdir - 1) == 0){
+		cwd_buf[len_pwdir - 1] = '~';
+		r = r + len_pwdir - 1;
+	}
+	gethostname(hos_buf, 1024);
+	strcpy(usr_buf, usr->pw_name);
+
+	return r;
+}
+
 int main(){
+	load_commands();
 #ifdef __DEBUG_MEM
     __mem_debug_init();
 	atexit(__mem_debug_end);
 #endif
-	load_commands();
+	atexit(unload_commands);
 	int r = 0;
+	char cwd[256] = {};
+	char cus[256] = {};
 	while(true){
-		printf("[%d]:", r);
+		char* cwd = cwd_cleaned();
+		printf("%s@%s %s [%d]:", usr_buf, hos_buf, cwd, r);
 		char** args = split_into_args(get_args());
 		if(strcmp(args[0], "exit") == 0){
-			for(size_t i = 0; i < v_len(args) - 1; ++i)
+			for(size_t i = 0; i < v_len(args); ++i)
 				v_delete(args[i]);
 			v_delete(args);
 			break;
@@ -47,8 +71,8 @@ int main(){
 
 		char* name = args[0];
 		v_remove(args, 0);
-		int r = run_cmd(name, args);
-		v_delete(args);
+		r = run_cmd(name, args);
+
 		for(size_t i = 0; i < v_len(args); ++i)
 			v_delete(args[i]);
 		v_delete(args);
