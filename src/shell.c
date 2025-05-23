@@ -15,6 +15,10 @@
 
 lua_State* L = NULL;
 
+char* init_path = NULL;
+char* config_path = NULL;
+char* hot_path = NULL;
+
 void prompt(){
     lua_getglobal(L, "Luall");
         lua_getfield(L, -1, "prompts");
@@ -95,8 +99,8 @@ void load(){
     L = luaL_newstate();
     luaL_openlibs(L);
 
-    printf("initing Luall\n");
-    if (luaL_dofile(L, "./init.lua") != LUA_OK){
+    printf("initing Luall at: %s\n", init_path);
+    if (luaL_dofile(L, init_path) != LUA_OK){
         luaL_error(L, "Could not init the Luall: %s\n", lua_tostring(L, -1));
     }
 
@@ -104,9 +108,22 @@ void load(){
     update_variables();
 
     printf("building api\n");
+
+    // this is so wack
+    char* cwd = getcwd(NULL, 0);;
+    if(cwd == NULL){
+        printf("error: could not move to hot dir\n");
+        last_return_code = -1;
+        return;
+    }
+
+    chdir(hot_path);
     int exit = system("make hot");
     if(exit != 0){
-        printf("could not build api\n");
+        printf("error: could not build api\n");
+        last_return_code = -1;
+        chdir(cwd);
+        free(cwd);
         return;
     }
     else{
@@ -114,11 +131,24 @@ void load(){
         get_api = dlsym(handler, "get_api");
         take_api = dlsym(handler, "take_api");
     }
+    chdir(cwd);
+    free(cwd);
 
     printf("init api\n");
     init_api();
     printf("loading env\n");
     load_env();
+
+    printf("running user config\n");
+    if (luaL_dofile(L, config_path) != LUA_OK){
+        luaL_error(L, "Could not init the Luall: %s\n", lua_tostring(L, -1));
+    }
+}
+
+void setup(){
+    lua_getglobal(L, "Luall");
+    lua_getfield(L, -1, "setup");
+    lua_call(L, 0, 0);
 }
 
 void init_api(){

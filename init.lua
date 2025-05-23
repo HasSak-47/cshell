@@ -34,6 +34,17 @@ local function first_pass(input)
     return tokens
 end
 
+---@param path string
+local function expand_path(path)
+    if path[1] == '.' then
+        return path.gsub(path, '.', Luall.vars.cwd)
+    end
+    if path[1] == '~' then
+        return path.gsub(path, '~', Luall.vars.user.home)
+    end
+    return path
+end
+
 Luall = {
 	vars= {
 		host = "",
@@ -44,11 +55,17 @@ Luall = {
 		},
 		error = 0,
         debug = false,
-        env  = {},
+        -- special vars that don't get updated at each cycle
+        -- changes to env should trigger an env update
+        env = {},
+        settings = {
+            init = "",
+            config = "",
+            hot = "",
+        },
 	},
 
-    ---@type function[]
-	api = {},
+    api = {},
     util = {
         ---@param args table
         lua = function (args)
@@ -69,12 +86,17 @@ Luall = {
                 Luall.api.cd(Luall.vars.user.home)
                 print('cd to home')
             else
-                print('cd to: ' .. args[1])
-                Luall.api.cd(args[1])
+                local path = Luall.inner.path_expantion(args[1])
+                print('cd to: ' .. path)
+                Luall.api.cd(path)
             end
         end,
     },
 	inner = {
+        path_expantion = function(path)
+           path = string.gsub(path, '~', Luall.vars.user.home)
+           return path
+        end,
 		parse = function(input)
             local tokens = first_pass(input)
             ---@type string[]
@@ -113,5 +135,11 @@ Luall = {
         end,
         right_prompt = function() return "" end,
         greeting = function() return "" end,
-    }
+    },
+    setup = function()
+        -- why this IDK
+        local settings = Luall.vars.settings
+        settings.config = expand_path(settings.config)
+        settings.init = expand_path(settings.init)
+    end
 }
