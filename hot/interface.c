@@ -188,6 +188,17 @@ void lua_setup(lua_State* L){
     lua_createtable(L, 4, 4);
     luaL_setfuncs(L, api, 0);
     lua_setfield(L, -2, "api");
+    lua_getfield(L, -1, "api");
+
+    lua_createtable(L, 3, 3);
+    luaL_setfuncs(L, api_process, 0);
+    lua_setfield(L, -2, "process");
+
+    lua_createtable(L, 3, 3);
+    luaL_setfuncs(L, api_pipe, 0);
+    lua_setfield(L, -2, "pipe");
+
+    lua_pop(L, 1);
 
     // load user config
     if(luaL_dofile(L, config_path) != LUA_OK){
@@ -250,5 +261,6 @@ char* get_history(lua_State* state, int index){
         return NULL;
 
     char* copy = strdup(s);
+    printf("dup: %d, %p %s\n", index, copy, copy);
     return copy;
 }

@@ -59,8 +59,12 @@ void delete_char(struct Input* in){
 
 struct InputState{
     bool cont; // should continue
-    int index;
     struct Input in;
+    /**
+    * 0 means the original input
+    * [1, inf) means get the [0, inf) history element in reverse order
+    */
+    size_t index;
 };
 
 void render_input(struct Input* in){
@@ -88,6 +92,9 @@ void render_input(struct Input* in){
     printf("\e[%luD", in->len);
 }
 
+/**
+ * takes an string and makes it the buffer of input
+ */
 void set_string(struct Input* in, char* str){
     free(in->buf);
     size_t len = strlen(str);
@@ -95,9 +102,50 @@ void set_string(struct Input* in, char* str){
     in->buf = str;
     in->len = len;
     in->cur = len;
-
 }
 
+/**
+ * takes an string and clones it to make it the buffer of input
+ */
+void copy_string(struct Input* in, char* str){
+    free(in->buf);
+    size_t len = strlen(str);
+
+    in->buf = strdup(str);
+    in->len = len;
+    in->cur = len;
+}
+/**
+ * gets the current history element
+ * and then increses the index
+ */
+void next_entry(struct InputState* state){
+    char* new = get_history(L, state->index);
+
+    set_string(&state->in, new);
+    char* next = get_history(L, state->index + 1);
+    if (next == NULL)
+        return;
+    free(next);
+
+    state->index++;
+}
+
+/**
+ * decreses the index and then gets the element
+ */
+void prev_entry(struct InputState* state){
+    if (state->index == 0) {
+        copy_string(&state->in, "");
+        return;
+    }
+    if (state->in.buf != NULL) {
+        free(state->in.buf);
+    }
+    char* new = get_history(L, state->index - 1);
+    set_string(&state->in, new);
+    state->index--;
+}
 
 void handle_ctrl(struct InputState* in, char c){
     if(c == 0x08 || c == 0x7f){ // backspace
@@ -121,31 +169,19 @@ void handle_ctrl(struct InputState* in, char c){
     if (buffer[0] == '[') {
         switch (buffer[1]) {
             // up
-            case 'A': {
-                char* v = get_history(L, --in->index);
-                if (v == NULL) {
-                    in->index++;
-                    return;
-                }
-                set_string(&in->in, v);
-            }
+            case 'A':
+                next_entry(in);
             break;
             // down
-            case 'B':{
-                char* v = get_history(L, ++in->index);
-                if (v == NULL) {
-                    in->index--;
-                    return;
-                }
-                set_string(&in->in, v);
-            }
+            case 'B':
+                prev_entry(in);
             break;
             case 'C': // right
                 if(in->in.cur < in->in.len){
                     in->in.cur++;
                 }
                 return;
-            break;
+                break;
             case 'D': // left
                 if(in->in.cur > 0){
                     in->in.cur--;
@@ -166,7 +202,7 @@ void handle_ctrl(struct InputState* in, char c){
 char* interactive_input(){
     struct InputState state = { };
     state.cont = true;
-    state.index = -1;
+    state.index = 0;
 
     // read a character
     int c = 0;
