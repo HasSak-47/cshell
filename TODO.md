@@ -2,7 +2,10 @@
 Add generic vectors and rewrite resizeble arrays into those
 
 # UX
-add history and autocompletion and handle right and left cursor movement
+add autocompletion and handle right and left cursor movement
+
+## history
+fix memory leak
 
 # Lua API
 ## Pipes

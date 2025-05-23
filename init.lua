@@ -126,7 +126,11 @@ Luall = {
             local cwd = string.gsub(vars.cwd, user.home, '~');
             local fc = Luall.inner.full_color;
             local rc = Luall.inner.reset_color;
-            return fc(0, 128, 0) .. user.name .. rc() .. "@" .. vars.host .. ' ' .. fc(0, 128, 0) .. cwd .. rc() .. err .. " >"
+            local debug = ''
+            if Luall.vars.debug then
+                debug = '[DEBUG]'
+            end
+            return debug .. fc(0, 128, 0) .. user.name .. rc() .. "@" .. vars.host .. ' ' .. fc(0, 128, 0) .. cwd .. rc() .. err .. " >"
         end,
         right_prompt = function() return "" end,
         greeting = function() return "" end,

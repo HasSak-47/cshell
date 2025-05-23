@@ -35,7 +35,7 @@ int error = 0;
 #ifdef TEST
 bool debug = true;
 #else
-bool debug = true;
+bool debug = false;
 #endif /* ifdef TEST */
 
 /**
