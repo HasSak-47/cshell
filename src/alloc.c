@@ -12,13 +12,28 @@ struct allocator stdalloc = {
     free
 };
 
+#ifdef __DEBUG_MEM
+
+void* realloc_debug(void*, usize);
+void* malloc_debug(usize);
+void* calloc_debug(usize, usize);
+void free_debug(void*);
+
+struct debug_alloc _debug_alloc = {
+	{
+		realloc_debug, malloc_debug, calloc_debug, free_debug
+	},
+	NULL,
+};
+
+
 struct ptrs{
     void** ptr;
     size_t size;
     size_t cap;
 };
 
-// #define __LOG_STDOUT
+#define __LOG_STDOUT
 
 struct ptrs inited_ptrs = {};
 FILE* log_out = 0;
@@ -32,10 +47,11 @@ void __mem_debug_init(){
 #else
     log_out = fopen("log/mem_log.txt", "w+");
     if(log_out == NULL){
-        printf("could not make file\n");
-        exit(-1);
+		printf("could not make file\n");
+		exit(-1);
     }
 #endif
+	_debug_alloc.file = log_out;
 	fprintf(log_out, "current allocator is debugalloc...\n");
 	fprintf(log_out, "started debugalloc...\n");
 }
@@ -136,9 +152,5 @@ void free_debug(void* ptr){
     free(ptr);
 }
 
-struct allocator debugalloc = {
-    realloc_debug,
-    malloc_debug,
-    calloc_debug,
-    free_debug
-};
+
+#endif

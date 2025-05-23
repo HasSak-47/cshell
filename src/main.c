@@ -31,6 +31,7 @@ struct token vectored* get_args(){
 char cwd_buf[1024] = {};
 char usr_buf[1024] = {};
 char hos_buf[1024] = {};
+
 char* cwd_cleaned(){
 	int user_id = getuid();
 	struct passwd* usr = getpwuid(user_id);
@@ -48,37 +49,20 @@ char* cwd_cleaned(){
 	return r;
 }
 
+void prompt();
+void handle_input();
+
+/**
+ * this contains the minimal necessary functions
+ */
 int main(){
-	load_commands();
 #ifdef __DEBUG_MEM
     __mem_debug_init();
 	atexit(__mem_debug_end);
 #endif
+	load_commands();
+
+
 	atexit(unload_commands);
-	int r = 0;
-	char cwd[256] = {};
-	char cus[256] = {};
-	while(true){
-		char* cwd = cwd_cleaned();
-		printf("%s@%s %s [%d]:", usr_buf, hos_buf, cwd, r);
-		char** args = split_into_args(get_args());
-		if(strcmp(args[0], "exit") == 0){
-			for(size_t i = 0; i < v_len(args); ++i)
-				v_delete(args[i]);
-			v_delete(args);
-			break;
-		}
-
-		char* name = args[0];
-		v_remove(args, 0);
-		r = run_cmd(name, args);
-		v_delete(name);
-
-		for(size_t i = 0; i < v_len(args); ++i)
-			v_delete(args[i]);
-		v_delete(args);
-
-	}
-	unload_commands();
 	return 0;
 }

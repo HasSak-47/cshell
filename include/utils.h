@@ -2,7 +2,6 @@
 #define __UTILS_H__
 
 #include <stdlib.h>
-#include <stdio.h>
 
 /*
  * catastrophic realloc

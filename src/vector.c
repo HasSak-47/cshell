@@ -9,12 +9,13 @@
 /**
  * @param {void**} vector: It contains a pointer to the vector info 
  */
-void __vector_push(void** vector, usize size_of, struct allocator a){
+void __vector_push(void** vector, usize size_of){
 	// get header or
 	// setup header if it is a null vector
 	struct vector_header* header;
-	if(*vector == NULL)
-		header = a.c(1, __SIZE_H);
+	if(*vector == NULL){
+		header = zer_alloc(1, __SIZE_H);
+	}
 	else
 		header = *vector - __SIZE_H;
 
@@ -27,7 +28,7 @@ void __vector_push(void** vector, usize size_of, struct allocator a){
 
 	// set new cap to double (prev cap + 1)
 	size_t new_cap= (header->cap + 1) << 1;
-	void* aux = a.r(header, __SIZE_H + new_cap * size_of);
+	void* aux = cur_alloc.r(header, __SIZE_H + new_cap * size_of);
 
 	// something went wrong
 	if(aux == NULL)
@@ -40,13 +41,13 @@ void __vector_push(void** vector, usize size_of, struct allocator a){
 	header->len++;
 }
 
-void __vector_pop(void** vector, size_t size_of, struct allocator a){
+void __vector_pop(void** vector, size_t size_of){
 	//get header
 	struct vector_header* header = (*vector) - __SIZE_H;
 
 	// delete vector if empty
 	if(header->len == 1){
-		a.d(header);
+		cur_alloc.d(header);
 		*vector = NULL;
 		return;
 	}
@@ -56,16 +57,16 @@ void __vector_pop(void** vector, size_t size_of, struct allocator a){
 
 }
 
-void __vector_delete(void **vector, usize size_of, struct allocator a){
+void __vector_delete(void **vector, usize size_of){
 	//get header
 	struct vector_header* header = (*vector) - __SIZE_H;
-	a.d(header);
+	cur_alloc.d(header);
 	*vector = NULL;
 }
 
-void __vector_resize(void **vector, usize len, usize size_of, struct allocator a){
+void __vector_resize(void **vector, usize len, usize size_of){
 	//get header
 	struct vector_header* header = (*vector) - __SIZE_H;
-	a.d(header);
+	cur_alloc.d(header);
 	*vector = NULL;
 }
