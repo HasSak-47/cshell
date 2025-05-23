@@ -1,6 +1,8 @@
 #ifndef __PATH__
 #define __PATH__
 
+#include "str.h"
+
 enum SegmentType{
     ROOT_PATH,
     PREV_PATH,
@@ -10,7 +12,7 @@ enum SegmentType{
 
 
 struct PathSegment{
-    char* name;
+    struct VectorChars name;
     enum SegmentType ty;
 };
 
@@ -23,7 +25,12 @@ struct Path{
     struct VectorPath _inner;
 };
 
-char* get_path_string(struct Path path);
-void push_segment(struct Path* path, const char* name);
+char* get_path_string(const struct Path path);
+void push_name(struct Path* path, const char* name);
+void push_segment(struct Path* path, const struct PathSegment segment);
+struct Path root_path();
+struct Path parse_path(const char* path);
+
+void destruct_path(struct Path* path);
 
 #endif // !__PATH__

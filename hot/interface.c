@@ -34,12 +34,12 @@ void update_lua_state(lua_State* L){
     lua_pushstring(L, host);
     lua_setfield(L, -2, "host");
 
-    lua_pushstring(L, cwd);
+    lua_pushstring(L, "");
     lua_setfield(L, -2, "cwd");
 
     lua_getfield(L, -1, "user");
 
-    lua_pushstring(L, user.home);
+    lua_pushstring(L, "");
     lua_setfield(L, -2, "home");
 
     lua_pushstring(L, user.name);

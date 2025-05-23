@@ -30,13 +30,11 @@ extern char* hot_path;
 // Luall.vars
 struct User{
     char* name;
-    // TODO: change to path struct
-    char* home;
+    struct Path home;
 };
 
-extern struct Path path;
 extern struct User user;
-extern char* cwd;
+extern struct Path path;
 extern char* host;
 extern int error;
 extern bool debug;

@@ -1,39 +1,103 @@
+#include "str.h"
 #include "vectors.h"
+#include <stdio.h>
 #include <utils.h>
 #include <path.h>
 #include <stdlib.h>
 #include <string.h>
 
-static struct PathSegment build_segment(const char* name){
+static struct PathSegment build_segment(const struct VectorChars name){
     // not optimal but meaningful!
-    if (strncmp(name, ".", 1) == 0) {
+    if (string_cmp(name, ".")) {
         return (struct PathSegment){
             .ty = CURR_PATH,
             .name = NULL
         };
     }
-    if (strncmp(name, "..", 1) == 0) {
+    if (string_cmp(name, "..")) {
         return (struct PathSegment){
             .ty = PREV_PATH,
             .name = NULL
         };
     }
 
-    size_t len = strlen(name);
-    char* copy = malloc(len + 1);
-    strcpy(copy, name);
     return (struct PathSegment){
         .ty = NAMED_PATH,
-        .name = copy
+        .name = name,
     };
 }
 
-void push_segment(struct Path* path, const char* name){
-    struct PathSegment segment = build_segment(name);
+void push_name(struct Path* path, const char* name){
+    size_t len = strlen(name);
+    struct VectorChars nname = read_nstring(name, len);
+    struct PathSegment segment = build_segment(nname);
+
     vector_push(path->_inner, segment);
 }
 
-char* get_path_string(struct Path path){
+void push_segment(struct Path* path, const struct PathSegment segment){
+    vector_push(path->_inner, segment);
+}
+
+struct Path root_path(){
+    struct PathSegment segment = {
+        .ty = ROOT_PATH,
+        .name = NULL
+    };
+
+    struct Path path = {};
+    push_segment(&path, segment);
+
+    return path;
+}
+
+struct Path parse_path(const char *path){
+    struct Path _path = {};
+    size_t start = 0; 
+    size_t i = 0;
+    if (path[0] == '/') {
+        _path = root_path();
+        start = 1;
+        i = 1;
+    }
+
+    struct VectorChars cs = read_nstring(path, strlen(path));
+
+    for (; i < cs.len; ++i) {
+        if(cs.data[i].ty == NORMAL_CHARACTER && cs.data[i].data == '/'){
+            struct VectorChars name = substring(cs, start, i);
+
+            if (string_cmp(name, ".")) {
+                push_segment(&_path, (struct PathSegment){
+                    .name = {},
+                    .ty = CURR_PATH,
+                });
+                free(name.data);
+            }
+            else if (string_cmp(name, "..")) {
+                push_segment(&_path, (struct PathSegment){
+                    .name = {},
+                    .ty = PREV_PATH,
+                });
+                free(name.data);
+            }
+            else{
+                push_segment(&_path, (struct PathSegment){
+                    .name = name,
+                    .ty = NAMED_PATH,
+                });
+            }
+
+            start = i + 1;
+        }
+    }
+
+    free(cs.data);
+
+    return _path;
+}
+
+char* get_path_string(const struct Path path){
     struct VectorString str = {};
     vector_reserve(str, path._inner.len * 5);
     for (size_t i = 0; i < path._inner.len; ++i) {
@@ -48,15 +112,27 @@ char* get_path_string(struct Path path){
                 vector_push(str, '.');
                 break;
             case NAMED_PATH:{
-                    char* inn = path._inner.data[i].name;
-                    for (; inn != NULL; inn++)
+                    char* start = to_cstring( path._inner.data[i].name );
+                    for (char* inn = start; *inn != 0; ++inn)
                         vector_push(str, *inn);
+                    
+                    free(start);
                 }
                 break;
         } 
         vector_push(str, '/');
     }
     vector_push(str, '\0');
+    size_t len = str.len;
+    char* d = realloc(str.data, len);
 
-    return str.data;
+    return d;
+}
+
+void destruct_path(struct Path* path){
+    for (size_t i = 0; i < path->_inner.len; ++i) {
+        free(path->_inner.data[i].name.data);
+    }
+    free(path->_inner.data);
+    path->_inner.data = NULL;
 }
