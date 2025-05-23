@@ -16,7 +16,9 @@
 HandleInput handle_input = NULL;
 LuaSetup lua_setup = NULL;
 LuaCleanup lua_cleanup = NULL;
+#ifdef TEST
 Tester tester = NULL;
+#endif
 void* handler = NULL;
 
 struct termios orig_termios;
