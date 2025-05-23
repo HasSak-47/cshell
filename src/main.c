@@ -14,8 +14,6 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
-
-
 typedef const char* const cchar;
 
 char* read_line(){
@@ -75,6 +73,8 @@ int main(){
 
 		printf("[%s@%s %s]%c [%d] ", user, host, cwd, priv, ret);
 		char* line = read_line();
+
+		// this shit is wack
 		if(strcmp(line, "exit") == 0){
             printf("exiting...\n");
 			status = -1;
