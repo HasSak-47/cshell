@@ -1,3 +1,4 @@
+pub mod parser;
 use std::{ffi::{c_char, c_int, CStr}, ptr::null};
 
 use clap::Parser;
