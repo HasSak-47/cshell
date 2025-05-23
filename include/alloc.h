@@ -4,7 +4,7 @@
 #define __DEBUG_MEM
 
 #include <stddef.h>
-typedef void* (*__reallocator)(void*,size_t);
+typedef void* (*__reallocator)(void* ,size_t);
 typedef void* (*__allocator)(size_t);
 typedef void* (*__callocator)(size_t, size_t);
 typedef void  (*__deleter)(void*);
@@ -19,15 +19,16 @@ struct allocator{
 extern struct allocator stdalloc;
 extern struct allocator debugalloc;
 
-#define cur_alloc debugalloc
 
 #ifdef __DEBUG_MEM
+	#define cur_alloc debugalloc
 void __mem_debug_init();
 void __mem_debug_end();
-#endif // __DEBUG_MEM
-#ifdef cur_alloc
-    #undef cur_alloc
-#endif
+
+#else
+
     #define cur_alloc stdalloc
+#endif // __DEBUG_MEM
+
 #endif // !__DEBUG_MEM
 
