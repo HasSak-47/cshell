@@ -105,6 +105,16 @@ Luall = {
         format_path = function (path)
             return path:gsub(Luall.vars.home, '~')
         end,
+        ---@param r integer
+        ---@param g integer
+        ---@param b integer
+        full_color = function (r, g, b)
+            return '\x1b[38;2;' .. r .. ';' .. g .. ';' .. b .. 'm'
+        end,
+        reset_color = function ()
+            return '\x1b[0m'
+        end,
+        ---@param input string
 		parse = function(input)
             local tokens = first_pass(input)
             ---@type string[]
@@ -160,7 +170,9 @@ Luall = {
                 err = ' [' .. Luall.vars.error .. ']'
             end
             local cwd = string.gsub(vars.cwd, user.home, '~');
-            return user.name .. "@" .. vars.host .. ' ' .. cwd .. err .. ">"
+            local fc = Luall.inner.full_color;
+            local rc = Luall.inner.reset_color;
+            return fc(0, 128, 0) .. user.name .. rc() .. "@" .. vars.host .. ' ' .. cwd .. err .. ">"
         end,
         right_prompt = function() return "" end,
         greeting = function() return "" end,

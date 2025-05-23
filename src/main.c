@@ -17,14 +17,19 @@ LuaCleanup lua_cleanup = NULL;
 void* handler = NULL;
 
 struct termios orig_termios;
+bool got_original = false;
 
-void disable_raw_mode(){
-    tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig_termios);
+void unset_raw_mode(){
+    if(got_original)
+        tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig_termios);
 }
 
-void enable_raw_mode(){
-    tcgetattr(STDIN_FILENO, &orig_termios);
-    atexit(disable_raw_mode);
+void set_raw_mode(){
+    if(!got_original){
+        tcgetattr(STDIN_FILENO, &orig_termios);
+        atexit(unset_raw_mode);
+        got_original = true;
+    }
 
     struct termios raw = orig_termios;
     raw.c_lflag &= ~(ECHO | ICANON | ISIG | IEXTEN);
@@ -33,7 +38,7 @@ void enable_raw_mode(){
 }
 
 int main(){
-    enable_raw_mode();
+    set_raw_mode();
 
     init_shell_state();
     get_current_state();

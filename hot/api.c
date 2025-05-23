@@ -12,6 +12,7 @@
 #include <dirent.h>
 #include <sys/wait.h>
 #include <sys/stat.h>
+#include <signal.h>
 
 static int api_exit(lua_State* L){
     running = false;
@@ -42,6 +43,23 @@ static int api_exists(lua_State* L){
     return 1;
 }
 
+static void set_to_foreground(){
+    const int FD = STDIN_FILENO;
+    if(tcgetpgrp(FD) < 0)
+        exit(-1);
+    if(setpgid(0, 0) == -1)
+        exit(-1);
+    pid_t group_id = getpgrp();
+    // NOTE: I don't know why this is needed
+    // it just works like that
+    // sure why not ignore this random signal
+    // so it can take over
+    signal(SIGTTOU, SIG_IGN);
+    int ok = tcsetpgrp(FD, group_id);
+    if(ok == -1)
+        exit(-1);
+}
+
 // NOTE: this should not be run with valgrind!!
 static int api_exec(lua_State* L){
     const size_t argc = lua_gettop(L);
@@ -64,12 +82,22 @@ static int api_exec(lua_State* L){
     if(stat(cmd, &statbuf) == 0){
         pid_t pid = fork();
         if(pid == 0) { // child
-            int error = execv(cmd, args);
-            if(error == 1)
-                exit(-1);
+            unset_raw_mode();
+            set_to_foreground();
+            execv(cmd, args);
+            // kill self just in case
+            kill(getpid(), SIGKILL);
         }
         else if(pid > 0){ // parent
-            waitpid(pid, &error, 0);
+            pid_t result = waitpid(pid, &error, 0);
+            if (result < 0) {
+                printf("[parent] failed to wait for child??\n");
+                exit(-1);
+            }
+
+            signal(SIGTTOU, SIG_IGN);
+            set_to_foreground();
+            set_raw_mode();
         }
         else { // not found
             printf("could not exec\n");
