@@ -1,2 +1,6 @@
 -I
 include/
+-I
+/usr/lib/gcc/x86_64-pc-linux-gnu/14.2.1/plugin/include/
+-llua
+-Wall

@@ -1,7 +1,7 @@
 SRC_DIR := src
 UNI_DIR := src/commands
 
-OBJ_DIR := .cache
+OBJ_DIR := build
 SHR_DIR := units
 
 SRCS := $(wildcard $(SRC_DIR)/*.c)
@@ -16,7 +16,7 @@ C := gcc
 CFLAGS := -g -I include -c
 UFLAGS := -g -shared -I include
 
-LDFLAGS := -o $(OUT) -export-dynamic
+LDFLAGS := -o $(OUT) -export-dynamic -llua
 
 all: $(OUT) units
 
@@ -51,4 +51,13 @@ clean_units:
 valgrind: shell
 	valgrind ./$(OUT)
 
+
+GCC_PLUGINS_DIR = $(shell gcc -print-file-name=plugin)
+CXXFLAGS+= -I$(GCC_PLUGINS_DIR)/include -fPIC -fno-rtti
+
+plugins: extensions/vectored.c
+	g++ -shared $(CXXFLAGS) extensions/vectored.c -o plugins/bin
+
+
 .PHONY: all clean cmds source
+

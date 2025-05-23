@@ -2,9 +2,9 @@
 #define COMMAND_DEFINITION
 #include <cmd.h>
 
-int echo_args(int argc, char** argv){
+int echo_args(const size_t argc, const struct String* argv){
 	for(size_t i = 0; i < argc; ++i){
-		printf("%s\n", argv[i]);
+		printf("%*s\n", (int)argv[i].len, argv[i].cstr);
 	}
 	return 0;
 }
