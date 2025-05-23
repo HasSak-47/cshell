@@ -118,8 +118,7 @@ void test_process(){
     add_arg(&cmds[0], "-lA");
     add_arg(&cmds[0], "--color");
 
-    cmds[1] = new_command("/bin/wc");
-    add_arg(&cmds[1], "-l");
+    cmds[1] = new_command("/bin/less");
 
     struct Pipe p = new_pipe();
 
