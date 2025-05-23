@@ -54,12 +54,12 @@ void __mem_debug_end(){
 
 }
 
-void __add_to_tracker(void* ptr){
+static void __add_to_tracker(void* ptr){
 	if(ptr == NULL){
         fprintf(log_out, "will not add nullptr to trackerptr!");
 		return;
 	}
-	for(size_t i = 0; i < inited_ptrs.cap; ++i){
+	for(size_t i = 0; i < inited_ptrs.size; ++i){
 		if(inited_ptrs.ptr[i] == NULL){
 			fprintf(log_out, "found null at %lu, filling with ptr %p\n", i, ptr);
 			inited_ptrs.ptr[i] = ptr;
@@ -81,7 +81,7 @@ void __add_to_tracker(void* ptr){
     inited_ptrs.ptr[inited_ptrs.size++] = ptr;
 }
 
-void __remove_from_tracker(void* ptr){
+static void __remove_from_tracker(void* ptr){
     for(size_t i = 0; i < inited_ptrs.size; ++i){
         if(inited_ptrs.ptr[i] == ptr){
             inited_ptrs.ptr[i] = NULL;
@@ -117,8 +117,8 @@ void* malloc_debug(usize len){
 }
 void* calloc_debug(usize size_of, usize len){
     void* p = calloc(size_of, len);
-    __add_to_tracker(p);
     fprintf(log_out, "callocation %lu x %lu bytes at %p\n", size_of, len, p);
+    __add_to_tracker(p);
     return p;
 }
 void free_debug(void* ptr){
