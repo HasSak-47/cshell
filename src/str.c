@@ -86,5 +86,5 @@ bool string_cmp(struct VectorChars c, const char* str){
         ++i;
     }
 
-    return true;
+    return len == c.len;
 }
