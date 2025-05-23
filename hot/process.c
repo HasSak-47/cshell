@@ -39,7 +39,7 @@ void close_pipe(struct Pipe* p){
 }
 
 /*
- * takes an string md and clones it
+ * takes an string cmd and clones it
  */
 struct Command new_command(const char* cmd){
     struct Command c = {

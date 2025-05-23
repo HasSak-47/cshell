@@ -185,7 +185,8 @@ Luall = {
             local function color_text(text, r, g, b)
                 return fc(r, g, b) .. text .. rc()
             end
-            return debug .. color_text(Luall.vars.user.name, 32, 255, 64) .. "@" .. vars.host .. ' ' .. color_text(cwd, 32, 255, 64) .. err .. "\n" .. color_text(">", 255, 255, 128)
+            -- return debug .. color_text(Luall.vars.user.name, 32, 255, 64) .. "@" .. vars.host .. ' ' .. color_text(cwd, 32, 255, 64) .. err .. "\n" .. color_text(">", 255, 255, 128)
+            return "luall " .. color_text(cwd, 32, 255, 64) .. err .. color_text(">", 255, 255, 128)
         end,
         right_prompt = function() return "" end,
         greeting = function() return "" end,

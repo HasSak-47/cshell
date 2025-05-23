@@ -1,5 +1,6 @@
 from subprocess import Popen, PIPE
 from typing import Dict
+from enum import IntEnum
 import json
 
 class Lsp:
@@ -57,36 +58,46 @@ def open_document(lsp:Lsp, name: str):
 
     return lsp_read_message(lsp)
 
-def get_all_symbols(lsp:Lsp, f: None | str=None):
-    FILTERS = {
-	    'File' : 1,
-	    'Module' : 2,
-	    'Namespace' : 3,
-	    'Package' : 4,
-	    'Class' : 5,
-	    'Method' : 6,
-	    'Property' : 7,
-	    'Field' : 8,
-	    'Constructor' : 9,
-	    'Enum' : 10,
-	    'Interface' : 11,
-	    'Function' : 12,
-	    'Variable' : 13,
-	    'Constant' : 14,
-	    'String' : 15,
-	    'Number' : 16,
-	    'Boolean' : 17,
-	    'Array' : 18,
-	    'Object' : 19,
-	    'Key' : 20,
-	    'Null' : 21,
-	    'EnumMember' : 22,
-	    'Struct' : 23,
-	    'Event' : 24,
-	    'Operator' : 25,
-	    'TypeParameter' : 26,
-    }
+class SymbolType(IntEnum):
+    File = 1
+    Module = 2
+    Namespace = 3
+    Package = 4
+    Class = 5
+    Method = 6
+    Property = 7
+    Field = 8
+    Constructor = 9
+    Enum = 10
+    Interface = 11
+    Function = 12
+    Variable = 13
+    Constant = 14
+    String = 15
+    Number = 16
+    Boolean = 17
+    Array = 18
+    Object = 19
+    Key = 20
+    Null = 21
+    EnumMember = 22
+    Struct = 23
+    Event = 24
+    Operator = 25
+    TypeParameter = 26
 
+    def __str__(self):
+        return self.name
+
+    @classmethod
+    def from_name(cls, name: str):
+        try:
+            return cls[name]
+        except Exception:
+            return None
+
+
+def get_all_symbols(lsp:Lsp, f: None | str=None) :
     lsp_write_message(lsp, {
         'jsonrpc': '2.0',
         'id': 1,
@@ -95,10 +106,27 @@ def get_all_symbols(lsp:Lsp, f: None | str=None):
     })
 
     syms = lsp_read_message(lsp)
-    if f != None and f in FILTERS:
-        syms['result'] = list(filter(lambda x: x['kind'] == FILTERS[f], syms['result']))
+    if f != None and SymbolType.from_name(f) != None:
+        syms['result'] = list(filter(lambda x: x['kind'] == SymbolType.from_name(f), syms['result']))
     
     return syms['result']
 
-def get_function_signature(lsp: Lsp):
-    pass
+def get_signature(lsp: Lsp, symbol: Dict):
+    uri = symbol['location']['uri']
+    position = symbol['location']['range']['start']
+    if 'hot' not in uri:
+        return None
+
+    lsp_write_message(lsp, {
+        'jsonrpc': '2.0',
+        'id': 2,
+        'method' : 'textDocument/hover',
+        'params': {
+            'textDocument': { 'uri': uri },
+            'position': position,
+        },
+    })
+
+    value = str(lsp_read_message(lsp)['result']['contents']['value'])
+
+    return value
