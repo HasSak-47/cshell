@@ -1,20 +1,28 @@
-from os import listdir
 from subprocess import Popen, PIPE
-import json
 from typing import Dict
-from pprint import pprint
+import json
 
-def lsp_write_message(lsp:Popen, msg: Dict):
-    assert lsp.stdin is not None
+class Lsp:
+    def __init__(self, args) -> None:
+        self.proc = Popen(args, stdin=PIPE, stdout=PIPE)
+
+        assert self.proc.stdin is not None 
+        assert self.proc.stdout is not None
+
+        self.stdin = self.proc.stdin
+        self.stdout = self.proc.stdout
+
+    def __del__(self) -> None:
+        self.proc.terminate()
+
+def lsp_write_message(lsp:Lsp, msg: Dict):
 
     body = json.dumps(msg)
     header = f'Content-Length: {len(body)}\r\n\r\n'
     lsp.stdin.write(bytes(header + body, encoding='utf-8'))
     lsp.stdin.flush()
-    if lsp.stdout == None:
-        exit(-1)
 
-def lsp_read_message(lsp: Popen):
+def lsp_read_message(lsp: Lsp):
     assert lsp.stdout is not None
 
     headers = {}
@@ -30,7 +38,7 @@ def lsp_read_message(lsp: Popen):
 
     return json.loads(content)
 
-def open_document(lsp:Popen, name: str):
+def open_document(lsp:Lsp, name: str):
     with open(name, 'r') as file:
         text = file.read()
         uri = f'file:///{name}'
@@ -49,8 +57,8 @@ def open_document(lsp:Popen, name: str):
 
     return lsp_read_message(lsp)
 
-def get_all_symbols(lsp:Popen, f: None | str=None):
-    filters = {
+def get_all_symbols(lsp:Lsp, f: None | str=None):
+    FILTERS = {
 	    'File' : 1,
 	    'Module' : 2,
 	    'Namespace' : 3,
@@ -87,36 +95,10 @@ def get_all_symbols(lsp:Popen, f: None | str=None):
     })
 
     syms = lsp_read_message(lsp)
-    if f != None and f in filters:
-        syms['result'] = list(filter(lambda x: x['kind'] == filters[f], syms['result']))
+    if f != None and f in FILTERS:
+        syms['result'] = list(filter(lambda x: x['kind'] == FILTERS[f], syms['result']))
     
-    return syms
+    return syms['result']
 
-def init_clang():
-    args = ['clangd', '--compile-commands-dir=.', '--log=error']
-    print(args)
-    clangd = Popen(args, stdin=PIPE, stdout=PIPE)
-    if clangd.stdin == None or clangd.stdout == None:
-        exit(-1)
-
-    lsp_write_message(clangd,{
-        'jsonrpc': '2.0',
-        'id': 1,
-        'method': 'initialize',
-        'params': {
-            'processId': None,
-            'rootUri': None,
-            'capabilities': {},
-        }
-    })
-
-    # Read Ok message
-    lsp_read_message(clangd)
-
-    for file in listdir('hot'):
-        open_document(clangd, f'hot/{file}')
-
-    # from time import sleep
-    pprint(get_all_symbols(clangd, 'Function'))
-
-    return clangd
+def get_function_signature(lsp: Lsp):
+    pass
