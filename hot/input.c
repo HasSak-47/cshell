@@ -1,4 +1,4 @@
-#include "utils.h"
+#include <utils.h>
 #include <ctype.h>
 #include <state.h>
 
@@ -46,14 +46,15 @@ void delete_char(struct Input* in){
     // there is nothing before the cursor
     // and nothing can be deleted
     // so just continue
-    if (in->cur == 0)
+    if (in->cur == 0){
         return;
+    }
     // make everything the next character
-    for (size_t i = in->cur - 1; i < in->len - 1; ++i) {
+    for (size_t i = in->cur - 1; i < in->len; ++i) {
         in->buf[i] = in->buf[i + 1];
     }
-    in->len--;
-    in->cur--;
+    in->len = in->len - 1;
+    in->cur = in->cur - 1;
 }
 
 struct InputState{
@@ -61,20 +62,38 @@ struct InputState{
     struct Input in;
 };
 
+void render_input(struct Input* in){
+    // if this is not here it will move left when backspace is pressed
+    // idk why tho
+    if (in->len == 0) {
+        return;
+    }
+    for (size_t i = 0; i < in->len; ++i)
+        putchar(in->buf[i]);
+    
+    printf("\e[%luD", in->len);
+    if (in->cur != 0) {
+        printf("\e[%luC", in->cur);
+    }
+    fflush(stdout);
+    if (in->len == 0)
+        return;
+    if (in->cur != 0) {
+        printf("\e[%luD", in->cur);
+    }
+    for (size_t i = 0; i < in->len; ++i)
+        putchar(' ');
+    printf("\e[%luD", in->len);
+}
+
 
 void handle_ctrl(struct InputState* in, char c){
     if(c == 0x08 || c == 0x7f){ // backspace
-        if (in->in.len <= 0) {
-            return;
-        }
         delete_char(&in->in);
-        write(STDOUT_FILENO, "\b \b", 3);
-        fflush(stdout);
         return;
     }
 
     if(c == '\n'){ // newline
-        putchar(c);
         in->cont = false;
         return;
     }
@@ -95,15 +114,11 @@ void handle_ctrl(struct InputState* in, char c){
                 return;
             case 'C': // right
                 if(in->in.cur < in->in.len){
-                    printf("\e[D");
-                    fflush(stdout);
                     in->in.cur++;
                 }
                 return;
             case 'D': // left
                 if(in->in.cur > 0){
-                    printf("\e[D");
-                    fflush(stdout);
                     in->in.cur--;
                 }
                 return;
@@ -114,23 +129,6 @@ void handle_ctrl(struct InputState* in, char c){
 
     return;
 }
-
-void print_string(const struct Input* const in){
-    for (size_t i = 0; i < in->len; ++i) {
-        if(i == in->cur){
-            printf("\e[48;2;0;128;255m%c\e[0m", in->buf[i]);
-        }
-        else{
-            printf("%c", in->buf[i]);
-        }
-    }
-    if (in->cur == in->len) {
-        printf("\e[48;2;0;128;255m \e[0m");
-    }
-    printf("(%lu %lu %lu)\n", in->cur, in->len, in->cap);
-}
-
-void write
 
 /**
  * returns input string when enter is pressed
@@ -148,15 +146,17 @@ char* interactive_input(){
             continue;
         }
         if (iscntrl(c)) {
-            fflush(stdout);
             handle_ctrl(&state, c);
-            continue;
+        }
+        else{
+            insert_char(&state.in, c);
         }
 
-        insert_char(&state.in, c);
+        render_input(&state.in);
     }
     char* buffer = realloc(state.in.buf, state.in.len + 1);
     buffer[state.in.len] = 0;
+    printf("%s\n", buffer);
 
     return buffer;
 }
@@ -164,6 +164,20 @@ char* interactive_input(){
 
 #ifdef TEST
 
+void print_string(const struct Input* const in){
+    for (size_t i = 0; i < in->len; ++i) {
+        if(i == in->cur){
+            printf("\e[48;2;0;128;255m%c\e[0m", in->buf[i]);
+        }
+        else{
+            printf("%c", in->buf[i]);
+        }
+    }
+    if (in->cur == in->len) {
+        printf("\e[48;2;0;128;255m \e[0m");
+    }
+    printf("(%lu %lu %lu)\n", in->cur, in->len, in->cap);
+}
 
 void test_input(){
     struct Input in = {};
