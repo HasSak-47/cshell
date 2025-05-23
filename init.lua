@@ -27,6 +27,7 @@ Luall = {
 
     -- this is set up by c
     api = {},
+    -- this are commands that only exist in lua
     util = {
         ---@param args table
         lua = function (args)
@@ -34,7 +35,6 @@ Luall = {
                 return;
             end
 
-            print("exec: " .. args[1])
             local func, _ = load(args[1])
             if func ~= nil then
                 local ok, _ = pcall(func)
@@ -44,6 +44,7 @@ Luall = {
             end
         end,
     },
+    -- this are commands that behave like an alias
     overwrite = {
         cd = function(args)
             if #args == 0 then
@@ -54,6 +55,7 @@ Luall = {
             end
         end,
     },
+    -- this are not commands but usefull stuff
 	inner = {
         ---@param path string
         expand_path = function(path)
@@ -85,11 +87,7 @@ Luall = {
             end
 
             local parser = require('parser')
-            if Luall.vars.history == nil then
-                Luall.vars.history = {input}
-            else
-                table.insert(Luall.vars.history, input)
-            end
+            table.insert(Luall.vars.history, input)
             parser(input)
         end,
 

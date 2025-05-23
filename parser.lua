@@ -1,6 +1,8 @@
 
 ---@alias TokenType "statement"
 ---| "process"
+---| "command"
+---| "argument"
 ---| "pipe"
 ---| "pipe-process"
 ---| "redir"
@@ -78,8 +80,10 @@ local function take_process(tokens)
 
     for _ = 1, i, 1 do
         local tkn = table.remove(tokens, 1)
+        tkn.type = "argument"
         table.insert(process, tkn)
     end
+    process[1].type = "command"
 
     return {val=process, type="process"}
 end
@@ -121,40 +125,19 @@ local function tokenize(input)
     return tokens
 end
 
-local function parser()
-    error('in testing...');
-end
 
 ---@param t Token[]
 ---@param depth number
 local function print_tokens(t, depth)
     for _, value in ipairs(t) do
         local tab = string.rep("\t", depth)
-        if value.type == "str" then
-            goto bottom
-        end
-        if value.type == "pipe" then
-            goto bottom
-        end
-        if value.type == "fd" then
-            goto bottom
-        end
-        if value.type == "redir" then
-            goto bottom
-        end
-        if value.type == "undefined" then
-            goto bottom
+        if type(value.val) == "string" then
+            print(tab .. value.type .. ': "' .. value.val .. '"')
+        else
+            print(tab .. value.type)
+            print_tokens(value.val, depth + 1)
         end
 
-        print(tab .. value.type)
-        print_tokens(value.val, depth + 1)
-        goto continue
-
-        ::bottom::
-        print(tab .. value.type .. ': "' .. value.val .. '"')
-        goto continue
-
-        ::continue::
     end
 end
 
@@ -204,9 +187,12 @@ end
 
 if not package.loaded[...] then
     main()
-else
-    -- File is being required as a module
-    -- No action needed
 end
+
+---@param cmd string
+local function parser(cmd)
+    error('in testing...');
+end
+
 
 return parser
