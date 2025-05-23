@@ -86,6 +86,13 @@ Luall = {
                 Luall.api.cd(path)
             end
         end,
+        exec = function (cmd, ...)
+            cmd = Luall.inner.expand_path(cmd)
+            if debug then
+                print(cmd)
+            end
+            Luall.api.exec(cmd, args) 
+        end
     },
     -- the alias are blueprints for process.new
     alias = {
@@ -130,6 +137,15 @@ Luall = {
 
             table.insert(Luall.vars.history, input)
             parser.parser(input)
+        end,
+
+        ---@param input string
+		tokenize = function(input)
+            if input == '' then
+                return
+            end
+            local tokens = parser.tokenize(input)
+            return tokens;
         end,
 
         ---@param index number

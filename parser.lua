@@ -12,10 +12,10 @@
 ---
 ---@alias Token {type: TokenType, val: (string | Token), }
 ---
----@alias Command  {val: string , type: "command"}
----@alias Argument {val: string , type: "argument"}
----@alias Process  {val: {[1]: Command, [2]: Argument}, type: "process"}
----@alias Pipe     {val: "|" | "|&", type: "pipe"}
+---@alias Command  {span: {[1]: number, [2]: number}, val: string , type: "command"}
+---@alias Argument {span: {[1]: number, [2]: number}, val: string, type: "argument"}
+---@alias Process  {span: {[1]: number, [2]: number}, val: {[1]: Command, [2]: Argument}, type: "process"}
+---@alias Pipe     {span: {[1]: number, [2]: number}, val: "|" | "|&", type: "pipe"}
 
 -- <statement> ::= <process> (<pipe>  <process> )* (<redirection> (<fd> | <string>))
 -- <process>   ::= <string> (<string>)*
@@ -115,13 +115,13 @@ local function tokenize(input)
                 i = i + 1
             end
             -- remove quotes
-            table.insert(tokens, {val=input:sub(start + 1, i - 2), type="str"});
+            table.insert(tokens, {span={start, i-1}, val=input:sub(start + 1, i - 2), type="str"});
         elseif not char:match("%s") then
             local start = i
             while i <= len and not input:sub(i, i):match("%s") do
                 i = i + 1
             end
-            table.insert(tokens, {val=input:sub(start, i - 1), type="undefined"})
+            table.insert(tokens, {span={start, i-1}, val=input:sub(start, i - 1), type="undefined"})
         else
             i = i + 1
         end
@@ -157,7 +157,7 @@ local function tokenize(input)
 
             table.insert(statement.val, redir)
             table.insert(statement.val, target)
-            
+
         end
 
         ::continue::
@@ -259,7 +259,7 @@ local function run_cmd(cmd)
         end
     end
 
-    Luall.api.exec(target_cmd, table.unpack(args))
+    Luall.extend.exec(target_cmd, table.unpack(args))
     
 end
 
@@ -417,4 +417,4 @@ local function config()
     table.insert(Luall.testing, test_pipes )
 end
 
-return {parser=parser, config=config}
+return {parser=parser, tokenize=tokenize, config=config}

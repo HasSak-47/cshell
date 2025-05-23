@@ -1,6 +1,6 @@
 use std::{ffi::{c_char, c_int, CStr}, ptr::null};
 
-use clap::Parser
+use clap::Parser;
 
 #[derive(Parser, Debug, Default)]
 #[command(version, about, long_about = None)]
