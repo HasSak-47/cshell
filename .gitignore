@@ -6,14 +6,8 @@ luall
 .env
 log.txt
 
+# python
+**/__pycache__
 
-# Added by cargo
-
+# rust
 /target
-
-
-# Added by cargo
-#
-# already existing elements were commented out
-
-#/target
