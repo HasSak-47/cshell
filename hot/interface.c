@@ -1,4 +1,4 @@
-#include "utils.h"
+#include <utils.h>
 #include <ctype.h>
 #include <state.h>
 
@@ -166,7 +166,7 @@ void lua_setup(lua_State* L){
     luaL_requiref(L, "string", luaopen_string, true);
 
     // load blueprint
-    debug_printf("loading blueprint\n");
+    debug_printf("loading blueprint @ %s\n", init_path);
     if(luaL_dofile(L, init_path) != LUA_OK){
         // if it doesn't load just nuke it
         running = false;
