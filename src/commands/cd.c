@@ -8,6 +8,7 @@ const char* get_name(){
 }
 
 int run(char vectored** params) {
+	printf("chiange!\n");
 	if(v_len(params) < 2){
 		printf("no commands provided\n");
 		return -1;

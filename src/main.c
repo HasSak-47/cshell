@@ -72,6 +72,7 @@ int main(){
 		char* name = args[0];
 		v_remove(args, 0);
 		r = run_cmd(name, args);
+		v_delete(name);
 
 		for(size_t i = 0; i < v_len(args); ++i)
 			v_delete(args[i]);

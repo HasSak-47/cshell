@@ -4,6 +4,9 @@ shell:
 cmds:
 	make -C src/commands/ build
 
+cmds_clean:
+	make -C src/commands/ clean 
+
 run:
 	make shell
 	./cshell
