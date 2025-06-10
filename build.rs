@@ -4,31 +4,40 @@ use std::{
     io::Write,
 };
 
-use clang::{get_version, Clang, EntityKind, Index};
+use clang::{Clang, EntityKind, Index, get_version};
 
-fn match_types(ty: &str) -> &str {
+#[derive(Debug, Default, Clone)]
+enum LuaType {
+    #[default]
+    Nil,
+    Int,
+    IntEnum,
+    Boolean,
+    Number,
+    Str,
+    UserData(String),
+}
+
+fn match_types(ty: &str) -> LuaType {
     match ty {
-        "int" => "int",
-        "bool" => "boolean",
-        "float" => "number",
-        _ if ty.contains("char *") => "str",
-        _ => ty,
+        "int" => LuaType::Int,
+        "bool" => LuaType::Boolean,
+        "_Bool" => LuaType::Boolean,
+        "float" => LuaType::Number,
+        "void" => LuaType::Nil,
+        _ if ty.contains("char *") => LuaType::Str,
+        _ if ty.contains("enum") => LuaType::IntEnum,
+        _ => LuaType::UserData(ty.to_string()),
     }
 }
 
-fn make_bind(name: &str, params: Vec<(&str, &str)>, com: String) -> String {
+fn make_bind(name: &str, params: Vec<(&str, LuaType)>, com: String) -> String {
     let line = com
         .lines()
         .filter(|line| line.find("@luabind").is_some())
         .next()
         .unwrap()
         .to_string();
-
-    let bind_name = format!("api_bind_{name}");
-    for (name, ty) in params {}
-
-    let mut s = String::new();
-    return s;
 }
 
 fn main() {
@@ -104,7 +113,7 @@ fn main() {
 
             writeln!(
                 out_file,
-                "{f_name} -> {r_ty} => {r_canon_ty} => {r_type_name}"
+                "{f_name} -> {r_ty} aka {r_canon_ty} therefore lua.{r_type_name:?}"
             )
             .unwrap();
 
@@ -118,7 +127,7 @@ fn main() {
                     .get_display_name();
 
                 let type_name = match_types(&canon_ty);
-                writeln!(out_file, "{name}: {canon_ty} => {type_name}").unwrap();
+                writeln!(out_file, "{name}: {canon_ty} therefore lua.{type_name:?}").unwrap();
             }
             out_file.write(b"\n").unwrap();
         }

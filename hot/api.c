@@ -132,7 +132,8 @@ static int api_exec(lua_State* L) {
         // lua indices start at 1 for some fucking reason
         const char* arg = lua_tostring(L, i + 1);
         // something weird was passed as an argument just ignore
-        if (arg == NULL) continue;
+        if (arg == NULL)
+            continue;
 
         if (debug) {
             printf("adding arg: %s\n", arg);
@@ -182,7 +183,8 @@ static int api_process_new(lua_State* L) {
         // lua indices start at 1 for some fucking reason
         const char* arg = lua_tostring(L, i + 1);
         // something weird was passed as an argument just ignore
-        if (arg == NULL) continue;
+        if (arg == NULL)
+            continue;
         add_arg(p, arg);
     }
 
@@ -262,7 +264,7 @@ static void __print_param(lua_State* L, size_t i) {
         printf("%s", lua_toboolean(L, i) ? "true" : "false");
     }
     else if (lua_isinteger(L, i)) {
-        printf("%d", lua_tointeger(L, i));
+        printf("%lld", lua_tointeger(L, i));
     }
     else if (lua_isnumber(L, i)) {
         printf("%f", lua_tonumber(L, i));
@@ -284,7 +286,8 @@ static int api_io_print(lua_State* L) {
 }
 
 static int api_io_debug_print(lua_State* L) {
-    if (debug) return 0;
+    if (debug)
+        return 0;
 
     api_io_debug_print(L);
 
@@ -315,5 +318,8 @@ luaL_Reg api[] = {
     REG(reload),
     REG(exec),
     REG(exists),
-    {NULL, NULL},
+    {"debug", api_io_debug_print},
+    {"print",       api_io_print},
+
+    {   NULL,               NULL},
 };

@@ -1,19 +1,19 @@
-#include "debug.h"
-#include "str.h"
-#include "vectors.h"
 #include <path.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <utils.h>
+#include "debug.h"
+#include "str.h"
+#include "vectors.h"
 
 static struct PathSegment build_segment(const struct VectorChars name) {
     // not optimal but meaningful!
     if (string_cmp(name, ".")) {
-        return (struct PathSegment){.ty = CURR_PATH, .name = NULL};
+        return (struct PathSegment){.ty = CURR_PATH, .name = {}};
     }
     if (string_cmp(name, "..")) {
-        return (struct PathSegment){.ty = PREV_PATH, .name = NULL};
+        return (struct PathSegment){.ty = PREV_PATH, .name = {}};
     }
 
     return (struct PathSegment){
@@ -35,7 +35,7 @@ void push_segment(struct Path* path, const struct PathSegment segment) {
 }
 
 struct Path root_path() {
-    struct PathSegment segment = {.ty = ROOT_PATH, .name = NULL};
+    struct PathSegment segment = {.ty = ROOT_PATH, .name = {}};
 
     struct Path path = {};
     push_segment(&path, segment);
@@ -123,8 +123,7 @@ char* get_path_string(const struct Path path) {
             break;
         case NAMED_PATH: {
             char* start = to_cstring(path._inner.data[i].name);
-            for (char* inn = start; *inn != 0; ++inn)
-                vector_push(str, *inn);
+            for (char* inn = start; *inn != 0; ++inn) vector_push(str, *inn);
 
             free(start);
         } break;

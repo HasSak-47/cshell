@@ -30,7 +30,7 @@ char** history = NULL;
 
 // Luall.vars
 
-struct User user = {NULL, NULL};
+struct User user = {NULL, {}};
 struct Path cwd  = {};
 char* host       = NULL;
 // last error code

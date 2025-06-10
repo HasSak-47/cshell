@@ -8,59 +8,59 @@ file: ./hot/api.c
 file: ./hot/interface.c
 file: ./hot/testing.c
 file: ./hot/process.c
-new_pipe -> struct Pipe => struct Pipe => struct Pipe
+new_pipe -> struct Pipe aka struct Pipe therefore lua.UserData("struct Pipe")
 
-close_pipe -> void => void => void
-p: struct Pipe * => struct Pipe *
+close_pipe -> void aka void therefore lua.Nil
+p: struct Pipe * therefore lua.UserData("struct Pipe *")
 
-new_command -> struct Command => struct Command => struct Command
-path: const char * => str
+new_command -> struct Command aka struct Command therefore lua.UserData("struct Command")
+path: const char * therefore lua.Str
 
-command_reserve_size -> void => void => void
-cmd: struct Command * => struct Command *
-size: unsigned long => unsigned long
+command_reserve_size -> void aka void therefore lua.Nil
+cmd: struct Command * therefore lua.UserData("struct Command *")
+size: unsigned long therefore lua.UserData("unsigned long")
 
-bind_pipe -> void => void => void
-cmd: struct Command * => struct Command *
-pipe: struct Pipe * => struct Pipe *
-ty: enum BindType => enum BindType
+bind_pipe -> void aka void therefore lua.Nil
+cmd: struct Command * therefore lua.UserData("struct Command *")
+pipe: struct Pipe * therefore lua.UserData("struct Pipe *")
+ty: enum BindType therefore lua.IntEnum
 
-add_arg -> void => void => void
-cmd: struct Command * => struct Command *
-arg: const char * => str
+add_arg -> void aka void therefore lua.Nil
+cmd: struct Command * therefore lua.UserData("struct Command *")
+arg: const char * therefore lua.Str
 
-run -> pid_t => int => int
-p: struct Command * => struct Command *
+run -> pid_t aka int therefore lua.Int
+p: struct Command * therefore lua.UserData("struct Command *")
 
-new_pipe -> struct Pipe => struct Pipe => struct Pipe
+new_pipe -> struct Pipe aka struct Pipe therefore lua.UserData("struct Pipe")
 
-close_pipe -> void => void => void
-p: struct Pipe * => struct Pipe *
+close_pipe -> void aka void therefore lua.Nil
+p: struct Pipe * therefore lua.UserData("struct Pipe *")
 
-new_command -> struct Command => struct Command => struct Command
-cmd: const char * => str
+new_command -> struct Command aka struct Command therefore lua.UserData("struct Command")
+cmd: const char * therefore lua.Str
 
-bind_pipe -> void => void => void
-cmd: struct Command * => struct Command *
-pipe: struct Pipe * => struct Pipe *
-type: enum BindType => enum BindType
+bind_pipe -> void aka void therefore lua.Nil
+cmd: struct Command * therefore lua.UserData("struct Command *")
+pipe: struct Pipe * therefore lua.UserData("struct Pipe *")
+type: enum BindType therefore lua.IntEnum
 
-command_reserve_size -> void => void => void
-cmd: struct Command * => struct Command *
-argc: unsigned long => unsigned long
+command_reserve_size -> void aka void therefore lua.Nil
+cmd: struct Command * therefore lua.UserData("struct Command *")
+argc: unsigned long therefore lua.UserData("unsigned long")
 
-add_arg -> void => void => void
-cmd: struct Command * => struct Command *
-arg: const char * => str
+add_arg -> void aka void therefore lua.Nil
+cmd: struct Command * therefore lua.UserData("struct Command *")
+arg: const char * therefore lua.Str
 
-stdout_bind -> _Bool => _Bool => _Bool
-cmd: struct Command * => struct Command *
+stdout_bind -> _Bool aka _Bool therefore lua.Boolean
+cmd: struct Command * therefore lua.UserData("struct Command *")
 
-run -> pid_t => int => int
-p: struct Command * => struct Command *
+run -> pid_t aka int therefore lua.Int
+p: struct Command * therefore lua.UserData("struct Command *")
 
 file: ./hot/input.c
-set_string -> void => void => void
-in: struct Input * => struct Input *
-str: char * => str
+set_string -> void aka void therefore lua.Nil
+in: struct Input * therefore lua.UserData("struct Input *")
+str: char * therefore lua.Str
 
