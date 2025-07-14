@@ -89,7 +89,7 @@ local function take_process(tokens)
     end
     process[1].type = "command"
 
-    return {val=process, type="process"}
+    return { val = process, type = "process" }
 end
 
 ---@return Token[]
@@ -114,13 +114,13 @@ local function tokenize(input)
                 i = i + 1
             end
             -- remove quotes
-            table.insert(tokens, {span={start, i-1}, val=input:sub(start + 1, i - 2), type="str"});
+            table.insert(tokens, { span = { start, i - 1 }, val = input:sub(start + 1, i - 2), type = "str" });
         elseif not char:match("%s") then
             local start = i
             while i <= len and not input:sub(i, i):match("%s") do
                 i = i + 1
             end
-            table.insert(tokens, {span={start, i-1}, val=input:sub(start, i - 1), type="undefined"})
+            table.insert(tokens, { span = { start, i - 1 }, val = input:sub(start, i - 1), type = "undefined" })
         else
             i = i + 1
         end
@@ -138,7 +138,7 @@ local function tokenize(input)
         end
     end
 
-    local statement = {val = {take_process(tokens), }, type="statement"}
+    local statement = { val = { take_process(tokens), }, type = "statement" }
 
     while #tokens > 0 do
         if tokens[1].type == "pipe" then
@@ -156,13 +156,12 @@ local function tokenize(input)
 
             table.insert(statement.val, redir)
             table.insert(statement.val, target)
-
         end
 
         ::continue::
     end
 
-    return {statement}
+    return { statement }
 end
 
 
@@ -177,9 +176,7 @@ local function print_tokens(t, depth)
             print(tab .. value.type)
             print_tokens(value.val, depth + 1)
         end
-
     end
-
 end
 
 
@@ -194,7 +191,6 @@ end
 
 ---@param cmd Process
 local function run_cmd(cmd)
-
     if cmd.type == nil then
         error('did not got a token!');
     end
@@ -255,7 +251,7 @@ local function run_cmd(cmd)
     local possible_locs = parse_env(Luall.vars.env.PATH)
     local target_cmd = ''
     for _, path in pairs(possible_locs) do
-        local candidate = path ..'/' .. name
+        local candidate = path .. '/' .. name
         if Luall.api.exists(candidate) then
             target_cmd = candidate
             break
@@ -269,7 +265,6 @@ local function run_cmd(cmd)
         end
     end
     Luall.extend.exec(target_cmd, table.unpack(args))
-    
 end
 
 ---@param tokens {[1]: Process, [2]: Pipe, [3]: Process}
@@ -283,10 +278,10 @@ local function run_piped(tokens)
     local out = tokens[3]
 
     if src.type ~= "process" then
-        print ("first token isn't process")
+        print("first token isn't process")
     end
     if _pipe.type ~= "pipe" then
-        print ("second token isn't pipe")
+        print("second token isn't pipe")
     end
     if out.type ~= "process" then
         print("third token isn't process")
@@ -303,7 +298,7 @@ local function run_piped(tokens)
         local possible_locs = parse_env(Luall.vars.env.PATH)
         local target_cmd = ''
         for _, path in pairs(possible_locs) do
-            local candidate = path ..'/' .. name
+            local candidate = path .. '/' .. name
             if Luall.api.exists(candidate) then
                 target_cmd = candidate
                 break
@@ -322,16 +317,15 @@ local function run_piped(tokens)
         print('failed to create out process!')
     end
 
-    Luall.api.process.bind_pipe(src_p, pipe, "out")
-    Luall.api.process.bind_pipe(out_p, pipe, "in")
+    src_p:bind_pipe(pipe, "out")
+    out_p:bind_pipe(pipe, "in")
 
-    local src_pid = Luall.api.process.run(src_p)
-    local out_pid = Luall.api.process.run(out_p)
-    Luall.api.pipe.close(pipe)
+    local src_pid = src_p:run()
+    local out_pid = out_p:run()
+    pipe:close()
 
-    Luall.api.process.wait(src_pid)
-    Luall.api.process.wait(out_pid)
-
+    src_pid:wait()
+    out_pid:wait()
 end
 
 ---@param cmd string
@@ -345,19 +339,19 @@ local function handle_shell_like(cmd)
     --- check if the token list is just 1
     --- if there is more than 2 it means there is a pipe there
     if #tokens[1].val == 1 then
-        run_cmd( tokens[1].val[1] )
+        run_cmd(tokens[1].val[1])
     else
-        run_piped( tokens[1].val )
+        run_piped(tokens[1].val)
     end
 end
 
 ---@param line string
 local function handle_singleline(line)
-    local start  = line:find('lua')
+    local start = line:find('lua')
     if start == 1 then
         ---TODO: change it so it only takes the first lua
         line = line:gsub('lua', '')
-        Luall.util.lua({line})
+        Luall.util.lua({ line })
     else -- run "normal shell"
         handle_shell_like(line)
     end
@@ -388,7 +382,7 @@ local function parser(input)
 
     if #lines == 1 then -- single line
         handle_singleline(lines[1])
-    else -- multi line
+    else                -- multi line
     end
 
     if set_debug then
@@ -403,7 +397,7 @@ local function test_run_cmd()
     print_tokens(tokens, 0)
     print()
 
-    run_cmd( tokens[1].val[1] )
+    run_cmd(tokens[1].val[1])
 end
 
 local function test_pipes()
@@ -412,25 +406,23 @@ local function test_pipes()
     local wc = Luall.api.process.new('/bin/wc', '-l')
     local pipe = Luall.api.pipe.new()
 
-    Luall.api.process.bind_pipe(ls, pipe, "out")
-    Luall.api.process.bind_pipe(wc, pipe, "in")
+    ls:bind_pipe(ls, pipe, "out")
+    wc:bind_pipe(wc, pipe, "in")
 
 
-    local ls_pid = Luall.api.process.run(ls)
-    local wc_pid = Luall.api.process.run(wc)
+    local ls_pid = ls:run(ls)
+    local wc_pid = wc:run(wc)
 
-    Luall.api.pipe.close(pipe)
+    pipe:close()
 
-    Luall.api.process.wait(ls_pid)
-    Luall.api.process.wait(wc_pid)
-
-
+    ls_pid:wait()
+    wc_pid:wait()
 end
 
 local function config()
-    table.insert(Luall.testing, test_run_cmd )
-    table.insert(Luall.testing, test_pipes )
+    table.insert(Luall.testing, test_run_cmd)
+    table.insert(Luall.testing, test_pipes)
 end
 
 return {
-    parser=parser, tokenize=tokenize, config=config}
+    parser = parser, tokenize = tokenize, config = config }

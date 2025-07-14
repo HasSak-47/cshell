@@ -3,8 +3,6 @@
 
 #include <lauxlib.h>
 
-extern luaL_Reg api[];
-extern luaL_Reg api_process[];
-extern luaL_Reg api_pipe[];
+void init_api(lua_State* L);
 
 #endif

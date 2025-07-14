@@ -294,18 +294,12 @@ static int api_io_debug_print(lua_State* L) {
     return 0;
 }
 
-luaL_Reg api_process[] = {
+const luaL_Reg api_process[] = {
     {      "new",       api_process_new},
     {      "run",       api_process_run},
     {     "wait",      api_process_wait},
     {"bind_pipe", api_process_bind_pipe},
     {       NULL,                  NULL},
-};
-
-luaL_Reg api_pipe[] = {
-    {  "new",   api_pipe_new},
-    {"close", api_pipe_close},
-    {   NULL,           NULL},
 };
 
 #define REG(name) {#name, api_##name}
@@ -323,3 +317,63 @@ luaL_Reg api[] = {
 
     {   NULL,               NULL},
 };
+
+const luaL_Reg api_pipe[] = {
+    {  "new",   api_pipe_new},
+    {"close", api_pipe_close},
+    {   NULL,           NULL},
+};
+
+static void init_process_metatable(lua_State* L) {
+    luaL_newmetatable(L, "Process");
+    lua_pushcfunction(L, api_process_run);
+    lua_setfield(L, -2, "run");
+
+    lua_pushcfunction(L, api_process_wait);
+    lua_setfield(L, -2, "wait");
+
+    lua_pushcfunction(L, api_process_bind_pipe);
+    lua_setfield(L, -2, "bind_pipe");
+
+    lua_pushvalue(L, -1);
+    lua_setfield(L, -2, "__index");
+
+    lua_pop(L, 1);
+}
+
+static void init_pipe_metatable(lua_State* L) {
+    luaL_newmetatable(L, "Pipe");
+
+    lua_pushcfunction(L, api_pipe_close);
+    lua_setfield(L, -2, "close");
+
+    lua_pushvalue(L, -1);
+    lua_setfield(L, -2, "__index");
+    lua_pop(L, 1);
+}
+
+void init_api() {
+    init_pipe_metatable(L);
+    init_process_metatable(L);
+
+    lua_getglobal(L, "Luall");
+    lua_getfield(L, -1, "api");
+    luaL_setfuncs(L, api, 0);
+
+    lua_createtable(L, 0, 0);
+    lua_pushcfunction(L, api_process_new);
+    lua_setfield(L, -2, "new");
+    luaL_getmetatable(L, "process");
+    lua_setmetatable(L, -2);
+
+    lua_setfield(L, -2, "process");
+
+    lua_createtable(L, 0, 0);
+    lua_pushcfunction(L, api_pipe_new);
+    lua_setfield(L, -2, "new");
+    luaL_getmetatable(L, "pipe");
+    lua_setmetatable(L, -2);
+
+    lua_setfield(L, -2, "pipe");
+    lua_pop(L, 2);
+}
